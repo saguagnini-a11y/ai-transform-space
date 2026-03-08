@@ -41,7 +41,7 @@ const Index = () => {
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 font-body">
             A hands-on studio where learning designers experiment with AI to redesign real work.
           </p>
-          <p className="text-base sm:text-lg text-muted-foreground/80 max-w-xl mx-auto mb-10 font-body italic">
+          <p className="text-sm sm:text-base text-muted-foreground/80 max-w-xl mx-auto mb-10 font-body italic">
             Not another course. A practice space for building the future of learning.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
