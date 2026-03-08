@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Zap } from "lucide-react";
+import { ArrowRight, Zap, Shell, Users, FileCheck, MessageSquare } from "lucide-react";
 
 const workflows = [
   { id: "needs", name: "Needs Analysis", desc: "Identify learning gaps and priorities", steps: ["Gather data", "Analyze surveys", "Interview stakeholders", "Prioritize needs", "Report findings"] },
@@ -11,6 +11,14 @@ const workflows = [
   { id: "stakeholder", name: "Stakeholder Communication", desc: "Align with business leaders", steps: ["Map stakeholders", "Craft messaging", "Present data", "Get buy-in", "Follow up"] },
 ];
 
+const sprintSteps = [
+  { label: "Define the Challenge", placeholder: "What workflow challenge do you want to tackle?" },
+  { label: "Write a Prompt", placeholder: "Write the prompt you'll use to test this with AI..." },
+  { label: "Test with AI", placeholder: "Paste the AI output here..." },
+  { label: "Capture Output", placeholder: "What was the result? What worked, what didn't?" },
+  { label: "Write a Reflection", placeholder: "What did you learn? What would you do differently?" },
+];
+
 const WeeklyWorkflow = () => {
   const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(null);
   const [showSprint, setShowSprint] = useState(false);
@@ -18,20 +26,93 @@ const WeeklyWorkflow = () => {
 
   const selected = workflows.find((w) => w.id === selectedWorkflow);
 
-  const sprintSteps = [
-    { label: "Define the Challenge", placeholder: "What workflow challenge do you want to tackle?" },
-    { label: "Write a Prompt", placeholder: "Write the prompt you'll use to test this with AI..." },
-    { label: "Test with AI", placeholder: "Paste the AI output here..." },
-    { label: "Capture Output", placeholder: "What was the result? What worked, what didn't?" },
-    { label: "Write a Reflection", placeholder: "What did you learn? What would you do differently?" },
-  ];
-
   return (
     <Layout>
+      {/* Nutshell Overview */}
+      <section className="lab-section bg-lab-surface">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-10">
+            <h1 className="text-3xl sm:text-4xl font-display font-bold mb-2">Weekly Workflow</h1>
+            <p className="text-muted-foreground">Identify and redesign your L&D workflow steps with AI</p>
+          </div>
+
+          <div className="bg-sticky-yellow p-6 sm:p-8 rounded-sm shadow-sm max-w-3xl mx-auto mb-12" style={{ transform: "rotate(-0.5deg)" }}>
+            <p className="text-xl sm:text-2xl font-display font-bold text-foreground mb-6">
+              🐚 In a nutshell:
+            </p>
+            <p className="text-base sm:text-lg text-foreground/90 font-body leading-relaxed mb-6">
+              Every two weeks participants redesign one real workflow step, test it with AI, reflect with peers, and showcase what they can now do that was impossible before.
+            </p>
+
+            <div className="grid sm:grid-cols-2 gap-4 mb-6">
+              {/* Guest + Sprint */}
+              <div className="bg-background/60 rounded-lg p-5 border border-foreground/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="w-5 h-5 text-primary" />
+                  <h3 className="font-display font-bold text-base">Guest + Micro-case Sprint</h3>
+                </div>
+                <ul className="space-y-2 text-sm text-foreground/80 font-body">
+                  <li>• 1 guest bi-weekly for a show & tell related to the workflow focus of the day (Define, Discover, Design, Deploy & Develop, Iterate)</li>
+                  <li>• Guest gives a challenge related to the focus of the day</li>
+                  <li>• Participants design and test 1 micro-case in 45 minutes</li>
+                  <li>• They commit to a tiny experiment in the workplace</li>
+                  <li>• Ship a minimum viable experiment</li>
+                </ul>
+              </div>
+
+              {/* Reflection Pods */}
+              <div className="bg-background/60 rounded-lg p-5 border border-foreground/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-5 h-5 text-primary" />
+                  <h3 className="font-display font-bold text-base">Tiny Experiment + Reflection Pods</h3>
+                </div>
+                <p className="text-sm text-foreground/80 font-body mb-2">Sync or async reflection with 2 of your peers:</p>
+                <ul className="space-y-2 text-sm text-foreground/80 font-body">
+                  <li>• What did you ship since last time?</li>
+                  <li>• Show the artifact (prompt + output)</li>
+                  <li>• What can we do now that we couldn't do before?</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Override Log */}
+            <div className="bg-background/60 rounded-lg p-5 border border-foreground/10 mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <FileCheck className="w-5 h-5 text-primary" />
+                <h3 className="font-display font-bold text-base">"Override Log"</h3>
+              </div>
+              <ul className="space-y-1.5 text-sm text-foreground/80 font-body">
+                <li>• What did AI suggest?</li>
+                <li>• What did I override?</li>
+                <li>• What is uniquely mine?</li>
+              </ul>
+            </div>
+
+            {/* Non-Negotiable Outputs */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="bg-background/60 rounded-lg p-5 border border-foreground/10">
+                <h3 className="font-display font-bold text-base mb-3">3 Non-Negotiable Outputs of the Sprint</h3>
+                <ul className="space-y-1.5 text-sm text-foreground/80 font-body">
+                  <li>1. A micro-case tested with AI</li>
+                  <li>2. An override log</li>
+                  <li>3. A "before vs. after" comparison</li>
+                </ul>
+              </div>
+              <div className="bg-background/60 rounded-lg p-5 border border-foreground/10">
+                <h3 className="font-display font-bold text-base mb-3">1 Non-Negotiable Output of the Reflection</h3>
+                <ul className="space-y-1.5 text-sm text-foreground/80 font-body">
+                  <li>1. A tiny experiment shipped in the workplace</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Workflow Section */}
       <section className="lab-section">
         <div className="container mx-auto max-w-4xl">
-          <h1 className="text-3xl font-display font-bold mb-2">Weekly Workflow</h1>
-          <p className="text-muted-foreground mb-8">Identify and redesign your L&D workflow steps with AI</p>
+          <h2 className="text-2xl font-display font-bold mb-6">Pick a Workflow to Redesign</h2>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             {workflows.map((wf) => (
