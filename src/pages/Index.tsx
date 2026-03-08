@@ -8,11 +8,11 @@ const journeyWeeks = [
   { week: "2", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
   { week: "3", label: "Guest + Sprint", phase: "Discover", color: "bg-sticky-yellow" },
   { week: "4", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "5", label: "Guest + Sprint", phase: "Design", color: "bg-sticky-yellow" },
+  { week: "5", label: "Guest + Sprint", phase: "Design & Develop", color: "bg-sticky-yellow" },
   { week: "6", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
   { week: "7", label: "Guest + Sprint", phase: "Deploy & Iterate", color: "bg-sticky-yellow" },
   { week: "8", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "9", label: "Workflow Deep Dive", phase: "Peer Café", color: "bg-sticky-blue" },
+  { week: "9", label: "Workflow Deep Dive & Peer Café", phase: "", color: "bg-sticky-blue" },
   { week: "10", label: "Transformation Expo", phase: "World Café", color: "bg-sticky-pink" },
 ];
 
