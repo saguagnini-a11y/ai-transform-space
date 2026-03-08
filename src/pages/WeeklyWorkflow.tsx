@@ -11,15 +11,6 @@ const loopSteps = [
 
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
 
-
-const sprintSteps = [
-  { label: "Define the Challenge", placeholder: "What workflow challenge do you want to tackle?" },
-  { label: "Write a Prompt", placeholder: "Write the prompt you'll use to test this with AI..." },
-  { label: "Test with AI", placeholder: "Paste the AI output here..." },
-  { label: "Capture Output", placeholder: "What was the result? What worked, what didn't?" },
-  { label: "Write a Reflection", placeholder: "What did you learn? What would you do differently?" },
-];
-
 const WeeklyWorkflow = () => {
 
   return (
