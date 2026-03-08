@@ -1,7 +1,5 @@
-import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Zap, Mic, FlaskConical, Users, PenLine, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 const loopSteps = [
   { icon: Mic, emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow" },
