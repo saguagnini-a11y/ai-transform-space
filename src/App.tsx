@@ -8,6 +8,7 @@ import ExperimentsPage from "./pages/ExperimentsPage";
 import WeeklyWorkflow from "./pages/WeeklyWorkflow";
 import ReflectionPods from "./pages/ReflectionPods";
 import TransformationExpo from "./pages/TransformationExpo";
+import DeepDive from "./pages/DeepDive";
 import AboutPage from "./pages/AboutPage";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/weekly-workflow" element={<WeeklyWorkflow />} />
           <Route path="/reflection-pods" element={<ReflectionPods />} />
           <Route path="/transformation-expo" element={<TransformationExpo />} />
+          <Route path="/deep-dive" element={<DeepDive />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
