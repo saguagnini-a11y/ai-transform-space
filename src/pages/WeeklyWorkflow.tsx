@@ -11,13 +11,6 @@ const loopSteps = [
 
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
 
-const workflows = [
-  { id: "needs", name: "Needs Analysis", desc: "Identify learning gaps and priorities", steps: ["Gather data", "Analyze surveys", "Interview stakeholders", "Prioritize needs", "Report findings"] },
-  { id: "design", name: "Learning Design", desc: "Design learning experiences", steps: ["Define objectives", "Map learner journey", "Select modalities", "Create assessments", "Peer review"] },
-  { id: "content", name: "Content Development", desc: "Create and curate content", steps: ["Research topics", "Write content", "Create visuals", "Review & iterate", "Publish"] },
-  { id: "eval", name: "Evaluation", desc: "Measure learning impact", steps: ["Define metrics", "Collect data", "Analyze results", "Generate insights", "Share recommendations"] },
-  { id: "stakeholder", name: "Stakeholder Communication", desc: "Align with business leaders", steps: ["Map stakeholders", "Craft messaging", "Present data", "Get buy-in", "Follow up"] },
-];
 
 const sprintSteps = [
   { label: "Define the Challenge", placeholder: "What workflow challenge do you want to tackle?" },
