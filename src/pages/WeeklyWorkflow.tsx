@@ -1,7 +1,14 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Zap, Mic, FlaskConical, Users, PenLine, ChevronRight } from "lucide-react";
+import { ArrowRight, Zap, Mic, FlaskConical, Users, PenLine, ChevronRight, ChevronLeft } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const loopSteps = [
   { icon: Mic, emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow" },
