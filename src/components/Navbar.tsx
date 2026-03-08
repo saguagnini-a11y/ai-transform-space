@@ -10,7 +10,6 @@ const navItems = [
   { label: "My Experiments", path: "/experiments" },
   { label: "Reflection Pods", path: "/reflection-pods" },
   { label: "Transformation Expo", path: "/transformation-expo" },
-  { label: "About", path: "/about" },
 ];
 
 const Navbar = () => {
