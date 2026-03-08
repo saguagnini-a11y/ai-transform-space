@@ -18,7 +18,7 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
+    <nav className="sticky top-0 z-50 bg-secondary backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg text-foreground">
           <img src={logoImg} alt="L&D Shakers logo" className="w-9 h-9 rounded-full object-cover border border-border" />
