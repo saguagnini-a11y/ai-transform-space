@@ -6,44 +6,45 @@
 
 @layer base {
   :root {
-    --background: 40 33% 97%;
-    --foreground: 220 20% 15%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 25%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 15%;
+    --card-foreground: 0 0% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 15%;
+    --popover-foreground: 0 0% 25%;
 
-    --primary: 12 76% 56%;
+    --primary: 345 40% 72%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 93% 80%;
-    --secondary-foreground: 220 20% 15%;
+    --secondary: 0 0% 35%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 40 20% 92%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 160 40% 75%;
-    --accent-foreground: 220 20% 15%;
+    --accent: 345 30% 90%;
+    --accent-foreground: 0 0% 25%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 15% 88%;
-    --input: 40 15% 88%;
-    --ring: 12 76% 56%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 345 40% 72%;
 
     --radius: 0.75rem;
 
     /* Custom tokens */
-    --sticky-yellow: 48 95% 85%;
-    --sticky-green: 140 45% 82%;
-    --sticky-blue: 210 55% 85%;
-    --sticky-pink: 340 60% 88%;
-    --sticky-orange: 25 90% 85%;
-    --lab-surface: 40 25% 95%;
-    --lab-border: 40 15% 82%;
+    --sticky-yellow: 48 80% 88%;
+    --sticky-green: 160 35% 85%;
+    --sticky-blue: 210 40% 88%;
+    --sticky-pink: 345 45% 90%;
+    --sticky-orange: 25 70% 88%;
+    --lab-surface: 345 15% 96%;
+    --lab-border: 0 0% 85%;
+    --charcoal: 0 0% 30%;
 
     --font-display: 'Space Grotesk', sans-serif;
     --font-body: 'DM Sans', sans-serif;

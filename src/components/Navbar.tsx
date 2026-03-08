@@ -18,10 +18,10 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
+    <nav className="sticky top-0 z-50 bg-secondary backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg text-foreground">
-          <img src={logoImg} alt="L&D Shakers logo" className="w-9 h-9 rounded-full object-cover border border-border" />
+        <Link to="/" className="flex items-center gap-2.5 font-display font-bold text-lg text-secondary-foreground">
+          <img src={logoImg} alt="L&D Shakers logo" className="w-10 h-10 rounded-full object-cover border-2 border-primary/40" />
           <span>L&D Shakers <span className="text-primary">AI Sandbox</span></span>
         </Link>
 
@@ -33,8 +33,8 @@ const Navbar = () => {
               to={item.path}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors font-display ${
                 location.pathname === item.path
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-primary/20 text-primary"
+                  : "text-secondary-foreground/70 hover:text-secondary-foreground hover:bg-secondary-foreground/10"
               }`}
             >
               {item.label}
@@ -55,7 +55,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-card px-4 py-3 space-y-1">
+        <div className="md:hidden border-t border-secondary-foreground/10 bg-secondary px-4 py-3 space-y-1">
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -63,8 +63,8 @@ const Navbar = () => {
               onClick={() => setMobileOpen(false)}
               className={`block px-3 py-2 rounded-md text-sm font-display font-medium ${
                 location.pathname === item.path
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-primary/20 text-primary"
+                  : "text-secondary-foreground/70 hover:text-secondary-foreground"
               }`}
             >
               {item.label}

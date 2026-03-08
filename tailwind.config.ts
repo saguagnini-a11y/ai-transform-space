@@ -62,6 +62,7 @@ export default {
           surface: "hsl(var(--lab-surface))",
           border: "hsl(var(--lab-border))",
         },
+        charcoal: "hsl(var(--charcoal))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
