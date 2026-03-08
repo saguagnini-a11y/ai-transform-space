@@ -2,11 +2,11 @@ import Layout from "@/components/Layout";
 import { ChevronRight } from "lucide-react";
 
 const loopSteps = [
-  { icon: Mic, emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow" },
-  { icon: Zap, emoji: "⚡", label: "Sprint", color: "bg-sticky-green" },
-  { icon: FlaskConical, emoji: "🧪", label: "Tiny Experiment", color: "bg-sticky-blue" },
-  { icon: Users, emoji: "👥", label: "Reflection Pod", color: "bg-sticky-pink" },
-  { icon: PenLine, emoji: "✍️", label: "Override Log", color: "bg-accent" },
+  { emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow" },
+  { emoji: "⚡", label: "Sprint", color: "bg-sticky-green" },
+  { emoji: "🧪", label: "Tiny Experiment", color: "bg-sticky-blue" },
+  { emoji: "👥", label: "Reflection Pod", color: "bg-sticky-pink" },
+  { emoji: "✍️", label: "Override Log", color: "bg-accent" },
 ];
 
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
