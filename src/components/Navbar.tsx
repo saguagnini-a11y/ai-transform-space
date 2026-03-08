@@ -21,7 +21,7 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg text-foreground">
-          <Beaker className="w-5 h-5 text-primary" />
+          <img src={logoImg} alt="L&D Shakers logo" className="w-9 h-9 rounded-full object-cover border border-border" />
           <span>L&D Shakers <span className="text-primary">AI Sandbox</span></span>
         </Link>
 
