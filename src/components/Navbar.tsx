@@ -8,7 +8,7 @@ const navItems = [
   { label: "Weekly Workflow", path: "/weekly-workflow" },
   { label: "My Experiments", path: "/experiments" },
   { label: "Reflection Pods", path: "/reflection-pods" },
-  { label: "Peer Cafe", path: "/peer-cafe" },
+  { label: "Deep Dive", path: "/deep-dive" },
   { label: "Transformation Expo", path: "/transformation-expo" },
 ];
 
