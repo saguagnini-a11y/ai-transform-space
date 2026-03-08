@@ -55,7 +55,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-card px-4 py-3 space-y-1">
+        <div className="md:hidden border-t border-secondary-foreground/10 bg-secondary px-4 py-3 space-y-1">
           {navItems.map((item) => (
             <Link
               key={item.path}
