@@ -60,7 +60,7 @@ const Index = () => {
         <div className="container mx-auto max-w-3xl text-center">
           <div className="bg-sticky-yellow p-8 rounded-sm shadow-sm inline-block" style={{ transform: "rotate(-1deg)" }}>
             <p className="text-2xl sm:text-3xl font-display font-bold text-foreground">
-              🐚 "What can we do now that we couldn't do before?"
+              "What can we do now that we couldn't do before?"
             </p>
           </div>
           <p className="mt-8 text-muted-foreground max-w-xl mx-auto">
