@@ -5,10 +5,10 @@ import logoImg from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { label: "Home", path: "/" },
   { label: "Weekly Workflow", path: "/weekly-workflow" },
   { label: "My Experiments", path: "/experiments" },
   { label: "Reflection Pods", path: "/reflection-pods" },
+  { label: "Peer Cafe", path: "/peer-cafe" },
   { label: "Transformation Expo", path: "/transformation-expo" },
 ];
 
