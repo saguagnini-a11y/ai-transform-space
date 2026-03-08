@@ -20,8 +20,8 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-secondary backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg text-foreground">
-          <img src={logoImg} alt="L&D Shakers logo" className="w-9 h-9 rounded-full object-cover border border-border" />
+        <Link to="/" className="flex items-center gap-2.5 font-display font-bold text-lg text-secondary-foreground">
+          <img src={logoImg} alt="L&D Shakers logo" className="w-10 h-10 rounded-full object-cover border-2 border-primary/40" />
           <span>L&D Shakers <span className="text-primary">AI Sandbox</span></span>
         </Link>
 
