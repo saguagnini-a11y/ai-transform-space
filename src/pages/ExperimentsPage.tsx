@@ -1,0 +1,409 @@
+import { useState } from "react";
+import Layout from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import { Plus, Beaker, Share2, Save, ChevronDown } from "lucide-react";
+
+interface Experiment {
+  id: string;
+  title: string;
+  workflowStep: string;
+  problem: string;
+  aiUsed: string;
+  prompt: string;
+  output: string;
+  workflowChange: string;
+  becamePossible: string;
+  overrideLog?: {
+    aiSuggestion: string;
+    modification: string;
+    whyChanged: string;
+    humanInsight: string;
+  };
+  createdAt: string;
+}
+
+const workflowSteps = ["Define", "Discover", "Design", "Deploy", "Iterate"];
+
+const sampleExperiments: Experiment[] = [
+  {
+    id: "1",
+    title: "Automated Needs Analysis",
+    workflowStep: "Define",
+    problem: "Manual survey analysis takes 2 weeks",
+    aiUsed: "ChatGPT-4",
+    prompt: "Analyze these 200 survey responses and identify the top 5 learning needs with supporting quotes...",
+    output: "AI identified 5 clear themes with sentiment analysis and priority ranking",
+    workflowChange: "Reduced needs analysis from 2 weeks to 2 hours",
+    becamePossible: "I can now analyze learning feedback at scale in real-time",
+    overrideLog: {
+      aiSuggestion: "AI suggested 'Communication Skills' as top need",
+      modification: "Replaced with 'Stakeholder Influence' based on org context",
+      whyChanged: "AI missed the political dimension of the organization",
+      humanInsight: "Domain knowledge about org culture is irreplaceable",
+    },
+    createdAt: "2024-01-15",
+  },
+  {
+    id: "2",
+    title: "Learning Journey Prototyping",
+    workflowStep: "Design",
+    problem: "Designing learning journeys takes weeks of iteration",
+    aiUsed: "Claude",
+    prompt: "Design a 6-week blended learning journey for new managers, focusing on...",
+    output: "Complete journey map with touchpoints, activities, and assessment methods",
+    workflowChange: "Can now produce first-draft journeys in 30 minutes",
+    becamePossible: "I can prototype learning journeys in minutes instead of weeks",
+    createdAt: "2024-01-22",
+  },
+];
+
+const ExperimentsPage = () => {
+  const [experiments, setExperiments] = useState<Experiment[]>(sampleExperiments);
+  const [showBuilder, setShowBuilder] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [newExp, setNewExp] = useState<Partial<Experiment>>({
+    overrideLog: { aiSuggestion: "", modification: "", whyChanged: "", humanInsight: "" },
+  });
+
+  const builderSteps = [
+    "Choose Workflow Step",
+    "Define the Problem",
+    "Run Micro-Case",
+    "Capture Output & Reflection",
+    "Extract Pattern",
+  ];
+
+  const handleSave = () => {
+    const experiment: Experiment = {
+      id: Date.now().toString(),
+      title: newExp.title || "Untitled Experiment",
+      workflowStep: newExp.workflowStep || "Define",
+      problem: newExp.problem || "",
+      aiUsed: newExp.aiUsed || "",
+      prompt: newExp.prompt || "",
+      output: newExp.output || "",
+      workflowChange: newExp.workflowChange || "",
+      becamePossible: newExp.becamePossible || "",
+      overrideLog: newExp.overrideLog,
+      createdAt: new Date().toISOString().split("T")[0],
+    };
+    setExperiments([experiment, ...experiments]);
+    setShowBuilder(false);
+    setCurrentStep(0);
+    setNewExp({ overrideLog: { aiSuggestion: "", modification: "", whyChanged: "", humanInsight: "" } });
+  };
+
+  return (
+    <Layout>
+      <section className="lab-section">
+        <div className="container mx-auto max-w-4xl">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-display font-bold">My Experiments</h1>
+              <p className="text-muted-foreground mt-1">Your personal AI workflow redesign workspace</p>
+            </div>
+            <Button variant="hero" onClick={() => setShowBuilder(true)}>
+              <Plus className="w-4 h-4 mr-1" /> New Experiment
+            </Button>
+          </div>
+
+          {/* Experiment Builder Wizard */}
+          {showBuilder && (
+            <div className="bg-card border border-border rounded-lg p-6 mb-8 shadow-sm">
+              <h2 className="font-display font-bold text-xl mb-6">Experiment Builder</h2>
+
+              {/* Steps indicator */}
+              <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+                {builderSteps.map((step, i) => (
+                  <button
+                    key={step}
+                    onClick={() => setCurrentStep(i)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md text-xs font-display font-medium whitespace-nowrap transition-colors ${
+                      i === currentStep
+                        ? "bg-primary text-primary-foreground"
+                        : i < currentStep
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    <span className="w-5 h-5 rounded-full border flex items-center justify-center text-xs">
+                      {i + 1}
+                    </span>
+                    {step}
+                  </button>
+                ))}
+              </div>
+
+              {/* Step content */}
+              <div className="space-y-4">
+                {currentStep === 0 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Experiment Title</label>
+                      <input
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm"
+                        placeholder="e.g., Automated Needs Analysis"
+                        value={newExp.title || ""}
+                        onChange={(e) => setNewExp({ ...newExp, title: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Workflow Step</label>
+                      <div className="flex flex-wrap gap-2">
+                        {workflowSteps.map((step) => (
+                          <button
+                            key={step}
+                            onClick={() => setNewExp({ ...newExp, workflowStep: step })}
+                            className={`px-4 py-2 rounded-md text-sm font-display font-medium border transition-colors ${
+                              newExp.workflowStep === step
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "border-border hover:border-primary/50"
+                            }`}
+                          >
+                            {step}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 1 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">What problem are you trying to solve?</label>
+                      <textarea
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm min-h-[100px]"
+                        placeholder="Describe the current pain point in your workflow..."
+                        value={newExp.problem || ""}
+                        onChange={(e) => setNewExp({ ...newExp, problem: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">What AI tool did you use?</label>
+                      <input
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm"
+                        placeholder="e.g., ChatGPT, Claude, Gemini..."
+                        value={newExp.aiUsed || ""}
+                        onChange={(e) => setNewExp({ ...newExp, aiUsed: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 2 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Prompt Used</label>
+                      <div className="prompt-box">
+                        <textarea
+                          className="w-full bg-transparent border-0 outline-none text-sm min-h-[120px] resize-none"
+                          placeholder="Paste the prompt you used..."
+                          value={newExp.prompt || ""}
+                          onChange={(e) => setNewExp({ ...newExp, prompt: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 3 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Output Produced</label>
+                      <textarea
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm min-h-[80px]"
+                        placeholder="What did the AI produce?"
+                        value={newExp.output || ""}
+                        onChange={(e) => setNewExp({ ...newExp, output: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">What changed in your workflow?</label>
+                      <textarea
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm min-h-[80px]"
+                        placeholder="How did this change the way you work?"
+                        value={newExp.workflowChange || ""}
+                        onChange={(e) => setNewExp({ ...newExp, workflowChange: e.target.value })}
+                      />
+                    </div>
+                    <div className="bg-sticky-yellow p-4 rounded-sm">
+                      <label className="text-sm font-display font-semibold mb-1 block">
+                        ✨ What became possible because of AI?
+                      </label>
+                      <textarea
+                        className="w-full bg-transparent border-0 outline-none text-sm min-h-[60px] resize-none"
+                        placeholder="e.g., I can now analyze learning feedback at scale..."
+                        value={newExp.becamePossible || ""}
+                        onChange={(e) => setNewExp({ ...newExp, becamePossible: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Override Log */}
+                    <div className="border-2 border-dashed border-primary/30 rounded-lg p-5 bg-card">
+                      <h3 className="font-display font-semibold text-base mb-4 flex items-center gap-2">
+                        🔄 Override Log
+                        <span className="text-xs text-muted-foreground font-body font-normal">— Practice human judgment</span>
+                      </h3>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground mb-1 block">AI Suggestion</label>
+                          <input
+                            className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm"
+                            placeholder="What did AI suggest?"
+                            value={newExp.overrideLog?.aiSuggestion || ""}
+                            onChange={(e) =>
+                              setNewExp({ ...newExp, overrideLog: { ...newExp.overrideLog!, aiSuggestion: e.target.value } })
+                            }
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground mb-1 block">My Modification</label>
+                          <input
+                            className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm"
+                            placeholder="What did you change?"
+                            value={newExp.overrideLog?.modification || ""}
+                            onChange={(e) =>
+                              setNewExp({ ...newExp, overrideLog: { ...newExp.overrideLog!, modification: e.target.value } })
+                            }
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground mb-1 block">Why I Changed It</label>
+                          <input
+                            className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm"
+                            placeholder="What was your reasoning?"
+                            value={newExp.overrideLog?.whyChanged || ""}
+                            onChange={(e) =>
+                              setNewExp({ ...newExp, overrideLog: { ...newExp.overrideLog!, whyChanged: e.target.value } })
+                            }
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground mb-1 block">Human Insight</label>
+                          <input
+                            className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm"
+                            placeholder="What uniquely human knowledge did you apply?"
+                            value={newExp.overrideLog?.humanInsight || ""}
+                            onChange={(e) =>
+                              setNewExp({ ...newExp, overrideLog: { ...newExp.overrideLog!, humanInsight: e.target.value } })
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 4 && (
+                  <div className="space-y-4">
+                    <div className="bg-lab-surface p-6 rounded-lg text-center">
+                      <Beaker className="w-10 h-10 text-primary mx-auto mb-3" />
+                      <h3 className="font-display font-semibold text-lg mb-2">Experiment Summary</h3>
+                      <p className="text-sm text-muted-foreground mb-4">Review your experiment before saving</p>
+                      <div className="text-left space-y-3 max-w-md mx-auto">
+                        {newExp.title && <p><span className="font-medium">Title:</span> {newExp.title}</p>}
+                        {newExp.workflowStep && <p><span className="font-medium">Step:</span> {newExp.workflowStep}</p>}
+                        {newExp.problem && <p><span className="font-medium">Problem:</span> {newExp.problem}</p>}
+                        {newExp.becamePossible && (
+                          <div className="bg-sticky-yellow p-3 rounded-sm text-sm">
+                            <span className="font-medium">✨ New capability:</span> {newExp.becamePossible}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Navigation */}
+              <div className="flex justify-between mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (currentStep === 0) setShowBuilder(false);
+                    else setCurrentStep(currentStep - 1);
+                  }}
+                >
+                  {currentStep === 0 ? "Cancel" : "Back"}
+                </Button>
+                {currentStep < 4 ? (
+                  <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleSave}>
+                      <Save className="w-4 h-4 mr-1" /> Save Experiment
+                    </Button>
+                    <Button onClick={handleSave}>
+                      <Share2 className="w-4 h-4 mr-1" /> Share with Cohort
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Experiment Cards */}
+          <div className="space-y-4">
+            {experiments.map((exp) => (
+              <div key={exp.id} className="bg-card border border-border rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setExpandedId(expandedId === exp.id ? null : exp.id)}
+                  className="w-full p-5 text-left flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="px-2 py-1 rounded text-xs font-display font-medium bg-primary/10 text-primary">
+                      {exp.workflowStep}
+                    </span>
+                    <div>
+                      <h3 className="font-display font-semibold">{exp.title}</h3>
+                      <p className="text-sm text-muted-foreground">{exp.problem}</p>
+                    </div>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${expandedId === exp.id ? "rotate-180" : ""}`} />
+                </button>
+
+                {expandedId === exp.id && (
+                  <div className="px-5 pb-5 space-y-4 border-t border-border pt-4">
+                    <div className="prompt-box">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Prompt</p>
+                      <p className="text-sm">{exp.prompt}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Output</p>
+                      <p className="text-sm">{exp.output}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Workflow Change</p>
+                      <p className="text-sm">{exp.workflowChange}</p>
+                    </div>
+                    {exp.becamePossible && (
+                      <div className="bg-sticky-yellow p-3 rounded-sm">
+                        <p className="text-xs font-medium mb-1">✨ What became possible</p>
+                        <p className="text-sm font-medium">{exp.becamePossible}</p>
+                      </div>
+                    )}
+                    {exp.overrideLog && (
+                      <div className="border-2 border-dashed border-primary/20 rounded-lg p-4 space-y-2">
+                        <p className="text-xs font-display font-semibold text-primary">🔄 Override Log</p>
+                        <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                          <div><span className="text-muted-foreground">AI suggested:</span> {exp.overrideLog.aiSuggestion}</div>
+                          <div><span className="text-muted-foreground">I changed:</span> {exp.overrideLog.modification}</div>
+                          <div><span className="text-muted-foreground">Because:</span> {exp.overrideLog.whyChanged}</div>
+                          <div><span className="text-muted-foreground">Insight:</span> {exp.overrideLog.humanInsight}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </Layout>
+  );
+};
+
+export default ExperimentsPage;
