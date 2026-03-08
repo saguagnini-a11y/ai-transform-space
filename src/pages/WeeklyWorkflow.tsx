@@ -30,11 +30,6 @@ const sprintSteps = [
 ];
 
 const WeeklyWorkflow = () => {
-  const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(null);
-  const [showSprint, setShowSprint] = useState(false);
-  const [sprintStep, setSprintStep] = useState(0);
-
-  const selected = workflows.find((w) => w.id === selectedWorkflow);
 
   return (
     <Layout>
