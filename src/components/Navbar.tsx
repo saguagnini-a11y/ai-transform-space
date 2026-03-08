@@ -33,8 +33,8 @@ const Navbar = () => {
               to={item.path}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors font-display ${
                 location.pathname === item.path
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-primary/20 text-primary"
+                  : "text-secondary-foreground/70 hover:text-secondary-foreground hover:bg-secondary-foreground/10"
               }`}
             >
               {item.label}
