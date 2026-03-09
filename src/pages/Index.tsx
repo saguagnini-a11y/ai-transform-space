@@ -5,25 +5,25 @@ import Layout from "@/components/Layout";
 import SandboxCarousel from "@/components/SandboxCarousel";
 
 const journeyWeeks = [
-  { week: "1", label: "Guest Challenge + Sprint", phase: "Define", color: "bg-sticky-yellow" },
-  { week: "2", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "3", label: "Guest Challenge + Sprint", phase: "Discover", color: "bg-sticky-yellow" },
-  { week: "4", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "5", label: "Guest Challenge + Sprint", phase: "Design & Develop", color: "bg-sticky-yellow" },
-  { week: "6", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "7", label: "Guest Challenge + Sprint", phase: "Deploy & Iterate", color: "bg-sticky-yellow" },
-  { week: "8", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "9", label: "Deep Dive with Peers", phase: "", color: "bg-sticky-blue" },
-  { week: "10", label: "Transformation Expo", phase: "", color: "bg-sticky-pink" },
-];
+{ week: "1", label: "Guest Challenge + Sprint", phase: "Define", color: "bg-sticky-yellow" },
+{ week: "2", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
+{ week: "3", label: "Guest Challenge + Sprint", phase: "Discover", color: "bg-sticky-yellow" },
+{ week: "4", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
+{ week: "5", label: "Guest Challenge + Sprint", phase: "Design & Develop", color: "bg-sticky-yellow" },
+{ week: "6", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
+{ week: "7", label: "Guest Challenge + Sprint", phase: "Deploy & Iterate", color: "bg-sticky-yellow" },
+{ week: "8", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
+{ week: "9", label: "Deep Dive with Peers", phase: "", color: "bg-sticky-blue" },
+{ week: "10", label: "Transformation Expo", phase: "", color: "bg-sticky-pink" }];
+
 
 const outcomes = [
-  "Using AI to analyse learning data faster",
-  "Using AI agents to stress-test learning experiences",
-  "Using AI to anticipate capability gaps",
-  "Prototyping learning journeys in minutes",
-  "Simulating learner personas at scale",
-];
+"Using AI to analyse learning data faster",
+"Using AI agents to stress-test learning experiences",
+"Using AI to anticipate capability gaps",
+"Prototyping learning journeys in minutes",
+"Simulating learner personas at scale"];
+
 
 const Index = () => {
   return (
@@ -31,8 +31,8 @@ const Index = () => {
       {/* Navigation banner */}
       <div className="bg-primary/5 border-b border-primary/10">
         <div className="container mx-auto max-w-4xl py-2.5 px-4 text-center">
-          <p className="text-sm font-display font-medium text-primary">
-            👆 This is an interactive prototype — click the tabs above to explore each section of the sandbox
+          <p className="text-sm font-display font-medium text-primary">👆 This is an interactive storyboard — click the tabs above to explore each section of the sandbox
+
           </p>
         </div>
       </div>
@@ -98,11 +98,11 @@ const Index = () => {
                 This sandbox is for Shakers community members who want to move from scattered AI experiments to deliberately redesigned workflows — becoming not only more efficient, but genuinely more effective.
               </p>
               <div className="flex flex-wrap gap-2">
-                {["Learning Designers", "Instructional Designers", "Facilitators", "Capability Builders"].map((role) => (
-                  <span key={role} className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-display font-medium rounded-full">
+                {["Learning Designers", "Instructional Designers", "Facilitators", "Capability Builders"].map((role) =>
+                <span key={role} className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-display font-medium rounded-full">
                     {role}
                   </span>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -138,16 +138,16 @@ const Index = () => {
           <h2 className="text-3xl font-display font-bold text-center mb-8">Sandbox Principles</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {[
-              "Imperfect thinking is welcome",
-              "Experimentation is encouraged",
-              "Process thinking beats tool mastery",
-              "Learning happens through building and sharing",
-            ].map((principle) => (
-              <div key={principle} className="flex items-start gap-3 bg-card p-4 rounded-lg border border-border">
+            "Imperfect thinking is welcome",
+            "Experimentation is encouraged",
+            "Process thinking beats tool mastery",
+            "Learning happens through building and sharing"].
+            map((principle) =>
+            <div key={principle} className="flex items-start gap-3 bg-card p-4 rounded-lg border border-border">
                 <Lightbulb className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <p className="text-sm font-medium">{principle}</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -158,13 +158,13 @@ const Index = () => {
           <h2 className="text-3xl font-display font-bold text-center mb-4">The 10-Week Journey</h2>
           <p className="text-center text-muted-foreground mb-12">Each cycle: Guest Challenge → Sprint → Tiny Experiment → Reflection Pod → Override Log</p>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {journeyWeeks.map((w) => (
-              <div key={w.week} className={`sticky-card ${w.color} text-center`} style={{ "--rotation": `${Math.random() * 3 - 1.5}deg` } as React.CSSProperties}>
+            {journeyWeeks.map((w) =>
+            <div key={w.week} className={`sticky-card ${w.color} text-center`} style={{ "--rotation": `${Math.random() * 3 - 1.5}deg` } as React.CSSProperties}>
                 <div className="text-xs font-display font-semibold text-foreground/50 mb-1">Week {w.week}</div>
                 <div className="text-sm font-display font-semibold">{w.label}</div>
                 {w.phase && <div className="text-xs text-foreground/60 mt-1">{w.phase}</div>}
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -183,12 +183,12 @@ const Index = () => {
             </p>
           </div>
           <div className="space-y-3 text-left max-w-md mx-auto">
-            {outcomes.map((outcome) => (
-              <div key={outcome} className="flex items-start gap-3">
+            {outcomes.map((outcome) =>
+            <div key={outcome} className="flex items-start gap-3">
                 <span className="text-primary mt-1">→</span>
                 <span className="text-sm">{outcome}</span>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -205,8 +205,8 @@ const Index = () => {
           </Button>
         </div>
       </section>
-    </Layout>
-  );
+    </Layout>);
+
 };
 
 export default Index;
