@@ -198,6 +198,12 @@ const TransformationExpo = () => {
                     <ArrowRight className="w-4 h-4 flex-shrink-0 mt-0.5 text-primary" />
                     <p className="text-xs font-display font-medium text-foreground">{table.impact}</p>
                   </div>
+
+                  {/* Key Override */}
+                  <div className="border-2 border-dashed border-primary/20 rounded-xl p-3">
+                    <p className="text-[10px] font-display font-bold uppercase tracking-wider mb-1.5 text-primary">💡 Key Override</p>
+                    <p className="text-xs italic text-foreground/80">{table.override.insight}</p>
+                  </div>
                 </div>
 
                 {/* Conversation prompt */}
