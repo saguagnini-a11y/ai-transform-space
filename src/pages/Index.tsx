@@ -1,8 +1,8 @@
-import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Beaker, ArrowRight, Lightbulb, Users, Trophy, Repeat, FlaskConical, Target, ChevronLeft, ChevronRight } from "lucide-react";
+import { Beaker, ArrowRight, Lightbulb, Users, Trophy, Repeat, FlaskConical, Target } from "lucide-react";
 import Layout from "@/components/Layout";
+import SandboxCarousel from "@/components/SandboxCarousel";
 
 const journeyWeeks = [
   { week: "1", label: "Guest Challenge + Sprint", phase: "Define", color: "bg-sticky-yellow" },
