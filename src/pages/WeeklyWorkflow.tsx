@@ -3,7 +3,6 @@ import Layout from "@/components/Layout";
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
 
 const WeeklyWorkflow = () => {
-
   return (
     <Layout>
       {/* Hero */}
@@ -18,9 +17,11 @@ const WeeklyWorkflow = () => {
           <p className="text-lg sm:text-xl text-muted-foreground font-body max-w-2xl mx-auto mb-3">
             Every two weeks, you'll follow this cycle to redesign one workflow step with AI.
           </p>
-          <p className="text-sm text-muted-foreground/70 font-body italic max-w-xl mx-auto mb-10">
+          <p className="text-sm text-muted-foreground/70 font-body italic max-w-xl mx-auto">
             Test it. Reflect with peers. Showcase what you can now do that was impossible before.
           </p>
+        </div>
+      </section>
 
       {/* Step Cards */}
       <section className="lab-section bg-lab-surface">
@@ -88,7 +89,10 @@ const WeeklyWorkflow = () => {
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-pink w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">👥</div>
                 <div>
-                  <h3 className="font-display font-bold text-lg mb-2">Reflection Pods</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display font-bold text-lg">Reflection Pods</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">30 min with peers</span>
+                  </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed mb-4">
                     Between sessions, you reflect with two peers — sync or async — on what you made, what changed, and what you learned.
                   </p>
@@ -112,7 +116,10 @@ const WeeklyWorkflow = () => {
               <div className="flex items-start gap-4">
                 <div className="bg-accent w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">✍️</div>
                 <div className="w-full">
-                  <h3 className="font-display font-bold text-lg mb-2">The Override Log</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display font-bold text-lg">The Override Log</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">15 min self-reflection</span>
+                  </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed mb-4">
                     Participants don't just use AI — they learn to see where human judgment matters most.
                   </p>
@@ -141,7 +148,6 @@ const WeeklyWorkflow = () => {
           </div>
         </div>
       </section>
-
     </Layout>
   );
 };
