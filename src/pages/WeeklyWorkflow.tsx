@@ -62,7 +62,10 @@ const WeeklyWorkflow = () => {
                       className={`${step.color} px-4 py-5 rounded-xl shadow-sm transition-all duration-500 cursor-pointer ${
                         i === activeIndex ? "scale-105 ring-2 ring-primary/30" : "opacity-70 scale-95"
                       }`}
-                      onClick={() => setActiveIndex(i)}
+                      onClick={() => {
+                        setActiveIndex(i);
+                        document.getElementById(step.sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
                     >
                       <span className="text-2xl block mb-1.5">{step.emoji}</span>
                       <span className="font-display font-bold text-sm text-foreground block">{step.label}</span>
