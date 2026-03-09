@@ -14,7 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      storyboard_feedback: {
+        Row: {
+          anxiety_spike: string | null
+          created_at: string
+          dropoff_moment: string | null
+          excitement_trigger: string | null
+          id: string
+          implementation_gap: string | null
+        }
+        Insert: {
+          anxiety_spike?: string | null
+          created_at?: string
+          dropoff_moment?: string | null
+          excitement_trigger?: string | null
+          id?: string
+          implementation_gap?: string | null
+        }
+        Update: {
+          anxiety_spike?: string | null
+          created_at?: string
+          dropoff_moment?: string | null
+          excitement_trigger?: string | null
+          id?: string
+          implementation_gap?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
