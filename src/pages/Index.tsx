@@ -119,13 +119,15 @@ const Index = () => {
       {/* Philosophy */}
       <section className="lab-section">
         <div className="container mx-auto max-w-5xl">
-          <h2 className="text-3xl font-display font-bold text-center mb-12">How the Sandbox Works</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <h2 className="text-3xl font-display font-bold text-center mb-3">How the Sandbox Works</h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">Every two weeks, one cycle through the loop — building real AI workflows step by step.</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {[
-              { icon: FlaskConical, title: "Experiment", desc: "Run micro-cases with AI on real workflows", color: "bg-sticky-yellow" },
-              { icon: Users, title: "Reflect", desc: "Share artifacts and override logs with peers", color: "bg-sticky-green" },
-              { icon: Target, title: "Ship", desc: "Test minimum viable experiments at work", color: "bg-sticky-blue" },
-              { icon: Repeat, title: "Pattern", desc: "Extract reusable AI collaboration patterns", color: "bg-sticky-pink" },
+              { icon: Lightbulb, title: "Guest Challenge", desc: "A guest sets a real L&D challenge connected to the sprint focus", color: "bg-sticky-yellow" },
+              { icon: FlaskConical, title: "Sprint", desc: "Design and test a micro-case with AI in 45 minutes", color: "bg-sticky-green" },
+              { icon: Target, title: "Tiny Experiment", desc: "Commit to one small AI experiment to run at work", color: "bg-sticky-blue" },
+              { icon: Users, title: "Reflection Pod", desc: "Share artifacts and learnings with your peer trio", color: "bg-sticky-pink" },
+              { icon: Repeat, title: "Override Log", desc: "Document where you overrode AI and why it mattered", color: "bg-accent" },
             ].map((item) => (
               <div key={item.title} className={`sticky-card ${item.color}`} style={{ "--rotation": `${Math.random() * 2 - 1}deg` } as React.CSSProperties}>
                 <item.icon className="w-8 h-8 text-foreground/70 mb-3" />
