@@ -3,11 +3,11 @@ import Layout from "@/components/Layout";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 
 const loopSteps = [
-  { emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow" },
-  { emoji: "⚡", label: "Sprint", color: "bg-sticky-green" },
-  { emoji: "🧪", label: "Tiny Experiment", color: "bg-sticky-blue" },
-  { emoji: "👥", label: "Reflection Pod", color: "bg-sticky-pink" },
-  { emoji: "✍️", label: "Override Log", color: "bg-accent" },
+  { emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow", sectionId: "section-guest" },
+  { emoji: "⚡", label: "Sprint", color: "bg-sticky-green", sectionId: "section-sprint" },
+  { emoji: "🧪", label: "Tiny Experiment", color: "bg-sticky-blue", sectionId: "section-experiment" },
+  { emoji: "👥", label: "Reflection Pod", color: "bg-sticky-pink", sectionId: "section-reflection" },
+  { emoji: "✍️", label: "Override Log", color: "bg-accent", sectionId: "section-override" },
 ];
 
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
