@@ -137,6 +137,33 @@ const ExperimentsPage = () => {
             <div className="bg-card border border-border rounded-lg p-6 mb-8 shadow-sm">
               <h2 className="font-display font-bold text-xl mb-6">Experiment Builder</h2>
 
+              {/* Blank template preview */}
+              <div className="bg-muted/30 border border-border rounded-lg p-4 mb-6 space-y-2">
+                <p className="text-xs font-display font-semibold text-muted-foreground mb-3">You'll be filling in:</p>
+                <div className="grid sm:grid-cols-2 gap-2 text-sm">
+                  <div className="flex gap-2">
+                    <span className="text-muted-foreground font-medium shrink-0">Prompt:</span>
+                    <span className="text-muted-foreground/60 italic">What you asked AI to help you redesign</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-muted-foreground font-medium shrink-0">Output:</span>
+                    <span className="text-muted-foreground/60 italic">What AI generated for you</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-muted-foreground font-medium shrink-0">Workflow Change:</span>
+                    <span className="text-muted-foreground/60 italic">How you implemented this in real work</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-sticky-yellow font-medium shrink-0">✨ What became possible:</span>
+                    <span className="text-muted-foreground/60 italic">The transformation this enabled</span>
+                  </div>
+                  <div className="flex gap-2 sm:col-span-2">
+                    <span className="text-primary font-medium shrink-0">🔄 Override Log:</span>
+                    <span className="text-muted-foreground/60 italic">Where you improved on AI's suggestions</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Steps indicator */}
               <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
                 {builderSteps.map((step, i) => (
