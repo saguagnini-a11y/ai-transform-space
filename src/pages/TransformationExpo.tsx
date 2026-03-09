@@ -83,13 +83,13 @@ const TransformationExpo = () => {
               {/* Cohort stats */}
               <div className="flex items-center gap-3 mb-10 flex-wrap">
                 <Badge variant="secondary" className="font-display text-xs px-3 py-1.5">
-                  <Users className="w-3 h-3 mr-1" /> 15 participants
+                  80 experiments completed
                 </Badge>
                 <Badge variant="secondary" className="font-display text-xs px-3 py-1.5">
-                  75 experiments total
+                  <Users className="w-3 h-3 mr-1" /> 20 participants
                 </Badge>
                 <Badge className="font-display text-xs px-3 py-1.5">
-                  Showcasing top 12 today
+                  Top 20 showcased today
                 </Badge>
               </div>
 
