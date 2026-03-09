@@ -58,9 +58,6 @@ const Index = () => {
             <Button variant="hero" size="lg" asChild>
               <Link to="/weekly-workflow">Start Exploring <ArrowRight className="w-4 h-4 ml-1" /></Link>
             </Button>
-            <Button variant="hero-outline" size="lg" asChild>
-              <Link to="/about">Learn More</Link>
-            </Button>
           </div>
         </div>
       </section>
