@@ -83,13 +83,13 @@ const TransformationExpo = () => {
               {/* Cohort stats */}
               <div className="flex items-center gap-3 mb-10 flex-wrap">
                 <Badge variant="secondary" className="font-display text-xs px-3 py-1.5">
-                  <Users className="w-3 h-3 mr-1" /> 15 participants
+                  80 experiments completed
                 </Badge>
                 <Badge variant="secondary" className="font-display text-xs px-3 py-1.5">
-                  75 experiments total
+                  <Users className="w-3 h-3 mr-1" /> 20 participants
                 </Badge>
                 <Badge className="font-display text-xs px-3 py-1.5">
-                  Showcasing top 12 today
+                  Top 20 showcased today
                 </Badge>
               </div>
 
@@ -98,7 +98,7 @@ const TransformationExpo = () => {
                 { icon: Coffee, label: "Join a table", desc: "Choose", number: "1" },
                 { icon: MessageCircle, label: "Discuss", desc: "10 min", number: "2" },
                 { icon: RotateCcw, label: "Rotate", desc: "New table", number: "3" },
-                { icon: Lightbulb, label: "Synthesize", desc: "Share insights", number: "4" }].
+                { icon: Lightbulb, label: "Synthesize", desc: "Surface patterns", number: "4" }].
                 map((step, i) =>
                 <div key={i} className="text-center">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-secondary mx-auto mb-2">
@@ -134,14 +134,6 @@ const TransformationExpo = () => {
                   </li>
                 )}
               </ul>
-              <div className="rounded-xl p-4 border border-border bg-sticky-pink/40">
-                <p className="text-xs font-display font-semibold uppercase tracking-wider mb-1 text-primary">
-                  Facilitator cue
-                </p>
-                <p className="text-sm italic text-muted-foreground">
-                  Invite people to browse, not browse past. This page should make movement feel natural and conversation feel irresistible.
-                </p>
-              </div>
             </div>
           </div>
         </div>
