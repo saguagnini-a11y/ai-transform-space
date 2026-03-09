@@ -5,7 +5,7 @@ const pages = [
   { path: "/weekly-workflow", label: "Weekly Workflow" },
   { path: "/experiments", label: "Tiny Experiments" },
   { path: "/reflection-pods", label: "Reflection Pods" },
-  { path: "/deep-dive", label: "Peer Café" },
+  { path: "/deep-dive", label: "Workflow Deep Dives" },
   { path: "/transformation-expo", label: "Transformation Expo" },
 ];
 
