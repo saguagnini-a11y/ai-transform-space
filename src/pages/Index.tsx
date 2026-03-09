@@ -49,14 +49,61 @@ const Index = () => {
               <Link to="/experiments">Explore the Sandbox <ArrowRight className="w-4 h-4 ml-1" /></Link>
             </Button>
             <Button variant="hero-outline" size="lg" asChild>
-              <Link to="/experiments">Explore Experiments</Link>
+              <Link to="/about">Learn More</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Core question */}
+      {/* Entry Points */}
       <section className="lab-section bg-lab-surface">
+        <div className="container mx-auto max-w-5xl">
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* What & Why */}
+            <div className="bg-card border border-border rounded-lg p-8">
+              <div className="inline-block px-3 py-1 rounded-full bg-sticky-yellow text-xs font-display font-semibold uppercase tracking-wide text-foreground/70 mb-4">
+                What is this?
+              </div>
+              <h2 className="text-2xl font-display font-bold mb-4">From Order Takers to Strategists</h2>
+              <p className="text-muted-foreground mb-4">
+                The AI Sandbox is a practice space where L&D professionals stop just <em>using</em> AI tools and start <em>redesigning how they work</em>.
+              </p>
+              <p className="text-muted-foreground mb-6">
+                The goal isn't efficiency alone — it's transformation. Learning to do things with AI that were simply not possible before.
+              </p>
+              <div className="bg-sticky-yellow/50 p-4 rounded-sm" style={{ transform: "rotate(-0.5deg)" }}>
+                <p className="font-display font-semibold text-sm text-center">
+                  "Thanks to AI, I am now doing something I had never done before."
+                </p>
+              </div>
+            </div>
+
+            {/* Who */}
+            <div className="bg-card border border-border rounded-lg p-8">
+              <div className="inline-block px-3 py-1 rounded-full bg-sticky-blue text-xs font-display font-semibold uppercase tracking-wide text-foreground/70 mb-4">
+                Who is it for?
+              </div>
+              <h2 className="text-2xl font-display font-bold mb-4">L&D Professionals Ready to Go Beyond Tinkering</h2>
+              <p className="text-muted-foreground mb-4">
+                You've tried ChatGPT. You've experimented with a few prompts. But you know there's more — you just haven't had the space to figure out <em>what</em> more looks like.
+              </p>
+              <p className="text-muted-foreground mb-6">
+                This sandbox is for Shakers community members who want to move from scattered AI experiments to deliberately redesigned workflows — becoming not only more efficient, but genuinely more effective.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {["Learning Designers", "L&D Managers", "Training Leads", "Capability Builders"].map((role) => (
+                  <span key={role} className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-display font-medium rounded-full">
+                    {role}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Core question */}
+      <section className="lab-section">
         <div className="container mx-auto max-w-3xl text-center">
           <div className="bg-sticky-yellow p-8 rounded-sm shadow-sm inline-block" style={{ transform: "rotate(-1deg)" }}>
             <p className="text-2xl sm:text-3xl font-display font-bold text-foreground">
