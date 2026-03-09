@@ -1,6 +1,7 @@
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, ThumbsUp, HelpCircle } from "lucide-react";
+import { MessageSquare, ThumbsUp, HelpCircle, ArrowRight, ArrowLeft } from "lucide-react";
 
 const pods = [
 {
