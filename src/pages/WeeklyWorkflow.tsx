@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
@@ -227,6 +228,19 @@ const WeeklyWorkflow = () => {
               <div className="w-3 h-3 rounded bg-[hsl(var(--sticky-pink))]" />
               <span>Peer reflection</span>
             </div>
+          </div>
+
+          {/* Next Section CTA */}
+          <div className="mt-12 text-center">
+            <p className="text-muted-foreground font-body mb-4">
+              Ready to see how experiments are tracked?
+            </p>
+            <Link
+              to="/experiments"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-display font-medium text-sm hover:opacity-90 transition-opacity"
+            >
+              View Tiny Experiments →
+            </Link>
           </div>
         </div>
       </section>
