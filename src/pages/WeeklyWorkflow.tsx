@@ -75,7 +75,7 @@ const WeeklyWorkflow = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-display font-bold text-lg">Tiny Experiment</h3>
-                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">60 min asyn</span>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">60 min async</span>
                   </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed">
                     Before leaving, each participant commits to one small workplace experiment. The goal is a minimum viable experiment — not a perfect solution.
