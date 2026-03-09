@@ -143,8 +143,8 @@ const TransformationExpo = () => {
       <section className="lab-section bg-lab-surface">
         <div className="container mx-auto max-w-6xl px-6">
           <div className="text-center mb-12">
-            <p className="text-xs font-display font-semibold uppercase tracking-[0.2em] mb-3 text-primary">
-              Café tables
+            <p className="text-xs font-display font-semibold uppercase tracking-[0.2em] mb-3 text-primary">TRANSFORMATION TABLES
+
             </p>
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 text-foreground">
               Explore the transformations table by table
