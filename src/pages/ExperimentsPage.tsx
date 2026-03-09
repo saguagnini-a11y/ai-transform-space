@@ -368,6 +368,14 @@ const ExperimentsPage = () => {
             </div>
           )}
 
+          {/* Section intro */}
+          <div className="flex items-start gap-3 bg-accent/30 border border-accent rounded-lg p-4 mb-6">
+            <span className="text-lg shrink-0">💡</span>
+            <p className="text-sm font-body text-foreground/80">
+              Each experiment includes an <span className="font-display font-semibold text-primary">Override Log</span> where you document what you changed from AI's suggestions — and why. This is where the real learning happens: seeing the boundary between AI capability and human judgment.
+            </p>
+          </div>
+
           {/* Experiment Cards */}
           <div className="space-y-4">
             {experiments.map((exp) => (
@@ -384,6 +392,11 @@ const ExperimentsPage = () => {
                       <h3 className="font-display font-semibold">{exp.title}</h3>
                       <p className="text-sm text-muted-foreground">{exp.problem}</p>
                     </div>
+                    {exp.overrideLog && (
+                      <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-display font-semibold flex items-center gap-1 shrink-0">
+                        🔄 Override logged
+                      </span>
+                    )}
                   </div>
                   <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${expandedId === exp.id ? "rotate-180" : ""}`} />
                 </button>
