@@ -178,7 +178,7 @@ const WeeklyWorkflow = () => {
             </div>
 
             {/* Card 5 — Override Log */}
-            <div className="bg-card border-2 border-primary/20 rounded-xl p-6 sm:p-8">
+            <div id="section-override" className="bg-card border-2 border-primary/20 rounded-xl p-6 sm:p-8 scroll-mt-24">
               <div className="flex items-start gap-4">
                 <div className="bg-accent w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">✍️</div>
                 <div className="w-full">
