@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { Trophy, Star, Sparkles, Shield, Share2, MessageCircle, ArrowRight, RotateCcw, Users, Coffee, Lightbulb } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Star, Sparkles, Shield, Share2, MessageCircle, ArrowRight, ArrowLeft, RotateCcw, Users, Coffee, Lightbulb, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const caféTables = [
@@ -13,6 +15,7 @@ const caféTables = [
     impact: "80% time reduction. Stakeholders now receive insights within days, not weeks.",
     conversation: "Where in your workflow do insights arrive too late to influence decisions?",
     override: { insight: "AI ranked 'time management' as #1 need. I moved 'stakeholder communication' to #1 because an upcoming org restructuring makes it urgent — context AI couldn't know." },
+    badges: ["80% time saved", "Real learner impact"],
   },
   {
     number: "02",
@@ -24,6 +27,7 @@ const caféTables = [
     impact: "Can now produce and test 5 journey variants in the time it previously took to create 1.",
     conversation: "What would you test if prototyping a learning journey took hours instead of weeks?",
     override: { insight: "AI placed 360-feedback in week 2. I moved it to week 5 because psychological safety needs to be established first — something only experience teaches you." },
+    badges: ["Novel prompt technique", "Transferable pattern"],
   },
   {
     number: "03",
@@ -35,24 +39,28 @@ const caféTables = [
     impact: "Early intervention increased completion rates by 35%. Evaluation shifted from reactive to proactive.",
     conversation: "What signals would help you intervene before a learner drops off?",
     override: { insight: "AI suggested generic risk labels. I changed to org-specific language because alignment with internal frameworks drives completion rates." },
+    badges: ["Real learner impact", "35% completion lift"],
   },
 ];
+
 const awards = [
-  { icon: Sparkles, name: "Boldest Experiment", winner: "James K.", desc: "Simulated 50 learner personas to stress-test a leadership program." },
-  { icon: Star, name: "Best Override", winner: "Maria S.", desc: "Detected AI bias in needs prioritization using organizational context knowledge." },
-  { icon: Shield, name: "Best Validation Discipline", winner: "Priya R.", desc: "Designed a 3-step validation protocol for AI-generated learning paths." },
-  { icon: Share2, name: "Most Transferable Prompt", winner: "Tom L.", desc: "Needs-analysis prompt adopted by 4 other participants." },
+  { icon: Sparkles, name: "Boldest Experiment", winner: "James K.", initial: "J", desc: "Simulated 50 learner personas to stress-test a leadership program." },
+  { icon: Star, name: "Best Override", winner: "Maria S.", initial: "M", desc: "Detected AI bias in needs prioritization using organizational context knowledge." },
+  { icon: Shield, name: "Best Validation Discipline", winner: "Priya R.", initial: "P", desc: "Designed a 3-step validation protocol for AI-generated learning paths." },
+  { icon: Share2, name: "Most Transferable Prompt", winner: "Tom L.", initial: "T", desc: "Needs-analysis prompt adopted by 4 other participants." },
 ];
 
 const patterns = [
-  "AI enables faster stakeholder communication through automated insight synthesis.",
-  "Persona simulation reveals design flaws that traditional testing might take weeks to uncover.",
-  "Override logging surfaces tacit knowledge that improves AI collaboration over time.",
-  "Prompt chaining creates more reliable outputs than single complex prompts.",
-  "Human judgment matters most at the framing, validation, and interpretation stages.",
+  { text: "AI enables faster stakeholder communication through automated insight synthesis.", frequency: 8 },
+  { text: "Persona simulation reveals design flaws that traditional testing might take weeks to uncover.", frequency: 6 },
+  { text: "Override logging surfaces tacit knowledge that improves AI collaboration over time.", frequency: 5 },
+  { text: "Prompt chaining creates more reliable outputs than single complex prompts.", frequency: 4 },
+  { text: "Human judgment matters most at the framing, validation, and interpretation stages.", frequency: 9 },
 ];
 
 const TransformationExpo = () => {
+  const maxFrequency = 12;
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -63,14 +71,27 @@ const TransformationExpo = () => {
             <div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-display font-semibold uppercase tracking-[0.2em] mb-6">
                 <Coffee className="w-4 h-4" />
-                World Café Format
+                Week 10 — Final Showcase
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground leading-tight mb-4">
                 Transformation Expo
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground mb-10 font-body">
+              <p className="text-lg md:text-xl text-muted-foreground mb-6 font-body">
                 A rotating conversation experience where L&D professionals share how they redesigned workflows with AI.
               </p>
+
+              {/* Cohort stats */}
+              <div className="flex items-center gap-3 mb-10 flex-wrap">
+                <Badge variant="secondary" className="font-display text-xs px-3 py-1.5">
+                  <Users className="w-3 h-3 mr-1" /> 15 participants
+                </Badge>
+                <Badge variant="secondary" className="font-display text-xs px-3 py-1.5">
+                  75 experiments total
+                </Badge>
+                <Badge className="font-display text-xs px-3 py-1.5">
+                  Showcasing top 12 today
+                </Badge>
+              </div>
 
               <div className="grid grid-cols-4 gap-3">
                 {[
@@ -88,6 +109,9 @@ const TransformationExpo = () => {
                   </div>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground mt-3 text-center">
+                6 rotations × 10 min = 60 min total
+              </p>
             </div>
 
             {/* Right: How it works panel */}
@@ -133,9 +157,11 @@ const TransformationExpo = () => {
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 text-foreground">
               Explore the transformations table by table
             </h2>
-            <Badge variant="secondary" className="font-display text-xs px-3 py-1">
-              <RotateCcw className="w-3 h-3 mr-1" /> Rotate every 10 minutes
-            </Badge>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Badge variant="secondary" className="font-display text-xs px-3 py-1">
+                <RotateCcw className="w-3 h-3 mr-1" /> Rotate every 10 minutes
+              </Badge>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -157,9 +183,17 @@ const TransformationExpo = () => {
                     </div>
                     <span className="font-display font-semibold text-sm text-foreground">{table.host}</span>
                   </div>
-                  <h3 className="font-display font-bold text-base leading-snug text-foreground">
+                  <h3 className="font-display font-bold text-base leading-snug text-foreground mb-3">
                     {table.title}
                   </h3>
+                  {/* Selection criteria badges */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {table.badges.map((badge, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 text-[10px] font-display font-semibold px-2 py-0.5 rounded-full bg-sticky-green/50 text-foreground/70">
+                        ✓ {badge}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Before / After */}
@@ -206,12 +240,12 @@ const TransformationExpo = () => {
                   </div>
                 </div>
 
-                {/* Conversation prompt */}
+                {/* Conversation prompt — always visible */}
                 <div className="p-4 mx-4 mb-4 rounded-xl bg-sticky-blue/50 border border-sticky-blue">
                   <div className="flex items-start gap-2">
                     <MessageCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-primary" />
-                    <p className="text-sm font-display font-medium text-foreground">
-                      💬 {table.conversation}
+                    <p className="text-xs font-display font-medium text-foreground">
+                      💬 Discuss: {table.conversation}
                     </p>
                   </div>
                 </div>
@@ -221,57 +255,122 @@ const TransformationExpo = () => {
         </div>
       </section>
 
-      {/* Awards + Patterns Split Section */}
+      {/* Emerging Patterns — THE CLIMAX */}
       <section className="lab-section">
-        <div className="container mx-auto max-w-6xl px-6">
-          <div className="grid md:grid-cols-2 gap-12">
-            {/* Awards */}
-            <div>
-              <p className="text-xs font-display font-semibold uppercase tracking-[0.2em] mb-3 text-primary">
-                Sandbox awards
-              </p>
-              <h2 className="text-2xl md:text-3xl font-display font-bold mb-8 text-foreground">
-                Celebrating the boldest experiments
-              </h2>
-              <div className="space-y-4">
-                {awards.map((award) => (
-                  <div key={award.name} className="rounded-xl p-5 border border-border bg-card flex items-start gap-4 shadow-sm">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-sticky-yellow">
-                      <award.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-display font-bold text-sm text-foreground">{award.name}</h3>
-                      <p className="text-xs mb-1 text-primary">{award.winner}</p>
-                      <p className="text-xs text-muted-foreground">{award.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <div className="container mx-auto max-w-4xl px-6">
+          <div className="text-center mb-12">
+            <p className="text-xs font-display font-semibold uppercase tracking-[0.2em] mb-3 text-primary">
+              Meta-learning
+            </p>
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 text-foreground">
+              What We're Learning Across All Experiments
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Patterns that emerged across 12 transformation stories and 75 experiments — ranked by how many teams experienced them.
+            </p>
+          </div>
 
-            {/* Patterns */}
-            <div>
-              <p className="text-xs font-display font-semibold uppercase tracking-[0.2em] mb-3 text-primary">
-                Emerging patterns
-              </p>
-              <h2 className="text-2xl md:text-3xl font-display font-bold mb-8 text-foreground">
-                Insights surfacing across tables
-              </h2>
-              <div className="space-y-4">
-                {patterns.map((pattern, i) => (
-                  <div key={i} className="rounded-xl p-5 border border-border bg-card flex items-start gap-4 shadow-sm">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-display font-bold bg-sticky-blue text-primary">
-                      {i + 1}
-                    </span>
-                    <p className="text-sm text-muted-foreground">{pattern}</p>
+          <div className="space-y-4">
+            {patterns
+              .sort((a, b) => b.frequency - a.frequency)
+              .map((pattern, i) => (
+              <div key={i} className="rounded-xl p-5 border border-border bg-card shadow-sm">
+                <div className="flex items-start gap-4 mb-3">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-display font-bold bg-primary/10 text-primary">
+                    {i + 1}
+                  </span>
+                  <p className="text-sm font-display font-medium text-foreground flex-1">{pattern.text}</p>
+                </div>
+                <div className="ml-12 flex items-center gap-3">
+                  <div className="flex-1 h-2.5 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all duration-500"
+                      style={{ width: `${(pattern.frequency / maxFrequency) * 100}%` }}
+                    />
                   </div>
-                ))}
+                  <span className="text-xs font-display font-semibold text-muted-foreground whitespace-nowrap">
+                    {pattern.frequency}/{maxFrequency} teams
+                  </span>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
+      {/* Sandbox Awards — Celebratory */}
+      <section className="lab-section bg-lab-surface">
+        <div className="container mx-auto max-w-4xl px-6">
+          <div className="text-center mb-12">
+            <p className="text-xs font-display font-semibold uppercase tracking-[0.2em] mb-3 text-primary">
+              🏆 Sandbox awards
+            </p>
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 text-foreground">
+              Celebrating the Boldest Contributors
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Recognizing participants who pushed boundaries, challenged AI outputs, and shared the most transferable insights.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-6">
+            {awards.map((award) => (
+              <div key={award.name} className="rounded-2xl p-6 border border-border bg-card shadow-sm text-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-sticky-yellow mx-auto mb-4">
+                  <award.icon className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="font-display font-bold text-base text-foreground mb-1">{award.name}</h3>
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-display font-bold bg-secondary text-primary">
+                    {award.initial}
+                  </div>
+                  <span className="text-sm font-display font-semibold text-primary">{award.winner}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{award.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Facilitation Guide */}
+      <section className="lab-section">
+        <div className="container mx-auto max-w-3xl px-6">
+          <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 text-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 mx-auto mb-4">
+              <Coffee className="w-6 h-6 text-primary" />
+            </div>
+            <h3 className="text-xl font-display font-bold mb-2 text-foreground">Want to facilitate your own Expo?</h3>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto mb-5">
+              Run this World Café format with your own team. Includes table setup, timing guide, prompt templates, and debrief facilitation notes.
+            </p>
+            <Button variant="outline" className="gap-2">
+              <Download className="w-4 h-4" /> Download Expo Facilitation Guide
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Next Step CTA */}
+      <section className="lab-section bg-lab-surface">
+        <div className="container mx-auto max-w-3xl px-6">
+          <div className="border border-border rounded-lg p-6 text-center space-y-3 bg-card">
+            <p className="text-sm font-display font-semibold text-primary">✓ You've experienced the full Transformation Expo</p>
+            <p className="text-lg font-display font-bold">🎉 You've completed the full cohort storyboard</p>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              From weekly workflows to tiny experiments, reflection pods, deep dives, and the final showcase — this is what a cohort journey looks like.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Link to="/">
+                <Button className="gap-2">Back to Home <ArrowRight className="w-4 h-4" /></Button>
+              </Link>
+              <Link to="/deep-dive">
+                <Button variant="outline" className="gap-2"><ArrowLeft className="w-4 h-4" /> Previous: Deep Dive</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </Layout>
   );
 };
