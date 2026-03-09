@@ -118,7 +118,7 @@ const ExperimentsPage = () => {
         <div className="container mx-auto max-w-4xl">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-display font-bold">My Experiments</h1>
+              <h1 className="text-3xl font-display font-bold">Tiny Experiments</h1>
               <p className="text-muted-foreground mt-1">Your personal AI workflow redesign workspace</p>
             </div>
             <Button variant="hero" onClick={() => setShowBuilder(true)}>
