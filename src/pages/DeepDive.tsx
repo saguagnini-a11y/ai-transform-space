@@ -63,6 +63,10 @@ const DeepDive = () => {
       {/* Hero */}
       <section className="lab-section">
         <div className="container mx-auto max-w-4xl text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-display font-semibold uppercase tracking-[0.2em] mb-6">
+            <Search className="w-4 h-4" />
+            Week 9 — Deep Dive with Peers
+          </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
             Workflow Deep Dives
           </h1>
