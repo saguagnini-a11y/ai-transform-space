@@ -4,15 +4,15 @@ import { Beaker, ArrowRight, Lightbulb, Users, Trophy, Repeat, FlaskConical, Tar
 import Layout from "@/components/Layout";
 
 const journeyWeeks = [
-  { week: "1", label: "Guest + Sprint", phase: "Define", color: "bg-sticky-yellow" },
+  { week: "1", label: "Guest Challenge + Sprint", phase: "Define", color: "bg-sticky-yellow" },
   { week: "2", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "3", label: "Guest + Sprint", phase: "Discover", color: "bg-sticky-yellow" },
+  { week: "3", label: "Guest Challenge + Sprint", phase: "Discover", color: "bg-sticky-yellow" },
   { week: "4", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "5", label: "Guest + Sprint", phase: "Design & Develop", color: "bg-sticky-yellow" },
+  { week: "5", label: "Guest Challenge + Sprint", phase: "Design & Develop", color: "bg-sticky-yellow" },
   { week: "6", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "7", label: "Guest + Sprint", phase: "Deploy & Iterate", color: "bg-sticky-yellow" },
+  { week: "7", label: "Guest Challenge + Sprint", phase: "Deploy & Iterate", color: "bg-sticky-yellow" },
   { week: "8", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "9", label: "Workflow Deep Dive & Peer Café", phase: "", color: "bg-sticky-blue" },
+  { week: "9", label: "Deep Dive & Peer Café", phase: "", color: "bg-sticky-blue" },
   { week: "10", label: "Transformation Expo", phase: "World Café", color: "bg-sticky-pink" },
 ];
 
