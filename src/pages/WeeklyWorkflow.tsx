@@ -238,10 +238,8 @@ const WeeklyWorkflow = () => {
       <section className="lab-section bg-lab-surface">
         <div className="container mx-auto max-w-3xl px-6">
           <div className="border border-border rounded-lg p-8 text-center space-y-4 bg-card">
-            <h2 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Next: Tiny Experiments</h2>
-            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              See how participants design, run, and track small AI experiments each cycle.
-            </p>
+            <p className="text-sm font-display font-semibold text-primary">✓ You've explored the Weekly Workflow</p>
+            <h2 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Next: See how peers came up with tiny experiments</h2>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <Link to="/experiments">
                 <Button className="gap-2">Tiny Experiments <ArrowRight className="w-4 h-4" /></Button>
