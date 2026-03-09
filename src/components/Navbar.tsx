@@ -19,9 +19,16 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-secondary backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2.5 font-display font-bold text-lg text-secondary-foreground">
-          <img src={logoImg} alt="L&D Shakers logo" className="w-10 h-10 rounded-full object-cover border-2 border-primary/40" />
-          <span>L&D Shakers <span className="text-primary">AI Sandbox</span></span>
+        <Link to="/" className="flex items-center gap-2.5 font-display font-bold text-lg text-secondary-foreground group">
+          <img src={logoImg} alt="L&D Shakers logo" className="w-10 h-10 rounded-full object-cover border-2 border-primary/40 group-hover:border-primary group-hover:scale-105 transition-all duration-200" />
+          <div className="flex flex-col">
+            <span>L&D Shakers <span className="text-primary">AI Sandbox</span></span>
+            {location.pathname !== "/" && (
+              <span className="text-[10px] font-body font-normal text-primary/70 group-hover:text-primary transition-colors -mt-0.5">
+                ← Back to Overview
+              </span>
+            )}
+          </div>
         </Link>
 
         {/* Desktop nav */}
