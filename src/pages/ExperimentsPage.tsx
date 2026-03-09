@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Plus, Beaker, Share2, Save, ChevronDown } from "lucide-react";
+import { Plus, Beaker, Share2, Save, ChevronDown, ArrowRight } from "lucide-react";
 
 interface Experiment {
   id: string;
@@ -463,6 +464,20 @@ const ExperimentsPage = () => {
                 )}
               </div>
             ))}
+          </div>
+
+          {/* Next step CTA */}
+          <div className="mt-12 border border-border rounded-lg p-6 text-center space-y-3 bg-card">
+            <p className="text-sm font-display font-semibold text-primary">✓ You've explored the experiment workspace</p>
+            <p className="text-lg font-display font-bold">🔜 Next: See how you share learnings in Reflection Pods</p>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              Between sessions, you reflect with two peers on what you made, what changed, and what you learned.
+            </p>
+            <Link to="/reflection-pods">
+              <Button className="mt-2 gap-2">
+                Explore Reflection Pods <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
