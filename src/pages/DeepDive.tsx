@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { Search, Layers, Target, Lightbulb, ArrowRight, ChevronDown, ChevronUp, MessageSquare, Zap, HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Layers, Target, Lightbulb, ArrowRight, ArrowLeft, ChevronDown, ChevronUp, MessageSquare, Zap, HelpCircle } from "lucide-react";
 
 const diveTopics = [
 {
@@ -245,6 +247,27 @@ const DeepDive = () => {
             <div className="bg-card border border-border rounded-lg p-5">
               <p className="text-2xl mb-2">🤝</p>
               <p className="font-display font-semibold text-sm">Peer feedback on your approach and thinking</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Next Step CTA */}
+      <section className="lab-section bg-lab-surface">
+        <div className="container mx-auto max-w-3xl">
+          <div className="border border-border rounded-lg p-6 text-center space-y-3 bg-card">
+            <p className="text-sm font-display font-semibold text-primary">✓ You've explored the Deep Dive format</p>
+            <p className="text-lg font-display font-bold">🔜 Next: See how the cohort culminates</p>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              The Transformation Expo is where participants showcase their AI-enhanced workflows and celebrate what they've built.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Link to="/transformation-expo">
+                <Button className="gap-2">Next: Transformation Expo <ArrowRight className="w-4 h-4" /></Button>
+              </Link>
+              <Link to="/reflection-pods">
+                <Button variant="outline" className="gap-2"><ArrowLeft className="w-4 h-4" /> Previous: Reflection Pods</Button>
+              </Link>
             </div>
           </div>
         </div>
