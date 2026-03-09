@@ -134,14 +134,6 @@ const TransformationExpo = () => {
                   </li>
                 )}
               </ul>
-              <div className="rounded-xl p-4 border border-border bg-sticky-pink/40">
-                <p className="text-xs font-display font-semibold uppercase tracking-wider mb-1 text-primary">
-                  Facilitator cue
-                </p>
-                <p className="text-sm italic text-muted-foreground">
-                  Invite people to browse, not browse past. This page should make movement feel natural and conversation feel irresistible.
-                </p>
-              </div>
             </div>
           </div>
         </div>
