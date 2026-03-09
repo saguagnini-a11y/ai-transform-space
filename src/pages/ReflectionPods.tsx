@@ -1,6 +1,7 @@
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, ThumbsUp, HelpCircle } from "lucide-react";
+import { MessageSquare, ThumbsUp, HelpCircle, ArrowRight, ArrowLeft } from "lucide-react";
 
 const pods = [
 {
@@ -118,6 +119,27 @@ const ReflectionPods = () => {
               )}
               </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Next Step CTA */}
+      <section className="lab-section bg-lab-surface">
+        <div className="container mx-auto max-w-3xl">
+          <div className="border border-border rounded-lg p-6 text-center space-y-3 bg-card">
+            <p className="text-sm font-display font-semibold text-primary">✓ You've seen how reflection happens in small pods</p>
+            <p className="text-lg font-display font-bold">🔜 Next: See the last step of the cohort before showcase</p>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              The Deep Dive is where all cohort members gather for deep dives, pattern sharing, and cross-pod learning.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Link to="/deep-dive">
+                <Button className="gap-2">Next: Deep Dive <ArrowRight className="w-4 h-4" /></Button>
+              </Link>
+              <Link to="/experiments">
+                <Button variant="outline" className="gap-2"><ArrowLeft className="w-4 h-4" /> Previous: Tiny Experiments</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
