@@ -28,6 +28,7 @@ const App = () => (
           <Route path="/reflection-pods" element={<ReflectionPods />} />
           <Route path="/transformation-expo" element={<TransformationExpo />} />
           <Route path="/deep-dive" element={<DeepDive />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
