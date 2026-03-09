@@ -196,12 +196,12 @@ const Index = () => {
       {/* CTA */}
       <section className="lab-section">
         <div className="container mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-display font-bold mb-4">Ready to Experiment?</h2>
+          <h2 className="text-3xl font-display font-bold mb-4">Ready to explore this storyboard?</h2>
           <p className="text-muted-foreground mb-8">
-            Start redesigning your L&D workflows with AI today.
+            Click through the tabs above to see how each part of the sandbox works.
           </p>
           <Button variant="hero" size="lg" asChild>
-            <Link to="/experiments">Start Your First Experiment <ArrowRight className="w-4 h-4 ml-1" /></Link>
+            <Link to="/weekly-workflow">Start Exploring <ArrowRight className="w-4 h-4 ml-1" /></Link>
           </Button>
         </div>
       </section>
