@@ -265,28 +265,6 @@ const TransformationExpo = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="lab-section bg-lab-surface">
-        <div className="container mx-auto max-w-3xl px-6 text-center">
-          <p className="text-xs font-display font-semibold uppercase tracking-[0.2em] mb-4 text-primary">
-            Your turn
-          </p>
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-5 text-foreground">
-            What transformation will you test next?
-          </h2>
-          <p className="text-base md:text-lg mb-10 max-w-2xl mx-auto text-muted-foreground">
-            Before leaving the Expo, add one AI-enabled workflow experiment you want to test in your own L&D practice. Let your idea become the spark for the next conversation.
-          </p>
-          <div className="rounded-2xl p-6 md:p-8 border-2 border-dashed border-primary/30 bg-card max-w-xl mx-auto">
-            <p className="text-xs font-display font-semibold uppercase tracking-wider mb-3 text-primary">
-              Board prompt
-            </p>
-            <p className="text-lg md:text-xl font-display font-medium italic text-foreground">
-              "One workflow I want to redesign with AI is…"
-            </p>
-          </div>
-        </div>
-      </section>
     </Layout>
   );
 };
