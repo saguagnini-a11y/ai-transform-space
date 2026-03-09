@@ -352,10 +352,7 @@ const TransformationExpo = () => {
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
               You've seen the 10-week journey, the weekly workflow, experiment tracking, reflection pods, deep dives, and the transformation showcase. Now help us make this sandbox even better.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <Link to="/feedback">
-                <Button className="gap-2">Provide Feedback on This Storyboard <ArrowRight className="w-4 h-4" /></Button>
-              </Link>
+            <div className="flex items-center justify-center pt-2">
               <Link to="/">
                 <Button variant="outline" className="gap-2"><ArrowLeft className="w-4 h-4" /> Back to Overview</Button>
               </Link>
