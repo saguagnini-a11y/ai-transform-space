@@ -28,6 +28,15 @@ const outcomes = [
 const Index = () => {
   return (
     <Layout>
+      {/* Navigation banner */}
+      <div className="bg-primary/5 border-b border-primary/10">
+        <div className="container mx-auto max-w-4xl py-2.5 px-4 text-center">
+          <p className="text-sm font-display font-medium text-primary">
+            👆 This is an interactive prototype — click the tabs above to explore each section of the sandbox
+          </p>
+        </div>
+      </div>
+
       {/* Hero */}
       <section className="lab-section relative overflow-hidden">
         <div className="container mx-auto max-w-4xl text-center">
