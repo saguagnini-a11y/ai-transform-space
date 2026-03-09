@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { Search, Layers, Target, Lightbulb, ArrowRight, ChevronDown, ChevronUp, MessageSquare, Zap, HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Layers, Target, Lightbulb, ArrowRight, ArrowLeft, ChevronDown, ChevronUp, MessageSquare, Zap, HelpCircle } from "lucide-react";
 
 const diveTopics = [
 {
