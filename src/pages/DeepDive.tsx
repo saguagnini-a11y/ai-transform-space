@@ -29,9 +29,9 @@ const diveTopics = [
   {
     emoji: "✏️",
     icon: Target,
-    title: "Design",
+    title: "Design & Develop",
     subtitle: "Learning Experience Design Deep Dive",
-    description: "Go deeper on designing learning journeys, assessments, and experiences with AI as a co-designer.",
+    description: "Go deeper on designing and developing learning journeys, assessments, and experiences with AI as a co-designer.",
     prompts: [
       "What does a good AI-assisted learner journey look like?",
       "Where does AI-generated assessment design fall short?",
@@ -41,25 +41,13 @@ const diveTopics = [
   {
     emoji: "🚀",
     icon: Lightbulb,
-    title: "Deploy & Develop",
-    subtitle: "Implementation Deep Dive",
-    description: "Tackle the real-world challenges of deploying AI-enhanced workflows — from pilot to scale.",
+    title: "Deploy & Iterate",
+    subtitle: "Implementation & Improvement Deep Dive",
+    description: "Tackle the real-world challenges of deploying AI-enhanced workflows — from pilot to scale — and refine them over time.",
     prompts: [
       "What's the smallest viable way to test this in your team?",
-      "How do you get stakeholder buy-in for AI-augmented processes?",
-      "What does 'good enough to ship' look like?",
-    ],
-  },
-  {
-    emoji: "🔁",
-    icon: Users,
-    title: "Iterate",
-    subtitle: "Evaluation & Improvement Deep Dive",
-    description: "Focus on measuring impact, gathering feedback, and refining your AI-augmented workflows over time.",
-    prompts: [
       "How do you measure whether AI actually improved the outcome?",
       "What feedback loops matter most?",
-      "When should you stop iterating and start scaling?",
     ],
   },
 ];
