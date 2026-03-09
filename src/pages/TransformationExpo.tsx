@@ -72,20 +72,19 @@ const TransformationExpo = () => {
                 A rotating conversation experience where L&D professionals share how they redesigned workflows with AI.
               </p>
 
-              <div className="space-y-6">
+              <div className="grid grid-cols-4 gap-3">
                 {[
-                  { icon: Coffee, label: "Join a table", desc: "Start with any host story that sparks your curiosity." },
-                  { icon: MessageCircle, label: "Discuss the prompt", desc: "Explore what this transformation could mean in your own context." },
-                  { icon: RotateCcw, label: "Rotate", desc: "Move to a new table every round and collect fresh ideas." },
+                  { icon: Coffee, label: "Join a table", desc: "Choose", number: "1" },
+                  { icon: MessageCircle, label: "Discuss", desc: "10 min", number: "2" },
+                  { icon: RotateCcw, label: "Rotate", desc: "New table", number: "3" },
+                  { icon: Lightbulb, label: "Synthesize", desc: "Share insights", number: "4" },
                 ].map((step, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-secondary">
+                  <div key={i} className="text-center">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-secondary mx-auto mb-2">
                       <step.icon className="w-5 h-5 text-primary" />
                     </div>
-                    <div>
-                      <p className="font-display font-semibold text-sm text-foreground">{step.label}</p>
-                      <p className="text-sm text-muted-foreground">{step.desc}</p>
-                    </div>
+                    <p className="font-display font-semibold text-xs text-foreground">{step.label}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{step.desc}</p>
                   </div>
                 ))}
               </div>
