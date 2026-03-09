@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
