@@ -3,55 +3,55 @@ import Layout from "@/components/Layout";
 import { Search, Layers, Target, Lightbulb, ArrowRight, ChevronDown, ChevronUp, MessageSquare, Zap, HelpCircle } from "lucide-react";
 
 const diveTopics = [
-  {
-    emoji: "🔍",
-    icon: Search,
-    title: "Define",
-    subtitle: "Needs Analysis Deep Dive",
-    description: "Dig into how AI can reshape the way you identify learning needs — from survey analysis to stakeholder interviews.",
-    prompts: [
-      { icon: "🔬", text: "How might AI surface patterns in qualitative feedback that humans miss?" },
-      { icon: "✍️", text: "What happens when you let AI draft your needs report — and then override it?" },
-      { icon: "🧭", text: "Where does context matter more than data?" },
-    ],
-  },
-  {
-    emoji: "🧭",
-    icon: Layers,
-    title: "Discover",
-    subtitle: "Research & Benchmarking Deep Dive",
-    description: "Explore how AI accelerates research, competitive analysis, and trend-spotting across your domain.",
-    prompts: [
-      { icon: "⚡", text: "Can AI help you benchmark faster without losing nuance?" },
-      { icon: "🎯", text: "What sources does AI miss that your expertise catches?" },
-      { icon: "✅", text: "How do you validate AI-generated research?" },
-    ],
-  },
-  {
-    emoji: "✏️",
-    icon: Target,
-    title: "Design & Develop",
-    subtitle: "Learning Experience Design Deep Dive",
-    description: "Go deeper on designing and developing learning journeys, assessments, and experiences with AI as a co-designer.",
-    prompts: [
-      { icon: "🗺️", text: "What does a good AI-assisted learner journey look like?" },
-      { icon: "⚠️", text: "Where does AI-generated assessment design fall short?" },
-      { icon: "💡", text: "How do you keep the human touch in AI-designed experiences?" },
-    ],
-  },
-  {
-    emoji: "🚀",
-    icon: Lightbulb,
-    title: "Deploy & Iterate",
-    subtitle: "Implementation & Improvement Deep Dive",
-    description: "Tackle the real-world challenges of deploying AI-enhanced workflows — from pilot to scale — and refine them over time.",
-    prompts: [
-      { icon: "🧪", text: "What's the smallest viable way to test this in your team?" },
-      { icon: "📊", text: "How do you measure whether AI actually improved the outcome?" },
-      { icon: "🔁", text: "What feedback loops matter most?" },
-    ],
-  },
-];
+{
+  emoji: "🔍",
+  icon: Search,
+  title: "Define",
+  subtitle: "Needs Analysis Deep Dive",
+  description: "Dig into how AI can reshape the way you identify learning needs — from survey analysis to stakeholder interviews.",
+  prompts: [
+  { icon: "🔬", text: "How might AI surface patterns in qualitative feedback that humans miss?" },
+  { icon: "✍️", text: "What happens when you let AI draft your needs report — and then override it?" },
+  { icon: "🧭", text: "Where does context matter more than data?" }]
+
+},
+{
+  emoji: "🧭",
+  icon: Layers,
+  title: "Discover",
+  subtitle: "Research & Benchmarking Deep Dive",
+  description: "Explore how AI accelerates research, competitive analysis, and trend-spotting across your domain.",
+  prompts: [
+  { icon: "⚡", text: "Can AI help you benchmark faster without losing nuance?" },
+  { icon: "🎯", text: "What sources does AI miss that your expertise catches?" },
+  { icon: "✅", text: "How do you validate AI-generated research?" }]
+
+},
+{
+  emoji: "✏️",
+  icon: Target,
+  title: "Design & Develop",
+  subtitle: "Learning Experience Design Deep Dive",
+  description: "Go deeper on designing and developing learning journeys, assessments, and experiences with AI as a co-designer.",
+  prompts: [
+  { icon: "🗺️", text: "What does a good AI-assisted learner journey look like?" },
+  { icon: "⚠️", text: "Where does AI-generated assessment design fall short?" },
+  { icon: "💡", text: "How do you keep the human touch in AI-designed experiences?" }]
+
+},
+{
+  emoji: "🚀",
+  icon: Lightbulb,
+  title: "Deploy & Iterate",
+  subtitle: "Implementation & Improvement Deep Dive",
+  description: "Tackle the real-world challenges of deploying AI-enhanced workflows — from pilot to scale — and refine them over time.",
+  prompts: [
+  { icon: "🧪", text: "What's the smallest viable way to test this in your team?" },
+  { icon: "📊", text: "How do you measure whether AI actually improved the outcome?" },
+  { icon: "🔁", text: "What feedback loops matter most?" }]
+
+}];
+
 
 const DeepDive = () => {
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
@@ -89,7 +89,7 @@ const DeepDive = () => {
               <div className="bg-sticky-yellow w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 text-xl">🎯</div>
               <h3 className="font-display font-bold mb-1">Frame</h3>
               <span className="inline-block px-2 py-0.5 rounded-full bg-sticky-yellow/50 text-xs font-display font-semibold text-foreground/60 mb-2">15 min</span>
-              <p className="text-sm text-muted-foreground">Pick one workflow challenge. Define what "better" looks like for your context.</p>
+              <p className="text-sm text-muted-foreground">Pick your greatest workflow challenge. Define what "better" looks like for your context.</p>
             </div>
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <div className="bg-sticky-green w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 text-xl">🛠️</div>
@@ -181,8 +181,8 @@ const DeepDive = () => {
                 <div key={topic.title} className="bg-card border border-border rounded-xl overflow-hidden transition-all duration-200">
                   <button
                     onClick={() => setExpandedTopic(isExpanded ? null : topic.title)}
-                    className="w-full flex items-center gap-4 p-5 sm:p-6 text-left hover:bg-muted/30 transition-colors"
-                  >
+                    className="w-full flex items-center gap-4 p-5 sm:p-6 text-left hover:bg-muted/30 transition-colors">
+                    
                     <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">
                       {topic.emoji}
                     </div>
@@ -195,31 +195,31 @@ const DeepDive = () => {
                         {topic.description}
                       </p>
                     </div>
-                    {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />
-                    )}
+                    {isExpanded ?
+                    <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0" /> :
+
+                    <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />
+                    }
                   </button>
 
-                  {isExpanded && (
-                    <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 border-t border-border">
+                  {isExpanded &&
+                  <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 border-t border-border">
                       <p className="text-sm text-muted-foreground font-body leading-relaxed mt-4 mb-4">
                         {topic.description}
                       </p>
                       <p className="text-xs font-display font-semibold text-primary uppercase tracking-wide mb-3">Guiding Questions</p>
                       <div className="space-y-2.5">
-                        {topic.prompts.map((prompt, i) => (
-                          <div key={i} className="flex items-start gap-3 bg-muted/30 rounded-lg p-3">
+                        {topic.prompts.map((prompt, i) =>
+                      <div key={i} className="flex items-start gap-3 bg-muted/30 rounded-lg p-3">
                             <span className="text-base shrink-0">{prompt.icon}</span>
                             <p className="text-sm text-foreground/80">{prompt.text}</p>
                           </div>
-                        ))}
+                      )}
                       </div>
                     </div>
-                  )}
-                </div>
-              );
+                  }
+                </div>);
+
             })}
           </div>
         </div>
@@ -249,8 +249,8 @@ const DeepDive = () => {
           </div>
         </div>
       </section>
-    </Layout>
-  );
+    </Layout>);
+
 };
 
 export default DeepDive;
