@@ -3,11 +3,10 @@ import { useLocation } from "react-router-dom";
 const pages = [
   { path: "/", label: "Home" },
   { path: "/weekly-workflow", label: "Weekly Workflow" },
-  { path: "/experiments", label: "Experiments" },
+  { path: "/experiments", label: "Tiny Experiments" },
   { path: "/reflection-pods", label: "Reflection Pods" },
-  { path: "/transformation-expo", label: "Transformation Expo" },
   { path: "/deep-dive", label: "Peer Café" },
-  { path: "/about", label: "About" },
+  { path: "/transformation-expo", label: "Transformation Expo" },
 ];
 
 const PrototypeBanner = () => {
