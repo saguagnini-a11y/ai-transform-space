@@ -232,16 +232,13 @@ const WeeklyWorkflow = () => {
             </div>
           </div>
 
-          {/* Next Section CTA */}
-          <div className="mt-12 text-center">
-            <p className="text-muted-foreground font-body mb-4">
-              Ready to see how experiments are tracked?
-            </p>
-            <Link
-              to="/experiments"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-display font-medium text-sm hover:opacity-90 transition-opacity"
-            >
-              View Tiny Experiments →
+          {/* Navigation CTA */}
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link to="/">
+              <Button variant="outline" className="gap-2"><ArrowLeft className="w-4 h-4" /> Overview</Button>
+            </Link>
+            <Link to="/experiments">
+              <Button className="gap-2">Tiny Experiments <ArrowRight className="w-4 h-4" /></Button>
             </Link>
           </div>
         </div>
