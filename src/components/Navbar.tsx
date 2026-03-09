@@ -32,12 +32,12 @@ const Navbar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors font-display ${
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 font-display story-link ${
                   location.pathname === item.path
                     ? "bg-primary/20 text-primary"
                     : isHighlighted
                     ? "text-primary bg-primary/10 shadow-[0_0_12px_hsl(var(--primary)/0.3)] pulse"
-                    : "text-secondary-foreground/70 hover:text-secondary-foreground hover:bg-secondary-foreground/10"
+                    : "text-secondary-foreground/70 hover:text-primary hover:bg-primary/5"
                 }`}
               >
                 {item.label}
