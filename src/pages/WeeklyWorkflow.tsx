@@ -1,30 +1,8 @@
-import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { ChevronRight, ChevronLeft } from "lucide-react";
-
-const loopSteps = [
-  { emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow", sectionId: "section-guest" },
-  { emoji: "⚡", label: "Sprint", color: "bg-sticky-green", sectionId: "section-sprint" },
-  { emoji: "🧪", label: "Tiny Experiment", color: "bg-sticky-blue", sectionId: "section-experiment" },
-  { emoji: "👥", label: "Reflection Pod", color: "bg-sticky-pink", sectionId: "section-reflection" },
-  { emoji: "✍️", label: "Override Log", color: "bg-accent", sectionId: "section-override" },
-];
 
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
 
 const WeeklyWorkflow = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % loopSteps.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const goTo = (dir: number) => {
-    setActiveIndex((prev) => (prev + dir + loopSteps.length) % loopSteps.length);
-  };
 
   return (
     <Layout>
