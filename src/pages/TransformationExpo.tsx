@@ -98,7 +98,7 @@ const TransformationExpo = () => {
                 { icon: Coffee, label: "Join a table", desc: "Choose", number: "1" },
                 { icon: MessageCircle, label: "Discuss", desc: "10 min", number: "2" },
                 { icon: RotateCcw, label: "Rotate", desc: "New table", number: "3" },
-                { icon: Lightbulb, label: "Synthesize", desc: "Share insights", number: "4" }].
+                { icon: Lightbulb, label: "Synthesize", desc: "Surface patterns", number: "4" }].
                 map((step, i) =>
                 <div key={i} className="text-center">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-secondary mx-auto mb-2">
