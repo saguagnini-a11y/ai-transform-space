@@ -33,7 +33,10 @@ const WeeklyWorkflow = () => {
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-yellow w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">🎤</div>
                 <div>
-                  <h3 className="font-display font-bold text-lg mb-2">Guest + Show & Tell</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display font-bold text-lg">Guest + Show & Tell</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">60 min</span>
+                  </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed mb-3">
                     Each session starts with a guest-led show & tell connected to one workflow focus. The guest introduces a real challenge.
                   </p>
