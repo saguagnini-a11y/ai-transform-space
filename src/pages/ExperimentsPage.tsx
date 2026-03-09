@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Plus, Beaker, Share2, Save, ChevronDown, ArrowRight } from "lucide-react";
+import { Plus, Beaker, Share2, Save, ChevronDown, ArrowRight, ArrowLeft } from "lucide-react";
 
 interface Experiment {
   id: string;
@@ -473,11 +473,14 @@ const ExperimentsPage = () => {
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
               Between sessions, you reflect with two peers on what you made, what changed, and what you learned.
             </p>
-            <Link to="/reflection-pods">
-              <Button className="mt-2 gap-2">
-                Explore Reflection Pods <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Link to="/reflection-pods">
+                <Button className="gap-2">Next: Reflection Pods <ArrowRight className="w-4 h-4" /></Button>
+              </Link>
+              <Link to="/weekly-workflow">
+                <Button variant="outline" className="gap-2"><ArrowLeft className="w-4 h-4" /> Previous: Weekly Workflow</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
