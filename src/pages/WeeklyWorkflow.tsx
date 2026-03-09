@@ -51,16 +51,21 @@ const WeeklyWorkflow = () => {
               <ChevronLeft className="w-5 h-5 text-muted-foreground" />
             </button>
 
-            <div className="overflow-hidden w-full max-w-xs">
+            <div className="overflow-hidden w-full max-w-2xl">
               <div
                 className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+                style={{ transform: `translateX(-${activeIndex * 33.333}%)` }}
               >
-                {loopSteps.map((step) => (
-                  <div key={step.label} className="w-full shrink-0 flex justify-center px-2">
-                    <div className={`${step.color} px-8 py-6 rounded-xl shadow-sm w-full`}>
-                      <span className="text-3xl block mb-2">{step.emoji}</span>
-                      <span className="font-display font-bold text-lg text-foreground block">{step.label}</span>
+                {loopSteps.map((step, i) => (
+                  <div key={step.label} className="w-1/3 shrink-0 px-2">
+                    <div
+                      className={`${step.color} px-4 py-5 rounded-xl shadow-sm transition-all duration-500 cursor-pointer ${
+                        i === activeIndex ? "scale-105 ring-2 ring-primary/30" : "opacity-70 scale-95"
+                      }`}
+                      onClick={() => setActiveIndex(i)}
+                    >
+                      <span className="text-2xl block mb-1.5">{step.emoji}</span>
+                      <span className="font-display font-bold text-sm text-foreground block">{step.label}</span>
                     </div>
                   </div>
                 ))}
