@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Plus, Beaker, Share2, Save, ChevronDown } from "lucide-react";
+import { Plus, Beaker, Share2, Save, ChevronDown, ArrowRight } from "lucide-react";
 
 interface Experiment {
   id: string;
