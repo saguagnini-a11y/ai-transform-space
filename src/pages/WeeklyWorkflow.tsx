@@ -10,7 +10,7 @@ const steps = [
 {
   id: "guest",
   emoji: "🎤",
-  title: "Guest + Show & Tell",
+  title: "Show & Tell",
   duration: 20,
   label: "20 min",
   color: "bg-sticky-yellow",
