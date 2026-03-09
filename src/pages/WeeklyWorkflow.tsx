@@ -121,7 +121,7 @@ const WeeklyWorkflow = () => {
                         {String(index + 1).padStart(2, "0")}
                       </span>
                       <span className="text-lg">{step.emoji}</span>
-                      <span className="hidden sm:inline text-xs font-display font-medium text-foreground truncate">
+                      <span className="text-xs font-display font-medium text-foreground truncate">
                         {step.title}
                       </span>
                     </div>
