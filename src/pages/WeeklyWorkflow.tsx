@@ -36,7 +36,7 @@ const steps = [
     color: "bg-sticky-blue",
     barColor: "bg-[hsl(var(--sticky-blue))]",
     description:
-      "Before leaving, each participant commits to one small workplace experiment. The goal is a minimum viable experiment — not a perfect solution. The tiny experiments from each cycle are collected and appear in 'My Experiments' section.",
+      "Before leaving, each participant commits to one small workplace experiment. The goal is a minimum viable experiment — not a perfect solution. The tiny experiments from each cycle are collected and appear in 'Tiny Experiments' section.",
   },
   {
     id: "reflection",
