@@ -108,7 +108,7 @@ const WeeklyWorkflow = () => {
 
           <div className="grid gap-6">
             {/* Card 1 — Guest */}
-            <div className="bg-card border border-border rounded-xl p-6 sm:p-8">
+            <div id="section-guest" className="bg-card border border-border rounded-xl p-6 sm:p-8 scroll-mt-24">
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-yellow w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">🎤</div>
                 <div>
