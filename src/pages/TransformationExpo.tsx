@@ -351,21 +351,19 @@ const TransformationExpo = () => {
         </div>
       </section>
 
-      {/* Next Step CTA */}
+      {/* Final CTA */}
       <section className="lab-section bg-lab-surface">
         <div className="container mx-auto max-w-3xl px-6">
-          <div className="border border-border rounded-lg p-6 text-center space-y-3 bg-card">
-            <p className="text-sm font-display font-semibold text-primary">✓ You've experienced the full Transformation Expo</p>
-            <p className="text-lg font-display font-bold">🎉 You've completed the full cohort storyboard</p>
+          <div className="border border-border rounded-lg p-8 text-center space-y-4 bg-card">
+            <p className="text-sm font-display font-semibold text-primary">✓ You've explored the entire AI Sandbox structure</p>
+            <h2 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Ready to Start Testing?</h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              From weekly workflows to tiny experiments, reflection pods, deep dives, and the final showcase — this is what a cohort journey looks like.
+              You've seen the 10-week journey, the weekly workflow, experiment tracking, reflection pods, deep dives, and the transformation showcase. Now help us make this sandbox even better.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Button className="gap-2">Provide Feedback on This Storyboard <ArrowRight className="w-4 h-4" /></Button>
               <Link to="/">
-                <Button className="gap-2">Back to Home <ArrowRight className="w-4 h-4" /></Button>
-              </Link>
-              <Link to="/deep-dive">
-                <Button variant="outline" className="gap-2"><ArrowLeft className="w-4 h-4" /> Previous: Deep Dive</Button>
+                <Button variant="outline" className="gap-2"><ArrowLeft className="w-4 h-4" /> Back to Overview</Button>
               </Link>
             </div>
           </div>
