@@ -154,7 +154,7 @@ const WeeklyWorkflow = () => {
             </div>
 
             {/* Card 4 — Reflection Pods */}
-            <div className="bg-card border border-border rounded-xl p-6 sm:p-8">
+            <div id="section-reflection" className="bg-card border border-border rounded-xl p-6 sm:p-8 scroll-mt-24">
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-pink w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">👥</div>
                 <div>
