@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Lightbulb, FlaskConical, Target, Users, Repeat } from "lucide-react";
 
 const steps = [
-  { icon: Lightbulb, title: "Guest Challenge", desc: "A guest sets a real L&D challenge connected to the sprint focus", color: "bg-sticky-yellow" },
+  { icon: Lightbulb, title: "Show and Tell", desc: "A guest share how they have transformed their workflow", color: "bg-sticky-yellow" },
   { icon: FlaskConical, title: "Sprint", desc: "Design and test a micro-case with AI in 45 minutes", color: "bg-sticky-green" },
   { icon: Target, title: "Tiny Experiment", desc: "Commit to one small AI experiment to run at work", color: "bg-sticky-blue" },
   { icon: Users, title: "Reflection Pod", desc: "Share artifacts and learnings with your peer trio", color: "bg-sticky-pink" },
