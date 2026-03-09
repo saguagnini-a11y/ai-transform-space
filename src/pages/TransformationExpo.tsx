@@ -12,6 +12,7 @@ const caféTables = [
     prompt: '"Analyze these 200 survey responses and identify top learning needs with supporting evidence."',
     impact: "80% time reduction. Stakeholders now receive insights within days, not weeks.",
     conversation: "Where in your workflow do insights arrive too late to influence decisions?",
+    override: { insight: "AI ranked 'time management' as #1 need. I moved 'stakeholder communication' to #1 because an upcoming org restructuring makes it urgent — context AI couldn't know." },
   },
   {
     number: "02",
@@ -22,19 +23,20 @@ const caféTables = [
     prompt: '"Design a blended learning journey for new managers and simulate 3 different learner personas."',
     impact: "Can now produce and test 5 journey variants in the time it previously took to create 1.",
     conversation: "What would you test if prototyping a learning journey took hours instead of weeks?",
+    override: { insight: "AI placed 360-feedback in week 2. I moved it to week 5 because psychological safety needs to be established first — something only experience teaches you." },
   },
   {
     number: "03",
     host: "Priya R.",
     title: "From Reactive Evaluation to Predictive Learning Insights",
     before: ["Manual evaluation", "Kirkpatrick surveys", "Delayed reporting"],
-    after: ["AI-driven sentiment analysis", "Real-time feedback loops", "Predictive insights"],
-    prompt: '"Analyze post-training feedback and predict retention risks."',
-    impact: "Shifted from reactive evaluation to predictive learning insights and identified at-risk learners earlier.",
-    conversation: "What early signals would you want to detect about learner success or failure?",
+    after: ["Predictive analytics", "Real-time dashboards", "Proactive insights"],
+    prompt: '"Analyze completion data and predict which learners are at risk of disengagement."',
+    impact: "Early intervention increased completion rates by 35%. Evaluation shifted from reactive to proactive.",
+    conversation: "What signals would help you intervene before a learner drops off?",
+    override: { insight: "AI suggested generic risk labels. I changed to org-specific language because alignment with internal frameworks drives completion rates." },
   },
 ];
-
 const awards = [
   { icon: Sparkles, name: "Boldest Experiment", winner: "James K.", desc: "Simulated 50 learner personas to stress-test a leadership program." },
   { icon: Star, name: "Best Override", winner: "Maria S.", desc: "Detected AI bias in needs prioritization using organizational context knowledge." },
