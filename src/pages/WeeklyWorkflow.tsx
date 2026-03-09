@@ -42,11 +42,11 @@ const WeeklyWorkflow = () => {
                     Each session starts with a guest-led show & tell connected to one workflow focus. The guest introduces a real challenge.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {focusAreas.map((area) => (
-                      <span key={area} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-display font-medium">
+                    {focusAreas.map((area) =>
+                    <span key={area} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-display font-medium">
                         {area}
                       </span>
-                    ))}
+                    )}
                   </div>
                 </div>
               </div>
@@ -75,7 +75,7 @@ const WeeklyWorkflow = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-display font-bold text-lg">Tiny Experiment</h3>
-                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">60 min</span>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">60 min asyn</span>
                   </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed">
                     Before leaving, each participant commits to one small workplace experiment. The goal is a minimum viable experiment — not a perfect solution.
@@ -148,8 +148,8 @@ const WeeklyWorkflow = () => {
           </div>
         </div>
       </section>
-    </Layout>
-  );
+    </Layout>);
+
 };
 
 export default WeeklyWorkflow;
