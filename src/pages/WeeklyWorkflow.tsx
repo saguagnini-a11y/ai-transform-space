@@ -56,7 +56,10 @@ const WeeklyWorkflow = () => {
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-green w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">⚡</div>
                 <div>
-                  <h3 className="font-display font-bold text-lg mb-2">Micro-case Sprint</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display font-bold text-lg">Micro-case Sprint</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">45 min</span>
+                  </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed">
                     Participants design and test one micro-case in 45 minutes using AI. No theory — just hands-on experimentation with a real workflow challenge.
                   </p>
