@@ -53,6 +53,12 @@ const sampleExperiments: Experiment[] = [
     output: "Detailed persona-by-persona walkthrough with predicted engagement curves, friction moments, and suggested design tweaks per persona",
     workflowChange: "We now 'stress-test' every learning journey against diverse personas before pilot, catching design flaws early",
     becamePossible: "We can empathy-test designs at scale without running expensive focus groups, making inclusive design the default",
+    overrideLog: {
+      aiSuggestion: "AI generated uniformly positive reactions for all four personas — each 'loved' the blended format with minor scheduling concerns",
+      modification: "Rewrote the sceptical senior manager and time-poor parent personas to show genuine resistance: the manager questioned ROI evidence, the parent flagged impossible live-session times",
+      whyChanged: "AI defaults to agreeable, conflict-free simulations. Real learners push back hard — and if we don't design for that resistance, we discover it at launch when it's too late to fix",
+      humanInsight: "The whole point of persona simulation is to surface uncomfortable truths. If AI smooths away the friction, are we just building an echo chamber that validates our own designs? Where exactly does 'helpful simulation' end and 'false reassurance' begin?",
+    },
     createdAt: "2024-01-22",
   },
   {
