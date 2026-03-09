@@ -18,7 +18,7 @@ const PrototypeBanner = () => {
   return (
     <div className="w-full bg-primary text-primary-foreground py-2 px-4 text-center text-sm font-display">
       <span className="mr-1">🧭</span>
-      <span className="font-semibold">Interactive Prototype:</span>{" "}
+      <span className="font-semibold">Interactive Storyboard:</span>{" "}
       <span className="opacity-90">Click tabs to explore</span>
       {currentPage && (
         <span className="ml-2 opacity-75 text-xs">
