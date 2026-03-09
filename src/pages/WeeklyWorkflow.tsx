@@ -22,66 +22,6 @@ const WeeklyWorkflow = () => {
             Test it. Reflect with peers. Showcase what you can now do that was impossible before.
           </p>
 
-          {/* Carousel */}
-          <div className="relative flex items-center justify-center gap-4 mb-4">
-            <button
-              onClick={() => goTo(-1)}
-              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors shrink-0"
-              aria-label="Previous step"
-            >
-              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-            </button>
-
-            <div className="overflow-hidden w-full max-w-2xl">
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${activeIndex * 33.333}%)` }}
-              >
-                {loopSteps.map((step, i) => (
-                  <div key={step.label} className="w-1/3 shrink-0 px-2">
-                    <div
-                      className={`${step.color} px-4 py-5 rounded-xl shadow-sm transition-all duration-500 cursor-pointer ${
-                        i === activeIndex ? "scale-105 ring-2 ring-primary/30" : "opacity-70 scale-95"
-                      }`}
-                      onClick={() => {
-                        setActiveIndex(i);
-                        document.getElementById(step.sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }}
-                    >
-                      <span className="text-2xl block mb-1.5">{step.emoji}</span>
-                      <span className="font-display font-bold text-sm text-foreground block">{step.label}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={() => goTo(1)}
-              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors shrink-0"
-              aria-label="Next step"
-            >
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
-
-          {/* Dots */}
-          <div className="flex justify-center gap-2 mb-2">
-            {loopSteps.map((step, i) => (
-              <button
-                key={step.label}
-                onClick={() => setActiveIndex(i)}
-                className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                  i === activeIndex ? "bg-primary" : "bg-muted-foreground/30"
-                }`}
-                aria-label={step.label}
-              />
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground/60 font-display tracking-wide uppercase">Repeat every two weeks</p>
-        </div>
-      </section>
-
       {/* Step Cards */}
       <section className="lab-section bg-lab-surface">
         <div className="container mx-auto max-w-4xl">
