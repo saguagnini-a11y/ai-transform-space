@@ -1,31 +1,8 @@
-import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { ChevronRight, ChevronLeft } from "lucide-react";
-
-const loopSteps = [
-  { emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow", sectionId: "section-guest" },
-  { emoji: "⚡", label: "Sprint", color: "bg-sticky-green", sectionId: "section-sprint" },
-  { emoji: "🧪", label: "Tiny Experiment", color: "bg-sticky-blue", sectionId: "section-experiment" },
-  { emoji: "👥", label: "Reflection Pod", color: "bg-sticky-pink", sectionId: "section-reflection" },
-  { emoji: "✍️", label: "Override Log", color: "bg-accent", sectionId: "section-override" },
-];
 
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
 
 const WeeklyWorkflow = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % loopSteps.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const goTo = (dir: number) => {
-    setActiveIndex((prev) => (prev + dir + loopSteps.length) % loopSteps.length);
-  };
-
   return (
     <Layout>
       {/* Hero */}
@@ -40,67 +17,9 @@ const WeeklyWorkflow = () => {
           <p className="text-lg sm:text-xl text-muted-foreground font-body max-w-2xl mx-auto mb-3">
             Every two weeks, you'll follow this cycle to redesign one workflow step with AI.
           </p>
-          <p className="text-sm text-muted-foreground/70 font-body italic max-w-xl mx-auto mb-10">
+          <p className="text-sm text-muted-foreground/70 font-body italic max-w-xl mx-auto">
             Test it. Reflect with peers. Showcase what you can now do that was impossible before.
           </p>
-
-          {/* Carousel */}
-          <div className="relative flex items-center justify-center gap-4 mb-4">
-            <button
-              onClick={() => goTo(-1)}
-              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors shrink-0"
-              aria-label="Previous step"
-            >
-              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-            </button>
-
-            <div className="overflow-hidden w-full max-w-2xl">
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${activeIndex * 33.333}%)` }}
-              >
-                {loopSteps.map((step, i) => (
-                  <div key={step.label} className="w-1/3 shrink-0 px-2">
-                    <div
-                      className={`${step.color} px-4 py-5 rounded-xl shadow-sm transition-all duration-500 cursor-pointer ${
-                        i === activeIndex ? "scale-105 ring-2 ring-primary/30" : "opacity-70 scale-95"
-                      }`}
-                      onClick={() => {
-                        setActiveIndex(i);
-                        document.getElementById(step.sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }}
-                    >
-                      <span className="text-2xl block mb-1.5">{step.emoji}</span>
-                      <span className="font-display font-bold text-sm text-foreground block">{step.label}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={() => goTo(1)}
-              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors shrink-0"
-              aria-label="Next step"
-            >
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
-
-          {/* Dots */}
-          <div className="flex justify-center gap-2 mb-2">
-            {loopSteps.map((step, i) => (
-              <button
-                key={step.label}
-                onClick={() => setActiveIndex(i)}
-                className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                  i === activeIndex ? "bg-primary" : "bg-muted-foreground/30"
-                }`}
-                aria-label={step.label}
-              />
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground/60 font-display tracking-wide uppercase">Repeat every two weeks</p>
         </div>
       </section>
 
@@ -115,7 +34,10 @@ const WeeklyWorkflow = () => {
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-yellow w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">🎤</div>
                 <div>
-                  <h3 className="font-display font-bold text-lg mb-2">Guest + Show & Tell</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display font-bold text-lg">Guest + Show & Tell</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">60 min</span>
+                  </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed mb-3">
                     Each session starts with a guest-led show & tell connected to one workflow focus. The guest introduces a real challenge.
                   </p>
@@ -135,7 +57,10 @@ const WeeklyWorkflow = () => {
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-green w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">⚡</div>
                 <div>
-                  <h3 className="font-display font-bold text-lg mb-2">Micro-case Sprint</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display font-bold text-lg">Micro-case Sprint</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">45 min</span>
+                  </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed">
                     Participants design and test one micro-case in 45 minutes using AI. No theory — just hands-on experimentation with a real workflow challenge.
                   </p>
@@ -148,7 +73,10 @@ const WeeklyWorkflow = () => {
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-blue w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">🧪</div>
                 <div>
-                  <h3 className="font-display font-bold text-lg mb-2">Tiny Experiment</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display font-bold text-lg">Tiny Experiment</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">~2 hrs async</span>
+                  </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed">
                     Before leaving, each participant commits to one small workplace experiment. The goal is a minimum viable experiment — not a perfect solution.
                   </p>
@@ -161,7 +89,10 @@ const WeeklyWorkflow = () => {
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-pink w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">👥</div>
                 <div>
-                  <h3 className="font-display font-bold text-lg mb-2">Reflection Pods</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display font-bold text-lg">Reflection Pods</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">30 min with peers</span>
+                  </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed mb-4">
                     Between sessions, you reflect with two peers — sync or async — on what you made, what changed, and what you learned.
                   </p>
@@ -185,7 +116,10 @@ const WeeklyWorkflow = () => {
               <div className="flex items-start gap-4">
                 <div className="bg-accent w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">✍️</div>
                 <div className="w-full">
-                  <h3 className="font-display font-bold text-lg mb-2">The Override Log</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display font-bold text-lg">The Override Log</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">15 min self-reflection</span>
+                  </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed mb-4">
                     Participants don't just use AI — they learn to see where human judgment matters most.
                   </p>
@@ -214,7 +148,6 @@ const WeeklyWorkflow = () => {
           </div>
         </div>
       </section>
-
     </Layout>
   );
 };
