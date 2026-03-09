@@ -59,6 +59,7 @@ const sampleExperiments: Experiment[] = [
       whyChanged: "AI defaults to agreeable, conflict-free simulations. Real learners push back hard — and if we don't design for that resistance, we discover it at launch when it's too late to fix",
       humanInsight: "The whole point of persona simulation is to surface uncomfortable truths. If AI smooths away the friction, are we just building an echo chamber that validates our own designs? Where exactly does 'helpful simulation' end and 'false reassurance' begin?",
     },
+    createdAt: "2024-01-22",
   },
   {
     id: "3",
