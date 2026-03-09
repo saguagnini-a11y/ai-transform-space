@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 const loopSteps = [
   { emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow" },
@@ -12,6 +13,18 @@ const loopSteps = [
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
 
 const WeeklyWorkflow = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % loopSteps.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const goTo = (dir: number) => {
+    setActiveIndex((prev) => (prev + dir + loopSteps.length) % loopSteps.length);
+  };
 
   return (
     <Layout>
@@ -28,18 +41,52 @@ const WeeklyWorkflow = () => {
             Test it. Reflect with peers. Showcase what you can now do that was impossible before.
           </p>
 
-          {/* Visual loop */}
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-6">
-            {loopSteps.map((step, i) => (
-              <div key={step.label} className="flex items-center gap-2 sm:gap-3">
-                <div className={`${step.color} px-4 py-2.5 rounded-lg shadow-sm`}>
-                  <span className="text-base sm:text-lg mr-1.5">{step.emoji}</span>
-                  <span className="font-display font-semibold text-sm sm:text-base text-foreground">{step.label}</span>
-                </div>
-                {i < loopSteps.length - 1 && (
-                  <ChevronRight className="w-4 h-4 text-muted-foreground hidden sm:block" />
-                )}
+          {/* Carousel */}
+          <div className="relative flex items-center justify-center gap-4 mb-4">
+            <button
+              onClick={() => goTo(-1)}
+              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors shrink-0"
+              aria-label="Previous step"
+            >
+              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+            </button>
+
+            <div className="overflow-hidden w-full max-w-xs">
+              <div
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+              >
+                {loopSteps.map((step) => (
+                  <div key={step.label} className="w-full shrink-0 flex justify-center px-2">
+                    <div className={`${step.color} px-8 py-6 rounded-xl shadow-sm w-full`}>
+                      <span className="text-3xl block mb-2">{step.emoji}</span>
+                      <span className="font-display font-bold text-lg text-foreground block">{step.label}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
+            </div>
+
+            <button
+              onClick={() => goTo(1)}
+              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors shrink-0"
+              aria-label="Next step"
+            >
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
+
+          {/* Dots */}
+          <div className="flex justify-center gap-2 mb-2">
+            {loopSteps.map((step, i) => (
+              <button
+                key={step.label}
+                onClick={() => setActiveIndex(i)}
+                className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                  i === activeIndex ? "bg-primary" : "bg-muted-foreground/30"
+                }`}
+                aria-label={step.label}
+              />
             ))}
           </div>
           <p className="text-xs text-muted-foreground/60 font-display tracking-wide uppercase">Repeat every two weeks</p>
