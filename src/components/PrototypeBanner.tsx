@@ -6,7 +6,7 @@ const pages = [
   { path: "/experiments", label: "Experiments" },
   { path: "/reflection-pods", label: "Reflection Pods" },
   { path: "/transformation-expo", label: "Transformation Expo" },
-  { path: "/deep-dive", label: "Deep Dive" },
+  { path: "/deep-dive", label: "Peer Café" },
   { path: "/about", label: "About" },
 ];
 
