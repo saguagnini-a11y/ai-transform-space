@@ -116,12 +116,12 @@ const WeeklyWorkflow = () => {
                   
                   <div className="flex items-center gap-3 sm:gap-4">
                     {/* Step number & emoji */}
-                    <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0">
+                     <div className="flex items-center gap-2 w-40 sm:w-48 shrink-0">
                       <span className="text-xs font-mono text-muted-foreground font-bold w-5">
                         {String(index + 1).padStart(2, "0")}
                       </span>
                       <span className="text-lg">{step.emoji}</span>
-                      <span className="text-xs font-display font-medium text-foreground truncate">
+                      <span className="text-xs font-display font-medium text-foreground">
                         {step.title}
                       </span>
                     </div>
