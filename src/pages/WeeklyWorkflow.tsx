@@ -13,7 +13,7 @@ const steps = [
     color: "bg-sticky-yellow",
     barColor: "bg-[hsl(var(--sticky-yellow))]",
     description:
-      "Each session starts with a guest-led show & tell connected to one workflow focus. The guest introduces a real challenge.",
+      "Each session starts with a guest-led show & tell connected to one workflow focus. The guest introduces a real challenge related to one step in the L&D workflow.",
     extra: "focus-areas",
   },
   {
