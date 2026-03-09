@@ -10,6 +10,7 @@ import ReflectionPods from "./pages/ReflectionPods";
 import TransformationExpo from "./pages/TransformationExpo";
 import DeepDive from "./pages/DeepDive";
 import AboutPage from "./pages/AboutPage";
+import FeedbackPage from "./pages/FeedbackPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
