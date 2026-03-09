@@ -163,7 +163,7 @@ const Index = () => {
       <section className="lab-section">
         <div className="container mx-auto max-w-4xl">
           <h2 className="text-3xl font-display font-bold text-center mb-4">The 10-Week Journey</h2>
-          <p className="text-center text-muted-foreground mb-12">Every 2 weeks: Sprint → Experiment → Reflect → Pattern</p>
+          <p className="text-center text-muted-foreground mb-12">Each cycle: Guest Challenge → Sprint → Tiny Experiment → Reflection Pod → Override Log</p>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {journeyWeeks.map((w) => (
               <div key={w.week} className={`sticky-card ${w.color} text-center`} style={{ "--rotation": `${Math.random() * 3 - 1.5}deg` } as React.CSSProperties}>
