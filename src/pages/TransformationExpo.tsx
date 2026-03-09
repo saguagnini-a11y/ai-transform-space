@@ -5,58 +5,58 @@ import { Trophy, Star, Sparkles, Shield, Share2, MessageCircle, ArrowRight, Arro
 import { Badge } from "@/components/ui/badge";
 
 const caféTables = [
-  {
-    number: "01",
-    host: "Maria S.",
-    title: "From Slow Insights to Real-Time Learning Intelligence",
-    before: ["Manual survey analysis", "2-week turnaround", "Stakeholder frustration"],
-    after: ["AI-powered thematic analysis", "2-hour turnaround", "Real-time insights"],
-    prompt: '"Analyze these 200 survey responses and identify top learning needs with supporting evidence."',
-    impact: "80% time reduction. Stakeholders now receive insights within days, not weeks.",
-    conversation: "Where in your workflow do insights arrive too late to influence decisions?",
-    override: { insight: "AI ranked 'time management' as #1 need. I moved 'stakeholder communication' to #1 because an upcoming org restructuring makes it urgent — context AI couldn't know." },
-    badges: ["80% time saved", "Real learner impact"],
-  },
-  {
-    number: "02",
-    host: "James K.",
-    title: "From Linear Design to Rapid Learning Journey Prototyping",
-    before: ["Linear learning design", "Weeks of iteration", "Single perspective"],
-    after: ["AI-assisted journey prototyping", "Rapid iteration", "Multi-persona testing"],
-    prompt: '"Design a blended learning journey for new managers and simulate 3 different learner personas."',
-    impact: "Can now produce and test 5 journey variants in the time it previously took to create 1.",
-    conversation: "What would you test if prototyping a learning journey took hours instead of weeks?",
-    override: { insight: "AI placed 360-feedback in week 2. I moved it to week 5 because psychological safety needs to be established first — something only experience teaches you." },
-    badges: ["Novel prompt technique", "Transferable pattern"],
-  },
-  {
-    number: "03",
-    host: "Priya R.",
-    title: "From Reactive Evaluation to Predictive Learning Insights",
-    before: ["Manual evaluation", "Kirkpatrick surveys", "Delayed reporting"],
-    after: ["Predictive analytics", "Real-time dashboards", "Proactive insights"],
-    prompt: '"Analyze completion data and predict which learners are at risk of disengagement."',
-    impact: "Early intervention increased completion rates by 35%. Evaluation shifted from reactive to proactive.",
-    conversation: "What signals would help you intervene before a learner drops off?",
-    override: { insight: "AI suggested generic risk labels. I changed to org-specific language because alignment with internal frameworks drives completion rates." },
-    badges: ["Real learner impact", "35% completion lift"],
-  },
-];
+{
+  number: "01",
+  host: "Maria S.",
+  title: "From Slow Insights to Real-Time Learning Intelligence",
+  before: ["Manual survey analysis", "2-week turnaround", "Stakeholder frustration"],
+  after: ["AI-powered thematic analysis", "2-hour turnaround", "Real-time insights"],
+  prompt: '"Analyze these 200 survey responses and identify top learning needs with supporting evidence."',
+  impact: "80% time reduction. Stakeholders now receive insights within days, not weeks.",
+  conversation: "Where in your workflow do insights arrive too late to influence decisions?",
+  override: { insight: "AI ranked 'time management' as #1 need. I moved 'stakeholder communication' to #1 because an upcoming org restructuring makes it urgent — context AI couldn't know." },
+  badges: ["80% time saved", "Real learner impact"]
+},
+{
+  number: "02",
+  host: "James K.",
+  title: "From Linear Design to Rapid Learning Journey Prototyping",
+  before: ["Linear learning design", "Weeks of iteration", "Single perspective"],
+  after: ["AI-assisted journey prototyping", "Rapid iteration", "Multi-persona testing"],
+  prompt: '"Design a blended learning journey for new managers and simulate 3 different learner personas."',
+  impact: "Can now produce and test 5 journey variants in the time it previously took to create 1.",
+  conversation: "What would you test if prototyping a learning journey took hours instead of weeks?",
+  override: { insight: "AI placed 360-feedback in week 2. I moved it to week 5 because psychological safety needs to be established first — something only experience teaches you." },
+  badges: ["Novel prompt technique", "Transferable pattern"]
+},
+{
+  number: "03",
+  host: "Priya R.",
+  title: "From Reactive Evaluation to Predictive Learning Insights",
+  before: ["Manual evaluation", "Kirkpatrick surveys", "Delayed reporting"],
+  after: ["Predictive analytics", "Real-time dashboards", "Proactive insights"],
+  prompt: '"Analyze completion data and predict which learners are at risk of disengagement."',
+  impact: "Early intervention increased completion rates by 35%. Evaluation shifted from reactive to proactive.",
+  conversation: "What signals would help you intervene before a learner drops off?",
+  override: { insight: "AI suggested generic risk labels. I changed to org-specific language because alignment with internal frameworks drives completion rates." },
+  badges: ["Real learner impact", "35% completion lift"]
+}];
+
 
 const awards = [
-  { icon: Sparkles, name: "Boldest Experiment", winner: "James K.", initial: "J", desc: "Simulated 50 learner personas to stress-test a leadership program." },
-  { icon: Star, name: "Best Override", winner: "Maria S.", initial: "M", desc: "Detected AI bias in needs prioritization using organizational context knowledge." },
-  { icon: Shield, name: "Best Validation Discipline", winner: "Priya R.", initial: "P", desc: "Designed a 3-step validation protocol for AI-generated learning paths." },
-  { icon: Share2, name: "Most Transferable Prompt", winner: "Tom L.", initial: "T", desc: "Needs-analysis prompt adopted by 4 other participants." },
-];
+{ icon: Sparkles, name: "Boldest Experiment", winner: "James K.", initial: "J", desc: "Simulated 50 learner personas to stress-test a leadership program." },
+{ icon: Star, name: "Best Override", winner: "Maria S.", initial: "M", desc: "Detected AI bias in needs prioritization using organizational context knowledge." },
+{ icon: Shield, name: "Best Validation Discipline", winner: "Priya R.", initial: "P", desc: "Designed a 3-step validation protocol for AI-generated learning paths." },
+{ icon: Share2, name: "Most Transferable Prompt", winner: "Tom L.", initial: "T", desc: "Needs-analysis prompt adopted by 4 other participants." }];
+
 
 const patterns = [
-  { text: "AI enables faster stakeholder communication through automated insight synthesis.", frequency: 8 },
-  { text: "Persona simulation reveals design flaws that traditional testing might take weeks to uncover.", frequency: 6 },
-  { text: "Override logging surfaces tacit knowledge that improves AI collaboration over time.", frequency: 5 },
-  { text: "Prompt chaining creates more reliable outputs than single complex prompts.", frequency: 4 },
-  { text: "Human judgment matters most at the framing, validation, and interpretation stages.", frequency: 9 },
-];
+{ text: "AI enables faster stakeholder communication through automated insight synthesis.", frequency: 8 },
+{ text: "Persona simulation reveals design flaws that traditional testing might take weeks to uncover.", frequency: 6 },
+{ text: "Override logging surfaces tacit knowledge that improves AI collaboration over time.", frequency: 5 },
+{ text: "Prompt chaining creates more reliable outputs than single complex prompts.", frequency: 4 },
+{ text: "Human judgment matters most at the framing, validation, and interpretation stages.", frequency: 9 }];
+
 
 const TransformationExpo = () => {
   const maxFrequency = 12;
@@ -95,19 +95,19 @@ const TransformationExpo = () => {
 
               <div className="grid grid-cols-4 gap-3">
                 {[
-                  { icon: Coffee, label: "Join a table", desc: "Choose", number: "1" },
-                  { icon: MessageCircle, label: "Discuss", desc: "10 min", number: "2" },
-                  { icon: RotateCcw, label: "Rotate", desc: "New table", number: "3" },
-                  { icon: Lightbulb, label: "Synthesize", desc: "Share insights", number: "4" },
-                ].map((step, i) => (
-                  <div key={i} className="text-center">
+                { icon: Coffee, label: "Join a table", desc: "Choose", number: "1" },
+                { icon: MessageCircle, label: "Discuss", desc: "10 min", number: "2" },
+                { icon: RotateCcw, label: "Rotate", desc: "New table", number: "3" },
+                { icon: Lightbulb, label: "Synthesize", desc: "Share insights", number: "4" }].
+                map((step, i) =>
+                <div key={i} className="text-center">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-secondary mx-auto mb-2">
                       <step.icon className="w-5 h-5 text-primary" />
                     </div>
                     <p className="font-display font-semibold text-xs text-foreground">{step.label}</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">{step.desc}</p>
                   </div>
-                ))}
+                )}
               </div>
               <p className="text-xs text-muted-foreground mt-3 text-center">
                 6 rotations × 10 min = 60 min total
@@ -116,23 +116,23 @@ const TransformationExpo = () => {
 
             {/* Right: How it works panel */}
             <div className="rounded-2xl p-6 md:p-8 border border-border bg-card">
-              <h2 className="font-display font-bold text-lg mb-5 text-foreground">
-                How this World Café works
+              <h2 className="font-display font-bold text-lg mb-5 text-foreground">How the Transformation Expo works
+
               </h2>
               <ul className="space-y-4 mb-8">
                 {[
-                  "Each table host presents one real AI transformation story.",
-                  "Participants gather in small groups to discuss the case and response prompt.",
-                  "After each round, participants rotate to another table.",
-                  "Insights are captured across tables to reveal shared transformation patterns.",
-                ].map((bullet, i) => (
-                  <li key={i} className="flex items-start gap-3">
+                "Each table host presents one real AI transformation story.",
+                "Participants gather in small groups to discuss the case and response prompt.",
+                "After each round, participants rotate to another table.",
+                "Insights are captured across tables to reveal shared transformation patterns."].
+                map((bullet, i) =>
+                <li key={i} className="flex items-start gap-3">
                     <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-display font-bold mt-0.5 bg-secondary text-primary">
                       {i + 1}
                     </span>
                     <p className="text-sm text-muted-foreground">{bullet}</p>
                   </li>
-                ))}
+                )}
               </ul>
               <div className="rounded-xl p-4 border border-border bg-sticky-pink/40">
                 <p className="text-xs font-display font-semibold uppercase tracking-wider mb-1 text-primary">
@@ -165,8 +165,8 @@ const TransformationExpo = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {caféTables.map((table) => (
-              <div key={table.number} className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col shadow-sm">
+            {caféTables.map((table) =>
+            <div key={table.number} className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col shadow-sm">
                 {/* Header */}
                 <div className="p-5 pb-4 border-b border-border">
                   <div className="flex items-center justify-between mb-3">
@@ -188,11 +188,11 @@ const TransformationExpo = () => {
                   </h3>
                   {/* Selection criteria badges */}
                   <div className="flex flex-wrap gap-1.5">
-                    {table.badges.map((badge, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 text-[10px] font-display font-semibold px-2 py-0.5 rounded-full bg-sticky-green/50 text-foreground/70">
+                    {table.badges.map((badge, i) =>
+                  <span key={i} className="inline-flex items-center gap-1 text-[10px] font-display font-semibold px-2 py-0.5 rounded-full bg-sticky-green/50 text-foreground/70">
                         ✓ {badge}
                       </span>
-                    ))}
+                  )}
                   </div>
                 </div>
 
@@ -201,23 +201,23 @@ const TransformationExpo = () => {
                   <div className="rounded-xl p-3 bg-sticky-orange/40 border border-sticky-orange/60">
                     <p className="text-[10px] font-display font-bold uppercase tracking-wider mb-2 text-destructive">Before</p>
                     <ul className="space-y-1">
-                      {table.before.map((item, i) => (
-                        <li key={i} className="text-xs flex items-center gap-1.5 text-foreground/70">
+                      {table.before.map((item, i) =>
+                    <li key={i} className="text-xs flex items-center gap-1.5 text-foreground/70">
                           <span className="w-1 h-1 rounded-full flex-shrink-0 bg-destructive/60" />
                           {item}
                         </li>
-                      ))}
+                    )}
                     </ul>
                   </div>
                   <div className="rounded-xl p-3 bg-sticky-green/40 border border-sticky-green/60">
                     <p className="text-[10px] font-display font-bold uppercase tracking-wider mb-2 text-primary">After (AI-redesigned)</p>
                     <ul className="space-y-1">
-                      {table.after.map((item, i) => (
-                        <li key={i} className="text-xs flex items-center gap-1.5 text-foreground/70">
+                      {table.after.map((item, i) =>
+                    <li key={i} className="text-xs flex items-center gap-1.5 text-foreground/70">
                           <span className="w-1 h-1 rounded-full flex-shrink-0 bg-primary/60" />
                           {item}
                         </li>
-                      ))}
+                    )}
                     </ul>
                   </div>
 
@@ -250,7 +250,7 @@ const TransformationExpo = () => {
                   </div>
                 </div>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -271,10 +271,10 @@ const TransformationExpo = () => {
           </div>
 
           <div className="space-y-4">
-            {patterns
-              .sort((a, b) => b.frequency - a.frequency)
-              .map((pattern, i) => (
-              <div key={i} className="rounded-xl p-5 border border-border bg-card shadow-sm">
+            {patterns.
+            sort((a, b) => b.frequency - a.frequency).
+            map((pattern, i) =>
+            <div key={i} className="rounded-xl p-5 border border-border bg-card shadow-sm">
                 <div className="flex items-start gap-4 mb-3">
                   <span className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-display font-bold bg-primary/10 text-primary">
                     {i + 1}
@@ -284,16 +284,16 @@ const TransformationExpo = () => {
                 <div className="ml-12 flex items-center gap-3">
                   <div className="flex-1 h-2.5 rounded-full bg-secondary overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-primary transition-all duration-500"
-                      style={{ width: `${(pattern.frequency / maxFrequency) * 100}%` }}
-                    />
+                    className="h-full rounded-full bg-primary transition-all duration-500"
+                    style={{ width: `${pattern.frequency / maxFrequency * 100}%` }} />
+                  
                   </div>
                   <span className="text-xs font-display font-semibold text-muted-foreground whitespace-nowrap">
                     {pattern.frequency}/{maxFrequency} teams
                   </span>
                 </div>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -314,8 +314,8 @@ const TransformationExpo = () => {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-6">
-            {awards.map((award) => (
-              <div key={award.name} className="rounded-2xl p-6 border border-border bg-card shadow-sm text-center">
+            {awards.map((award) =>
+            <div key={award.name} className="rounded-2xl p-6 border border-border bg-card shadow-sm text-center">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-sticky-yellow mx-auto mb-4">
                   <award.icon className="w-7 h-7 text-primary" />
                 </div>
@@ -328,7 +328,7 @@ const TransformationExpo = () => {
                 </div>
                 <p className="text-xs text-muted-foreground">{award.desc}</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -369,8 +369,8 @@ const TransformationExpo = () => {
           </div>
         </div>
       </section>
-    </Layout>
-  );
+    </Layout>);
+
 };
 
 export default TransformationExpo;
