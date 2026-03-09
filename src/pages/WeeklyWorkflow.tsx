@@ -118,7 +118,7 @@ const WeeklyWorkflow = () => {
                 <div className="w-full">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-display font-bold text-lg">The Override Log</h3>
-                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">15 min self-reflection</span>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">10 min self-reflection</span>
                   </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed mb-4">
                     Participants don't just use AI — they learn to see where human judgment matters most.
