@@ -348,7 +348,7 @@ const TransformationExpo = () => {
         <div className="container mx-auto max-w-3xl px-6">
           <div className="border border-border rounded-lg p-8 text-center space-y-4 bg-card">
             <p className="text-sm font-display font-semibold text-primary">✓ You've explored the entire AI Sandbox structure</p>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Ready to Start Testing?</h2>
+            <h2 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Ready to Start Breaking the Sandbox?</h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
               You've seen the 10-week journey, the weekly workflow, experiment tracking, reflection pods, deep dives, and the transformation showcase. Now help us make this sandbox even better.
             </p>
