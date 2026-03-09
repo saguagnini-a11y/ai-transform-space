@@ -91,7 +91,7 @@ const Index = () => {
                 This sandbox is for Shakers community members who want to move from scattered AI experiments to deliberately redesigned workflows — becoming not only more efficient, but genuinely more effective.
               </p>
               <div className="flex flex-wrap gap-2">
-                {["Learning Designers", "L&D Managers", "Training Leads", "Capability Builders"].map((role) => (
+                {["Learning Designers", "Instructional Designers", "Facilitators", "Capability Builders"].map((role) => (
                   <span key={role} className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-display font-medium rounded-full">
                     {role}
                   </span>
