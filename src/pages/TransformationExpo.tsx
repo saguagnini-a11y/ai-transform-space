@@ -12,6 +12,7 @@ const caféTables = [
     prompt: '"Analyze these 200 survey responses and identify top learning needs with supporting evidence."',
     impact: "80% time reduction. Stakeholders now receive insights within days, not weeks.",
     conversation: "Where in your workflow do insights arrive too late to influence decisions?",
+    override: { insight: "AI ranked 'time management' as #1 need. I moved 'stakeholder communication' to #1 because an upcoming org restructuring makes it urgent — context AI couldn't know." },
   },
   {
     number: "02",
@@ -22,19 +23,20 @@ const caféTables = [
     prompt: '"Design a blended learning journey for new managers and simulate 3 different learner personas."',
     impact: "Can now produce and test 5 journey variants in the time it previously took to create 1.",
     conversation: "What would you test if prototyping a learning journey took hours instead of weeks?",
+    override: { insight: "AI placed 360-feedback in week 2. I moved it to week 5 because psychological safety needs to be established first — something only experience teaches you." },
   },
   {
     number: "03",
     host: "Priya R.",
     title: "From Reactive Evaluation to Predictive Learning Insights",
     before: ["Manual evaluation", "Kirkpatrick surveys", "Delayed reporting"],
-    after: ["AI-driven sentiment analysis", "Real-time feedback loops", "Predictive insights"],
-    prompt: '"Analyze post-training feedback and predict retention risks."',
-    impact: "Shifted from reactive evaluation to predictive learning insights and identified at-risk learners earlier.",
-    conversation: "What early signals would you want to detect about learner success or failure?",
+    after: ["Predictive analytics", "Real-time dashboards", "Proactive insights"],
+    prompt: '"Analyze completion data and predict which learners are at risk of disengagement."',
+    impact: "Early intervention increased completion rates by 35%. Evaluation shifted from reactive to proactive.",
+    conversation: "What signals would help you intervene before a learner drops off?",
+    override: { insight: "AI suggested generic risk labels. I changed to org-specific language because alignment with internal frameworks drives completion rates." },
   },
 ];
-
 const awards = [
   { icon: Sparkles, name: "Boldest Experiment", winner: "James K.", desc: "Simulated 50 learner personas to stress-test a leadership program." },
   { icon: Star, name: "Best Override", winner: "Maria S.", desc: "Detected AI bias in needs prioritization using organizational context knowledge." },
@@ -70,20 +72,19 @@ const TransformationExpo = () => {
                 A rotating conversation experience where L&D professionals share how they redesigned workflows with AI.
               </p>
 
-              <div className="space-y-6">
+              <div className="grid grid-cols-4 gap-3">
                 {[
-                  { icon: Coffee, label: "Join a table", desc: "Start with any host story that sparks your curiosity." },
-                  { icon: MessageCircle, label: "Discuss the prompt", desc: "Explore what this transformation could mean in your own context." },
-                  { icon: RotateCcw, label: "Rotate", desc: "Move to a new table every round and collect fresh ideas." },
+                  { icon: Coffee, label: "Join a table", desc: "Choose", number: "1" },
+                  { icon: MessageCircle, label: "Discuss", desc: "10 min", number: "2" },
+                  { icon: RotateCcw, label: "Rotate", desc: "New table", number: "3" },
+                  { icon: Lightbulb, label: "Synthesize", desc: "Share insights", number: "4" },
                 ].map((step, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-secondary">
+                  <div key={i} className="text-center">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-secondary mx-auto mb-2">
                       <step.icon className="w-5 h-5 text-primary" />
                     </div>
-                    <div>
-                      <p className="font-display font-semibold text-sm text-foreground">{step.label}</p>
-                      <p className="text-sm text-muted-foreground">{step.desc}</p>
-                    </div>
+                    <p className="font-display font-semibold text-xs text-foreground">{step.label}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{step.desc}</p>
                   </div>
                 ))}
               </div>
@@ -196,6 +197,12 @@ const TransformationExpo = () => {
                   <div className="flex items-start gap-2">
                     <ArrowRight className="w-4 h-4 flex-shrink-0 mt-0.5 text-primary" />
                     <p className="text-xs font-display font-medium text-foreground">{table.impact}</p>
+                  </div>
+
+                  {/* Key Override */}
+                  <div className="border-2 border-dashed border-primary/20 rounded-xl p-3">
+                    <p className="text-[10px] font-display font-bold uppercase tracking-wider mb-1.5 text-primary">💡 Key Override</p>
+                    <p className="text-xs italic text-foreground/80">{table.override.insight}</p>
                   </div>
                 </div>
 
