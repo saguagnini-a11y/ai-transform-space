@@ -415,12 +415,12 @@ const ExperimentsPage = () => {
                       <p className="text-xs font-medium text-muted-foreground mb-1">Workflow Change</p>
                       <p className="text-sm">{exp.workflowChange}</p>
                     </div>
-                    {exp.becamePossible && (
-                      <div className="bg-sticky-yellow p-3 rounded-sm">
-                        <p className="text-xs font-medium mb-1">✨ What became possible</p>
-                        <p className="text-sm font-medium">{exp.becamePossible}</p>
-                      </div>
-                    )}
+                    <div className="bg-sticky-yellow p-3 rounded-sm">
+                      <p className="text-xs font-medium mb-1">✨ What became possible</p>
+                      <p className="text-sm font-medium">
+                        {exp.becamePossible || <span className="italic text-muted-foreground font-normal">Not yet captured — what can you do now that was impossible before?</span>}
+                      </p>
+                    </div>
                     {exp.overrideLog && (
                       <div className="border-2 border-dashed border-primary/20 rounded-lg p-4 space-y-2">
                         <p className="text-xs font-display font-semibold text-primary">🔄 Override Log</p>
