@@ -3,11 +3,11 @@ import Layout from "@/components/Layout";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 
 const loopSteps = [
-  { emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow" },
-  { emoji: "⚡", label: "Sprint", color: "bg-sticky-green" },
-  { emoji: "🧪", label: "Tiny Experiment", color: "bg-sticky-blue" },
-  { emoji: "👥", label: "Reflection Pod", color: "bg-sticky-pink" },
-  { emoji: "✍️", label: "Override Log", color: "bg-accent" },
+  { emoji: "🎤", label: "Guest Challenge", color: "bg-sticky-yellow", sectionId: "section-guest" },
+  { emoji: "⚡", label: "Sprint", color: "bg-sticky-green", sectionId: "section-sprint" },
+  { emoji: "🧪", label: "Tiny Experiment", color: "bg-sticky-blue", sectionId: "section-experiment" },
+  { emoji: "👥", label: "Reflection Pod", color: "bg-sticky-pink", sectionId: "section-reflection" },
+  { emoji: "✍️", label: "Override Log", color: "bg-accent", sectionId: "section-override" },
 ];
 
 const focusAreas = ["Define", "Discover", "Design", "Deploy & Develop", "Iterate"];
@@ -62,7 +62,10 @@ const WeeklyWorkflow = () => {
                       className={`${step.color} px-4 py-5 rounded-xl shadow-sm transition-all duration-500 cursor-pointer ${
                         i === activeIndex ? "scale-105 ring-2 ring-primary/30" : "opacity-70 scale-95"
                       }`}
-                      onClick={() => setActiveIndex(i)}
+                      onClick={() => {
+                        setActiveIndex(i);
+                        document.getElementById(step.sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
                     >
                       <span className="text-2xl block mb-1.5">{step.emoji}</span>
                       <span className="font-display font-bold text-sm text-foreground block">{step.label}</span>
@@ -105,7 +108,7 @@ const WeeklyWorkflow = () => {
 
           <div className="grid gap-6">
             {/* Card 1 — Guest */}
-            <div className="bg-card border border-border rounded-xl p-6 sm:p-8">
+            <div id="section-guest" className="bg-card border border-border rounded-xl p-6 sm:p-8 scroll-mt-24">
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-yellow w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">🎤</div>
                 <div>
@@ -125,7 +128,7 @@ const WeeklyWorkflow = () => {
             </div>
 
             {/* Card 2 — Sprint */}
-            <div className="bg-card border border-border rounded-xl p-6 sm:p-8">
+            <div id="section-sprint" className="bg-card border border-border rounded-xl p-6 sm:p-8 scroll-mt-24">
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-green w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">⚡</div>
                 <div>
@@ -138,7 +141,7 @@ const WeeklyWorkflow = () => {
             </div>
 
             {/* Card 3 — Tiny Experiment */}
-            <div className="bg-card border border-border rounded-xl p-6 sm:p-8">
+            <div id="section-experiment" className="bg-card border border-border rounded-xl p-6 sm:p-8 scroll-mt-24">
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-blue w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">🧪</div>
                 <div>
@@ -151,7 +154,7 @@ const WeeklyWorkflow = () => {
             </div>
 
             {/* Card 4 — Reflection Pods */}
-            <div className="bg-card border border-border rounded-xl p-6 sm:p-8">
+            <div id="section-reflection" className="bg-card border border-border rounded-xl p-6 sm:p-8 scroll-mt-24">
               <div className="flex items-start gap-4">
                 <div className="bg-sticky-pink w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">👥</div>
                 <div>
@@ -175,7 +178,7 @@ const WeeklyWorkflow = () => {
             </div>
 
             {/* Card 5 — Override Log */}
-            <div className="bg-card border-2 border-primary/20 rounded-xl p-6 sm:p-8">
+            <div id="section-override" className="bg-card border-2 border-primary/20 rounded-xl p-6 sm:p-8 scroll-mt-24">
               <div className="flex items-start gap-4">
                 <div className="bg-accent w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl">✍️</div>
                 <div className="w-full">
