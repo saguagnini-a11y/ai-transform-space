@@ -31,11 +31,14 @@ const WeeklyWorkflow = () => {
       {/* Hero */}
       <section className="lab-section">
         <div className="container mx-auto max-w-4xl text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-display font-medium mb-6">
+            Weekly Workflow
+          </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
-            How the Sandbox Works
+            Your 2-Week Rhythm for AI Experimentation
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground font-body max-w-2xl mx-auto mb-3">
-            Every two weeks, redesign one workflow step with AI.
+            Every two weeks, you'll follow this cycle to redesign one workflow step with AI.
           </p>
           <p className="text-sm text-muted-foreground/70 font-body italic max-w-xl mx-auto mb-10">
             Test it. Reflect with peers. Showcase what you can now do that was impossible before.
