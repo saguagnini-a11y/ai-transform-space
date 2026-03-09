@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 const navItems = [
   { label: "Weekly Workflow", path: "/weekly-workflow" },
   { label: "Tiny Experiments", path: "/experiments" },
-  { label: "Reflection Pods", path: "/reflection-pods" },
+  { label: "Reflection Pods Log", path: "/reflection-pods" },
   { label: "Peer Café", path: "/deep-dive" },
   { label: "Transformation Expo", path: "/transformation-expo" },
 ];
