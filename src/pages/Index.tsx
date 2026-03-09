@@ -13,8 +13,8 @@ const journeyWeeks = [
   { week: "6", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
   { week: "7", label: "Guest Challenge + Sprint", phase: "Deploy & Iterate", color: "bg-sticky-yellow" },
   { week: "8", label: "Experiment + Reflect", phase: "", color: "bg-sticky-green" },
-  { week: "9", label: "Deep Dive & Peer Café", phase: "", color: "bg-sticky-blue" },
-  { week: "10", label: "Transformation Expo", phase: "World Café", color: "bg-sticky-pink" },
+  { week: "9", label: "Peer Café", phase: "", color: "bg-sticky-blue" },
+  { week: "10", label: "Transformation Expo", phase: "", color: "bg-sticky-pink" },
 ];
 
 const outcomes = [
