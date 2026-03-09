@@ -91,7 +91,7 @@ const WeeklyWorkflow = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-display font-bold text-lg">Reflection Pods</h3>
-                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">30 min with peers</span>
+                    <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-display font-medium">10 min with peers</span>
                   </div>
                   <p className="text-sm text-muted-foreground font-body leading-relaxed mb-4">
                     Between sessions, you reflect with two peers — sync or async — on what you made, what changed, and what you learned.
