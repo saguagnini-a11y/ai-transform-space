@@ -91,8 +91,8 @@ const Index = () => {
                 Who is it for?
               </div>
               <h2 className="text-2xl font-display font-bold mb-4">L&D Professionals Ready to Go Beyond Tinkering</h2>
-              <p className="text-muted-foreground mb-4">
-                You've tried ChatGPT. You've experimented with a few prompts. But you know there's more — you just haven't had the space to figure out <em>what</em> more looks like.
+              <p className="text-muted-foreground mb-4">You've tried GenAI. You've experimented with a few prompts and tasks. But you know there's more — you just haven't had the space to figure out what more looks like.
+                <em>what</em> more looks like.
               </p>
               <p className="text-muted-foreground mb-6">
                 This sandbox is for Shakers community members who want to move from scattered AI experiments to deliberately redesigned workflows — becoming not only more efficient, but genuinely more effective.
