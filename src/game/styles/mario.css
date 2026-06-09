@@ -1,0 +1,591 @@
+/* ============================================================
+   MARIO DESIGN SYSTEM — L&D Problem Finder
+   ============================================================ */
+
+:root {
+  --mario-red: #E52521;
+  --sky-blue: #5C94FC;
+  --brick: #C84B0A;
+  --coin-gold: #FBD000;
+  --grass-green: #4CAF50;
+  --dark-level: #1A1A2E;
+  --white: #FFFFFF;
+  --black: #000000;
+  --cloud-white: #F8F8F8;
+  --dark-brick: #8B3A0A;
+  --pipe-green: #3A9E3A;
+  --pipe-dark: #2A7A2A;
+}
+
+/* ── Fonts ─────────────────────────────────────────────── */
+.mario-font { font-family: 'Press Start 2P', monospace; }
+.vt323-font { font-family: 'VT323', monospace; font-size: 1.4rem; }
+
+/* ── Base game wrapper ──────────────────────────────────── */
+.game-screen {
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Press Start 2P', monospace;
+  image-rendering: pixelated;
+  overflow-x: hidden;
+}
+
+/* ── Pixel border utility ───────────────────────────────── */
+.pixel-border {
+  box-shadow:
+    -4px 0 0 0 var(--black),
+    4px 0 0 0 var(--black),
+    0 -4px 0 0 var(--black),
+    0 4px 0 0 var(--black);
+}
+
+.pixel-border-white {
+  box-shadow:
+    -4px 0 0 0 var(--white),
+    4px 0 0 0 var(--white),
+    0 -4px 0 0 var(--white),
+    0 4px 0 0 var(--white);
+}
+
+/* ── Mario button ───────────────────────────────────────── */
+.mario-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  padding: 12px 24px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: transform 0.1s;
+  box-shadow:
+    0 6px 0 0 rgba(0,0,0,0.5),
+    inset 0 2px 0 0 rgba(255,255,255,0.3);
+}
+
+.mario-btn:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 3px 0 0 rgba(0,0,0,0.5),
+    inset 0 2px 0 0 rgba(255,255,255,0.3);
+}
+
+.mario-btn-red { background: var(--mario-red); color: var(--white); }
+.mario-btn-gold { background: var(--coin-gold); color: var(--black); }
+.mario-btn-green { background: var(--grass-green); color: var(--white); }
+.mario-btn-blue { background: var(--sky-blue); color: var(--white); }
+.mario-btn-dark { background: #333; color: var(--white); }
+
+/* ── Mario input ────────────────────────────────────────── */
+.mario-input {
+  font-family: 'VT323', monospace;
+  font-size: 1.5rem;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  padding: 12px 16px;
+  outline: none;
+  width: 100%;
+  box-shadow:
+    -4px 0 0 0 var(--white),
+    4px 0 0 0 var(--white),
+    0 -4px 0 0 var(--white),
+    0 4px 0 0 var(--white);
+}
+
+.mario-input::placeholder { color: #666; }
+
+/* ── Question block (?) ─────────────────────────────────── */
+.question-block {
+  width: 64px;
+  height: 64px;
+  background: var(--coin-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.5rem;
+  color: var(--black);
+  cursor: pointer;
+  position: relative;
+  box-shadow:
+    -4px 0 0 0 var(--black),
+    4px 0 0 0 var(--black),
+    0 -4px 0 0 var(--black),
+    0 4px 0 0 var(--black),
+    inset 4px 4px 0 0 rgba(255,255,255,0.4),
+    inset -4px -4px 0 0 rgba(0,0,0,0.3);
+}
+
+.question-block.hit {
+  background: #8B7335;
+  animation: none;
+}
+
+@keyframes block-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.question-block:not(.hit) {
+  animation: block-bounce 1.5s ease-in-out infinite;
+}
+
+/* ── Coin pop animation ─────────────────────────────────── */
+@keyframes coin-pop {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  50% { opacity: 1; transform: translateY(-40px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-80px) scale(0.5); }
+}
+
+.coin-pop {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: var(--coin-gold);
+  border-radius: 50%;
+  animation: coin-pop 0.6s ease-out forwards;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* ── Platform option button ─────────────────────────────── */
+.platform-option {
+  font-family: 'VT323', monospace;
+  font-size: 1.3rem;
+  background: var(--brick);
+  color: var(--white);
+  border: none;
+  padding: 14px 20px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.1s, transform 0.1s;
+  box-shadow:
+    -4px 0 0 0 var(--black),
+    4px 0 0 0 var(--black),
+    0 -4px 0 0 var(--black),
+    0 4px 0 0 var(--black),
+    inset 2px 2px 0 0 rgba(255,255,255,0.2);
+}
+
+.platform-option:hover {
+  background: #E05A10;
+  transform: scale(1.02);
+}
+
+.platform-option.selected {
+  background: var(--coin-gold);
+  color: var(--black);
+}
+
+/* ── Enemy sprite (Goomba-style) ────────────────────────── */
+.enemy-sprite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.enemy-sprite:hover { transform: scale(1.1); }
+
+.goomba-head {
+  width: 48px;
+  height: 40px;
+  background: #8B4513;
+  position: relative;
+  box-shadow:
+    -4px 0 0 0 var(--black),
+    4px 0 0 0 var(--black),
+    0 -4px 0 0 var(--black),
+    0 4px 0 0 var(--black);
+}
+
+.goomba-head::before {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  width: 8px;
+  height: 8px;
+  background: var(--white);
+  box-shadow: 16px 0 0 var(--white);
+}
+
+.goomba-feet {
+  display: flex;
+  gap: 4px;
+}
+
+.goomba-foot {
+  width: 16px;
+  height: 12px;
+  background: #8B4513;
+  box-shadow:
+    -2px 0 0 0 var(--black),
+    2px 0 0 0 var(--black),
+    0 -2px 0 0 var(--black),
+    0 2px 0 0 var(--black);
+}
+
+.enemy-label {
+  font-family: 'VT323', monospace;
+  font-size: 0.9rem;
+  color: var(--white);
+  text-align: center;
+  max-width: 80px;
+  word-break: break-word;
+  background: rgba(0,0,0,0.7);
+  padding: 2px 4px;
+}
+
+.enemy-imported .goomba-head {
+  background: #2255AA;
+}
+
+.enemy-imported .goomba-foot {
+  background: #2255AA;
+}
+
+/* ── Boss enemy ─────────────────────────────────────────── */
+.boss-crown::before {
+  content: '👑';
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.2rem;
+}
+
+/* ── Walking animation ──────────────────────────────────── */
+@keyframes walk {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(4px) scaleX(1); }
+  75% { transform: translateX(-4px) scaleX(-1); }
+}
+
+/* ── Sky background (World 1) ───────────────────────────── */
+.sky-bg {
+  background: var(--sky-blue);
+  position: relative;
+}
+
+.sky-bg::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: var(--grass-green);
+  box-shadow: 0 -4px 0 0 #2E7D32;
+}
+
+/* ── Underground background (World 3) ──────────────────── */
+.underground-bg {
+  background: var(--dark-level);
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 31px,
+    rgba(255,255,255,0.03) 31px,
+    rgba(255,255,255,0.03) 32px
+  ),
+  repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 31px,
+    rgba(255,255,255,0.03) 31px,
+    rgba(255,255,255,0.03) 32px
+  );
+}
+
+/* ── Castle background (World 4) ───────────────────────── */
+.castle-bg {
+  background: #2C1810;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 27px,
+    rgba(0,0,0,0.3) 27px,
+    rgba(0,0,0,0.3) 32px
+  ),
+  repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 27px,
+    rgba(0,0,0,0.3) 27px,
+    rgba(0,0,0,0.3) 32px
+  );
+}
+
+/* ── Castle wall (Screen 5) ─────────────────────────────── */
+.castle-wall-bg {
+  background: #3D2B1F;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 23px,
+      rgba(0,0,0,0.4) 23px,
+      rgba(0,0,0,0.4) 28px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 47px,
+      rgba(0,0,0,0.2) 47px,
+      rgba(0,0,0,0.2) 52px
+    );
+}
+
+/* ── Banner card ────────────────────────────────────────── */
+.banner-card {
+  background: #F5E6C8;
+  color: var(--black);
+  padding: 20px;
+  position: relative;
+  box-shadow:
+    -4px 0 0 0 var(--black),
+    4px 0 0 0 var(--black),
+    0 -4px 0 0 var(--black),
+    0 4px 0 0 var(--black),
+    8px 8px 0 0 rgba(0,0,0,0.5);
+}
+
+.banner-card::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 20px;
+  background: var(--black);
+}
+
+/* ── Reaction button ────────────────────────────────────── */
+.reaction-btn {
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+  background: rgba(0,0,0,0.4);
+  color: var(--white);
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+  box-shadow:
+    -2px 0 0 0 var(--white),
+    2px 0 0 0 var(--white),
+    0 -2px 0 0 var(--white),
+    0 2px 0 0 var(--white);
+}
+
+.reaction-btn:hover { background: rgba(255,255,255,0.2); }
+.reaction-btn.reacted { background: var(--coin-gold); color: var(--black); }
+
+/* ── Verdict badge ──────────────────────────────────────── */
+.verdict-strong { background: #2E7D32; color: var(--white); }
+.verdict-maybe { background: #F9A825; color: var(--black); }
+.verdict-redirect { background: #C62828; color: var(--white); }
+
+.verdict-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  padding: 6px 10px;
+  display: inline-block;
+  box-shadow:
+    -2px 0 0 0 var(--black),
+    2px 0 0 0 var(--black),
+    0 -2px 0 0 var(--black),
+    0 2px 0 0 var(--black);
+}
+
+/* ── Progress dots / world node ─────────────────────────── */
+.world-node {
+  width: 56px;
+  height: 56px;
+  background: var(--coin-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.2rem;
+  color: var(--black);
+  cursor: pointer;
+  box-shadow:
+    -4px 0 0 0 var(--black),
+    4px 0 0 0 var(--black),
+    0 -4px 0 0 var(--black),
+    0 4px 0 0 var(--black);
+  transition: transform 0.1s;
+}
+
+.world-node:hover { transform: scale(1.1); }
+.world-node.locked { background: #666; cursor: default; }
+.world-node.complete { background: var(--grass-green); }
+
+/* ── Player dot ─────────────────────────────────────────── */
+.player-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ── Pixel cloud ────────────────────────────────────────── */
+.pixel-cloud {
+  background: var(--white);
+  position: absolute;
+  box-shadow:
+    16px -16px 0 var(--white),
+    32px 0 0 var(--white),
+    -16px 0 0 var(--white),
+    16px 16px 0 var(--white),
+    32px 16px 0 var(--white),
+    0 16px 0 var(--white);
+  width: 32px;
+  height: 16px;
+}
+
+/* ── Blinking cursor ────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.blink { animation: blink 1s step-end infinite; }
+
+/* ── Flag animation ─────────────────────────────────────── */
+@keyframes flag-raise {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.flag-raise {
+  animation: flag-raise 1s ease-out forwards;
+}
+
+@keyframes coin-shower {
+  0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(-120px) rotate(720deg); }
+}
+
+.coin-shower-item {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: var(--coin-gold);
+  border-radius: 50%;
+  animation: coin-shower 0.8s ease-out forwards;
+}
+
+/* ── Power-up brick ─────────────────────────────────────── */
+@keyframes power-drop {
+  from { transform: translateY(-60px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.power-up-brick {
+  animation: power-drop 0.4s ease-out;
+  background: var(--pipe-green);
+  color: var(--white);
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  padding: 12px 16px;
+  box-shadow:
+    -4px 0 0 0 var(--black),
+    4px 0 0 0 var(--black),
+    0 -4px 0 0 var(--black),
+    0 4px 0 0 var(--black);
+}
+
+/* ── Warning banner ─────────────────────────────────────── */
+.warning-banner {
+  background: #FF6B00;
+  color: var(--white);
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  padding: 12px 20px;
+  box-shadow:
+    -4px 0 0 0 var(--black),
+    4px 0 0 0 var(--black),
+    0 -4px 0 0 var(--black),
+    0 4px 0 0 var(--black);
+  margin: 16px 0;
+}
+
+/* ── Torch flicker ──────────────────────────────────────── */
+@keyframes flicker {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  25% { opacity: 0.8; transform: scale(0.95) translateX(2px); }
+  75% { opacity: 0.9; transform: scale(1.05) translateX(-2px); }
+}
+
+.torch {
+  width: 12px;
+  height: 24px;
+  background: var(--brick);
+  position: relative;
+  display: inline-block;
+}
+
+.torch::after {
+  content: '🔥';
+  position: absolute;
+  top: -20px;
+  left: -4px;
+  font-size: 1.2rem;
+  animation: flicker 0.4s ease-in-out infinite;
+}
+
+/* ── Scrolling dots path ─────────────────────────────────── */
+.dotted-path {
+  border-top: 4px dotted var(--coin-gold);
+  width: 100%;
+}
+
+/* ── Score display ──────────────────────────────────────── */
+.score-display {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.65rem;
+  color: var(--white);
+  background: rgba(0,0,0,0.6);
+  padding: 8px 16px;
+  letter-spacing: 2px;
+}
+
+/* ── World complete overlay ─────────────────────────────── */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.world-complete {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: fade-in-up 0.5s ease-out;
+}
+
+/* ── Artifact card (for screenshot) ─────────────────────── */
+.artifact-card {
+  background: var(--sky-blue);
+  color: var(--white);
+  padding: 32px;
+  width: 400px;
+  font-family: 'Press Start 2P', monospace;
+  box-shadow:
+    -4px 0 0 0 var(--black),
+    4px 0 0 0 var(--black),
+    0 -4px 0 0 var(--black),
+    0 4px 0 0 var(--black),
+    8px 8px 0 0 var(--black);
+}
