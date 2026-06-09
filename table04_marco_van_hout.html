@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Unbundled Facilitation — Table IV · Marco van Hout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2a1f0e;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; font-family: 'IM Fell English', serif; overflow: hidden;
+  }
+  #map-wrapper { position: relative; width: 1100px; height: 740px; flex-shrink: 0; }
+  #map-svg { width: 100%; height: 100%; display: block; }
+  .pin-group { cursor: pointer; }
+  .pin-group:hover .pin-circle { filter: brightness(1.2) drop-shadow(0 0 6px rgba(192,57,43,0.7)); }
+  .pin-circle { transition: filter 0.2s; }
+  #sidebar {
+    position: absolute; top: 0; right: 0; width: 320px; height: 100%;
+    background: #fdf6e3; border-left: 3px solid #8b6914;
+    transform: translateX(100%); transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column; z-index: 10; overflow: hidden;
+  }
+  #sidebar.open { transform: translateX(0); }
+  #sidebar-inner { flex: 1; overflow-y: auto; padding: 24px 20px 20px; }
+  #sidebar-close {
+    position: absolute; top: 10px; right: 12px; background: none; border: none;
+    font-size: 22px; cursor: pointer; color: #5a3e1b; line-height: 1; font-family: 'Cinzel', serif;
+  }
+  #sidebar-close:hover { color: #c0392b; }
+  .s-tag {
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #c0392b; background: #fce8e6; border: 1px solid #c0392b;
+    display: inline-block; padding: 2px 8px; border-radius: 2px; margin-bottom: 10px;
+  }
+  .s-title {
+    font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700; color: #2c1a06;
+    line-height: 1.3; margin-bottom: 10px; border-bottom: 1px solid #c9a84c; padding-bottom: 8px;
+  }
+  .s-desc { font-family: 'IM Fell English', serif; font-size: 13px; color: #3a2a10; line-height: 1.65; margin-bottom: 14px; }
+  .s-quote {
+    font-family: 'IM Fell English', serif; font-style: italic; font-size: 13px; color: #1a1a1a;
+    border-left: 3px solid #c0392b; padding: 8px 10px; background: #fdf0d0; line-height: 1.6; margin-bottom: 14px;
+  }
+  .s-tension-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #8b6914; margin-bottom: 5px; }
+  .s-tension { font-family: 'IM Fell English', serif; font-size: 12px; color: #5a3e1b; line-height: 1.6; background: #f5e6c0; border: 1px dashed #b8962a; padding: 8px 10px; border-radius: 3px; }
+  #sidebar-footer { padding: 10px 20px; border-top: 1px solid #c9a84c; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.1em; color: #8b6914; text-align: center; }
+</style>
+</head>
+<body>
+<div id="map-wrapper">
+<svg id="map-svg" viewBox="0 0 1100 740" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="parchment-texture" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+      <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="blend"/>
+      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="pin-shadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="blur-haze">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="60%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#1a0e04" stop-opacity="0.48"/>
+    </radialGradient>
+    <!-- West side: cooler, emptier -->
+    <linearGradient id="west-tone" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c8c0a8"/>
+      <stop offset="100%" stop-color="#d4c49a"/>
+    </linearGradient>
+    <!-- East side: warm amber -->
+    <linearGradient id="east-tone" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d4c49a"/>
+      <stop offset="100%" stop-color="#c8a050"/>
+    </linearGradient>
+    <!-- Ravine depth gradient -->
+    <linearGradient id="ravine-depth" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3a2810"/>
+      <stop offset="30%" stop-color="#1a0e04"/>
+      <stop offset="70%" stop-color="#1a0e04"/>
+      <stop offset="100%" stop-color="#3a2810"/>
+    </linearGradient>
+    <!-- Defence haze -->
+    <radialGradient id="defence-haze" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#d8c890" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#d4c49a" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Stone wall pattern -->
+    <pattern id="stone-wall" x="0" y="0" width="30" height="20" patternUnits="userSpaceOnUse">
+      <rect width="30" height="20" fill="#8a7858"/>
+      <rect x="0" y="0" width="28" height="9" fill="#9a8868" stroke="#6a5838" stroke-width="0.5"/>
+      <rect x="2" y="11" width="26" height="8" fill="#928060" stroke="#6a5838" stroke-width="0.5"/>
+      <line x1="14" y1="0" x2="14" y2="10" stroke="#6a5838" stroke-width="0.5"/>
+      <line x1="0" y1="11" x2="28" y2="11" stroke="#6a5838" stroke-width="0.5"/>
+    </pattern>
+    <!-- Bridge planks -->
+    <pattern id="bridge-planks" x="0" y="0" width="14" height="40" patternUnits="userSpaceOnUse">
+      <rect width="12" height="40" fill="#d4c8a0" stroke="#a89060" stroke-width="0.8"/>
+    </pattern>
+    <!-- Faded building lines for prep quarter -->
+    <pattern id="prep-hatch" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="10" x2="10" y2="0" stroke="#a09878" stroke-width="0.4" opacity="0.4"/>
+    </pattern>
+    <!-- Warm amber dots for The Room -->
+    <pattern id="room-warmth" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="8" cy="8" r="1.5" fill="#c8900a" opacity="0.2"/>
+    </pattern>
+  </defs>
+
+  <!-- ===== PARCHMENT BASE ===== -->
+  <rect width="1100" height="740" fill="#f2e8d0"/>
+  <rect width="1100" height="740" fill="url(#parchment-texture)" opacity="0.18"/>
+
+  <!-- ===== DECORATIVE BORDER ===== -->
+  <rect x="14" y="14" width="1072" height="712" fill="none" stroke="#8b6914" stroke-width="2.5"/>
+  <rect x="20" y="20" width="1060" height="700" fill="none" stroke="#8b6914" stroke-width="0.8" stroke-dasharray="4,3"/>
+  <g stroke="#8b6914" stroke-width="1.2" fill="none">
+    <path d="M14 14 L40 14 M14 14 L14 40"/>
+    <path d="M1086 14 L1060 14 M1086 14 L1086 40"/>
+    <path d="M14 726 L40 726 M14 726 L14 700"/>
+    <path d="M1086 726 L1060 726 M1086 726 L1086 700"/>
+    <circle cx="14"   cy="14"  r="4" fill="#8b6914"/>
+    <circle cx="1086" cy="14"  r="4" fill="#8b6914"/>
+    <circle cx="14"   cy="726" r="4" fill="#8b6914"/>
+    <circle cx="1086" cy="726" r="4" fill="#8b6914"/>
+  </g>
+
+  <!-- ===== LANDMASS ===== -->
+  <!-- West half: cooler, emptier tone -->
+  <path d="M50 108 Q180 75 360 85 Q460 78 520 90 L520 640 Q460 650 350 638 Q210 622 125 575 Q58 535 45 445 Q28 340 42 225 Q44 158 50 108 Z"
+    fill="#cdc0a0" stroke="#a08840" stroke-width="1"/>
+  <!-- East half: warmer amber tone -->
+  <path d="M520 90 Q640 72 760 88 Q890 76 985 125 Q1055 158 1062 242 Q1075 332 1052 438 Q1025 522 952 570 Q862 618 715 632 Q620 642 520 640 Z"
+    fill="#d4c49a" stroke="#a08840" stroke-width="1"/>
+  <!-- East amber wash -->
+  <path d="M560 110 Q700 95 830 118 Q930 138 980 200 Q1020 265 1010 360 Q995 455 940 510 Q860 560 720 575 Q620 582 560 572 Z"
+    fill="#c8a050" opacity="0.18"/>
+  <!-- West cool overlay -->
+  <path d="M60 140 Q170 108 340 118 Q430 112 500 125 L500 600 Q420 612 310 598 Q190 580 115 528 Q65 490 58 410 Q44 320 55 220 Z"
+    fill="#b8b098" opacity="0.18"/>
+
+  <!-- ===== THE CRAFT GAP RAVINE (vertical chasm, center) ===== -->
+  <!-- Ravine body -->
+  <path d="M518 95 Q522 200 516 310 Q510 420 514 530 Q516 590 518 645"
+    stroke="none" fill="none"/>
+  <!-- Ravine as a filled jagged shape -->
+  <path d="M505 95 Q512 180 506 295 Q500 390 503 490 Q505 575 504 645
+           L536 645 Q535 575 537 490 Q540 390 534 295 Q528 180 535 95 Z"
+    fill="url(#ravine-depth)"/>
+  <!-- Ravine jagged left edge -->
+  <path d="M505 95 Q508 150 503 200 Q498 260 505 310 Q510 360 502 420 Q496 480 504 545 Q508 595 504 645"
+    stroke="#2a1806" stroke-width="1.5" fill="none" opacity="0.8"/>
+  <!-- Ravine jagged right edge -->
+  <path d="M535 95 Q532 150 537 200 Q542 260 535 310 Q530 360 538 420 Q544 480 536 545 Q532 595 536 645"
+    stroke="#2a1806" stroke-width="1.5" fill="none" opacity="0.8"/>
+  <!-- Ravine depth shadow lines -->
+  <path d="M510 140 Q518 200 512 280 Q507 360 513 440 Q517 510 512 590"
+    stroke="#100804" stroke-width="3" fill="none" opacity="0.5"/>
+  <!-- Rock faces on ravine walls -->
+  <g stroke="#4a3010" stroke-width="0.6" fill="none" opacity="0.4">
+    <path d="M506 160 L513 155 L509 170"/>
+    <path d="M503 240 L511 235 L507 252"/>
+    <path d="M504 320 L512 315 L508 332"/>
+    <path d="M503 400 L510 395 L506 412"/>
+    <path d="M534 180 L527 175 L531 192"/>
+    <path d="M537 260 L529 255 L533 272"/>
+    <path d="M536 340 L528 335 L532 352"/>
+    <path d="M537 420 L529 415 L533 432"/>
+  </g>
+
+  <!-- ===== AI BRIDGE (crossing the ravine, gleaming new) ===== -->
+  <!-- Bridge deck — centered at y≈330 -->
+  <rect x="468" y="318" width="164" height="28" fill="url(#bridge-planks)" stroke="#c0b080" stroke-width="1.5" rx="2"/>
+  <!-- Bridge railings -->
+  <line x1="468" y1="320" x2="632" y2="320" stroke="#e0d090" stroke-width="2.5"/>
+  <line x1="468" y1="344" x2="632" y2="344" stroke="#e0d090" stroke-width="2.5"/>
+  <!-- Bridge posts -->
+  <g stroke="#c8b870" stroke-width="2">
+    <line x1="490" y1="310" x2="490" y2="352"/>
+    <line x1="520" y1="308" x2="520" y2="354"/>
+    <line x1="550" y1="308" x2="550" y2="354"/>
+    <line x1="580" y1="308" x2="580" y2="354"/>
+    <line x1="610" y1="310" x2="610" y2="352"/>
+  </g>
+  <!-- Cable suggestion (arch) -->
+  <path d="M472 322 Q520 298 550 295 Q580 298 628 322" stroke="#d4c878" stroke-width="1.5" fill="none" opacity="0.7"/>
+  <!-- "NEW" gleam -->
+  <text x="550" y="335" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#8b6914" text-anchor="middle" opacity="0.65">AI Bridge</text>
+
+  <!-- Old overgrown path (crossing below, now unused) -->
+  <path d="M468 490 Q500 486 520 488 Q540 490 572 487"
+    stroke="#7a6030" stroke-width="1.5" fill="none" stroke-dasharray="4,4" opacity="0.35"/>
+  <!-- Overgrowth marks on old path -->
+  <g fill="#4a6828" opacity="0.3" font-size="8">
+    <text x="476" y="487">~</text>
+    <text x="495" y="485">~</text>
+    <text x="514" y="487">~</text>
+    <text x="533" y="485">~</text>
+    <text x="552" y="487">~</text>
+  </g>
+
+  <!-- ===== CLIENT'S BUDGET WALL (south edge, solid stone) ===== -->
+  <rect x="55" y="608" width="985" height="38" fill="url(#stone-wall)" stroke="#6a5030" stroke-width="2"/>
+  <!-- Wall top crenellation -->
+  <g fill="#9a8868" stroke="#6a5030" stroke-width="1">
+    <rect x="60"  y="597" width="22" height="14"/>
+    <rect x="90"  y="597" width="22" height="14"/>
+    <rect x="120" y="597" width="22" height="14"/>
+    <rect x="150" y="597" width="22" height="14"/>
+    <rect x="180" y="597" width="22" height="14"/>
+    <rect x="210" y="597" width="22" height="14"/>
+    <rect x="240" y="597" width="22" height="14"/>
+    <rect x="270" y="597" width="22" height="14"/>
+    <rect x="300" y="597" width="22" height="14"/>
+    <rect x="330" y="597" width="22" height="14"/>
+    <rect x="360" y="597" width="22" height="14"/>
+    <rect x="390" y="597" width="22" height="14"/>
+    <rect x="420" y="597" width="22" height="14"/>
+    <rect x="450" y="597" width="22" height="14"/>
+    <rect x="480" y="597" width="22" height="14"/>
+    <rect x="510" y="597" width="22" height="14"/>
+    <rect x="540" y="597" width="22" height="14"/>
+    <rect x="570" y="597" width="22" height="14"/>
+    <rect x="600" y="597" width="22" height="14"/>
+    <rect x="630" y="597" width="22" height="14"/>
+    <rect x="660" y="597" width="22" height="14"/>
+    <rect x="690" y="597" width="22" height="14"/>
+    <rect x="720" y="597" width="22" height="14"/>
+    <rect x="750" y="597" width="22" height="14"/>
+    <rect x="780" y="597" width="22" height="14"/>
+    <rect x="810" y="597" width="22" height="14"/>
+    <rect x="840" y="597" width="22" height="14"/>
+    <rect x="870" y="597" width="22" height="14"/>
+    <rect x="900" y="597" width="22" height="14"/>
+    <rect x="930" y="597" width="22" height="14"/>
+    <rect x="960" y="597" width="22" height="14"/>
+    <rect x="990" y="597" width="22" height="14"/>
+    <rect x="1020" y="597" width="22" height="14"/>
+  </g>
+  <!-- Gate in wall (east side) — requires The Defence to open -->
+  <rect x="740" y="590" width="50" height="56" fill="#b8a060" stroke="#6a5030" stroke-width="1.8"/>
+  <rect x="746" y="596" width="18" height="38" fill="#8a6828" stroke="#5a4020" stroke-width="1"/>
+  <rect x="768" y="596" width="18" height="38" fill="#8a6828" stroke="#5a4020" stroke-width="1"/>
+  <!-- Gate lock -->
+  <circle cx="765" cy="616" r="5" fill="#c8a030" stroke="#8b6010" stroke-width="1.2"/>
+  <!-- Gate label -->
+  <text x="765" y="651" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#8b6914" text-anchor="middle" opacity="0.8">Gate (locked)</text>
+
+  <!-- ===== PREP QUARTER (west — fading buildings) ===== -->
+  <!-- Cooler district wash -->
+  <ellipse cx="260" cy="340" rx="190" ry="175" fill="#b8b098" opacity="0.35"/>
+  <ellipse cx="260" cy="340" rx="190" ry="175" fill="url(#prep-hatch)"/>
+  <!-- Fading building 1 -->
+  <rect x="148" y="260" width="45" height="55" fill="#c0b898" stroke="#9a9070" stroke-width="0.8" opacity="0.65"/>
+  <polygon points="148,260 170,242 193,260" fill="#a8a080" stroke="#9a9070" stroke-width="0.6" opacity="0.6"/>
+  <rect x="158" y="285" width="11" height="16" fill="#d4cca8" opacity="0.4" rx="1"/>
+  <rect x="174" y="285" width="11" height="16" fill="#d4cca8" opacity="0.4" rx="1"/>
+  <!-- Lights on (faint window glow) -->
+  <rect x="158" y="262" width="11" height="10" fill="#f0d870" opacity="0.35" rx="1"/>
+  <!-- Fading building 2 -->
+  <rect x="215" y="240" width="55" height="65" fill="#c8c0a0" stroke="#9a9070" stroke-width="0.8" opacity="0.6"/>
+  <polygon points="215,240 242,220 270,240" fill="#b0a888" stroke="#9a9070" stroke-width="0.6" opacity="0.55"/>
+  <rect x="224" y="270" width="13" height="20" fill="#d4cca8" opacity="0.35" rx="1"/>
+  <rect x="244" y="270" width="13" height="20" fill="#d4cca8" opacity="0.35" rx="1"/>
+  <!-- Lights on -->
+  <rect x="228" y="248" width="11" height="9" fill="#f0d870" opacity="0.3" rx="1"/>
+  <rect x="246" y="248" width="11" height="9" fill="#f0d870" opacity="0.2" rx="1"/>
+  <!-- Fading building 3 -->
+  <rect x="300" y="280" width="40" height="48" fill="#bab2928" stroke="#9a9070" stroke-width="0.8" opacity="0.5"/>
+  <rect x="300" y="280" width="40" height="48" fill="#b8b090" stroke="#9a9070" stroke-width="0.8" opacity="0.5"/>
+  <polygon points="300,280 320,264 340,280" fill="#a09878" stroke="#9a9070" stroke-width="0.6" opacity="0.45"/>
+  <rect x="308" y="302" width="10" height="14" fill="#d4cca8" opacity="0.3" rx="1"/>
+  <rect x="322" y="302" width="10" height="14" fill="#d4cca8" opacity="0.3" rx="1"/>
+  <!-- Light still on -->
+  <rect x="310" y="284" width="10" height="8" fill="#f0d870" opacity="0.4" rx="1"/>
+  <!-- Empty streets suggestion -->
+  <line x1="148" y1="315" x2="340" y2="315" stroke="#a09878" stroke-width="1" opacity="0.3"/>
+  <line x1="200" y1="200" x2="200" y2="590" stroke="#a09878" stroke-width="1" opacity="0.2"/>
+
+  <!-- "Mostly Empty" annotation -->
+  <text x="195" y="420" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#8a8060" text-anchor="middle" opacity="0.7">mostly empty</text>
+  <text x="195" y="433" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#8a8060" text-anchor="middle" opacity="0.7">lights still on</text>
+
+  <!-- ===== THE ROOM (east — warm, inhabited, central territory) ===== -->
+  <!-- Warm amber zone -->
+  <ellipse cx="760" cy="360" rx="195" ry="185" fill="#c8a050" opacity="0.28"/>
+  <ellipse cx="760" cy="360" rx="195" ry="185" fill="url(#room-warmth)"/>
+  <!-- Inhabited feeling: warm candlelit building -->
+  <rect x="690" y="295" width="70" height="75" fill="#d4a030" stroke="#8b6010" stroke-width="1.5" opacity="0.85"/>
+  <polygon points="690,295 725,272 760,295" fill="#b88020" stroke="#8b6010" stroke-width="1"/>
+  <!-- Warm glowing windows -->
+  <rect x="698" y="318" width="18" height="20" fill="#f8e060" opacity="0.75" rx="2"/>
+  <rect x="724" y="318" width="18" height="20" fill="#f8d840" opacity="0.7" rx="2"/>
+  <rect x="700" y="346" width="14" height="18" fill="#f8e060" opacity="0.7" rx="1"/>
+  <rect x="726" y="346" width="14" height="18" fill="#f8d840" opacity="0.65" rx="1"/>
+  <!-- Door -->
+  <rect x="714" y="352" width="18" height="18" fill="#7a5010" rx="2"/>
+  <circle cx="728" cy="362" r="2" fill="#c8a030"/>
+  <!-- Warm glow around building -->
+  <ellipse cx="725" cy="355" rx="65" ry="55" fill="#f0c840" opacity="0.08"/>
+  <!-- Second inhabited building -->
+  <rect x="790" y="320" width="50" height="55" fill="#c89830" stroke="#8b6010" stroke-width="1.2" opacity="0.75"/>
+  <polygon points="790,320 815,305 840,320" fill="#a87820" stroke="#8b6010" stroke-width="1" opacity="0.75"/>
+  <rect x="797" y="340" width="13" height="16" fill="#f8e060" opacity="0.65" rx="1"/>
+  <rect x="816" y="340" width="13" height="16" fill="#f8d840" opacity="0.6" rx="1"/>
+  <!-- Human figures (simplified) in The Room area -->
+  <g fill="#5a3010" opacity="0.35">
+    <circle cx="680" cy="440" r="5"/>
+    <line x1="680" y1="445" x2="680" y2="462" stroke="#5a3010" stroke-width="2"/>
+    <line x1="680" y1="450" x2="672" y2="458" stroke="#5a3010" stroke-width="1.5"/>
+    <line x1="680" y1="450" x2="688" y2="458" stroke="#5a3010" stroke-width="1.5"/>
+    <circle cx="710" cy="445" r="5"/>
+    <line x1="710" y1="450" x2="710" y2="467" stroke="#5a3010" stroke-width="2"/>
+    <line x1="710" y1="455" x2="702" y2="463" stroke="#5a3010" stroke-width="1.5"/>
+    <line x1="710" y1="455" x2="718" y2="463" stroke="#5a3010" stroke-width="1.5"/>
+    <circle cx="745" cy="440" r="5"/>
+    <line x1="745" y1="445" x2="745" y2="462" stroke="#5a3010" stroke-width="2"/>
+  </g>
+
+  <!-- ===== THE DEFENCE (northeast — hazy, partially mapped) ===== -->
+  <!-- Haze boundary -->
+  <ellipse cx="890" cy="190" rx="155" ry="120" fill="url(#defence-haze)" opacity="0.9"/>
+  <!-- Dotted border showing unmapped -->
+  <ellipse cx="890" cy="190" rx="155" ry="120" fill="none" stroke="#b8a060" stroke-width="1.2" stroke-dasharray="6,5" opacity="0.6"/>
+  <!-- Faint outlines inside — partially mapped structures -->
+  <rect x="835" y="148" width="38" height="30" fill="none" stroke="#c8a850" stroke-width="0.8" opacity="0.4" stroke-dasharray="3,3"/>
+  <rect x="895" y="155" width="32" height="25" fill="none" stroke="#c8a850" stroke-width="0.8" opacity="0.35" stroke-dasharray="3,3"/>
+  <text x="890" y="195" font-family="'IM Fell English', serif" font-style="italic" font-size="11" fill="#8b6010" text-anchor="middle" opacity="0.55">here be</text>
+  <text x="890" y="210" font-family="'IM Fell English', serif" font-style="italic" font-size="11" fill="#8b6010" text-anchor="middle" opacity="0.55">answers</text>
+
+  <!-- ===== ROUTES ===== -->
+  <!-- Road: Prep Quarter → The Room (unclear / partially built) -->
+  <path d="M370 340 Q410 338 440 335 Q465 333 480 332"
+    stroke="#8b6914" stroke-width="2" fill="none" stroke-dasharray="8,5" opacity="0.55"/>
+  <path d="M556 330 Q600 330 640 335 Q665 338 685 342"
+    stroke="#8b6914" stroke-width="2" fill="none" stroke-dasharray="8,5" opacity="0.55"/>
+  <!-- Arrow tip at The Room -->
+  <polygon points="685,342 672,336 672,348" fill="#8b6914" opacity="0.55"/>
+
+  <!-- Road: The Room → The Defence -->
+  <path d="M800 295 Q830 268 855 248 Q868 235 885 222"
+    stroke="#c0392b" stroke-width="1.8" fill="none" stroke-dasharray="9,5" opacity="0.65"/>
+  <polygon points="885,222 874,226 878,214" fill="#c0392b" opacity="0.65"/>
+
+  <!-- Path south to Budget Wall gate (from The Room) -->
+  <path d="M745 510 Q748 545 755 570 Q760 585 762 597"
+    stroke="#8b6914" stroke-width="1.5" fill="none" stroke-dasharray="6,4" opacity="0.5"/>
+
+  <!-- ===== VIGNETTE ===== -->
+  <rect width="1100" height="740" fill="url(#vignette)"/>
+
+  <!-- ===== MAP TITLE ===== -->
+  <text x="550" y="52" font-family="'Cinzel', serif" font-size="26" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="2">The Unbundled Facilitation</text>
+  <text x="550" y="72" font-family="'IM Fell English', serif" font-style="italic" font-size="13" fill="#6a4e20" text-anchor="middle">Table IV · Marco van Hout · Which half of the bundle is yours?</text>
+  <line x1="200" y1="80" x2="900" y2="80" stroke="#8b6914" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- ===== DIVIDING LABEL (on the ravine) ===== -->
+  <text x="520" y="137" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#f2e8d0" text-anchor="middle" letter-spacing="1">THE</text>
+  <text x="520" y="148" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#f2e8d0" text-anchor="middle" letter-spacing="1">CRAFT</text>
+  <text x="520" y="159" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#f2e8d0" text-anchor="middle" letter-spacing="1">GAP</text>
+
+  <!-- West / East labels on map -->
+  <text x="270" y="108" font-family="'IM Fell English', serif" font-style="italic" font-size="11" fill="#7a7050" text-anchor="middle" opacity="0.7">← what AI took</text>
+  <text x="760" y="108" font-family="'IM Fell English', serif" font-style="italic" font-size="11" fill="#8b6010" text-anchor="middle" opacity="0.8">what remains →</text>
+
+  <!-- ===== LANDMARK LABELS ===== -->
+  <text x="245" y="210" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#6a6040" text-anchor="middle">The Prep Quarter</text>
+
+  <text x="750" y="240" font-family="'Cinzel', serif" font-size="12" font-weight="700" fill="#2c1a06" text-anchor="middle">The Room</text>
+
+  <text x="890" y="120" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#8b6010" text-anchor="middle">The Defence</text>
+  <text x="890" y="132" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#8b6010" text-anchor="middle" opacity="0.7">(partially mapped)</text>
+
+  <text x="310" y="590" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#f2e8d0" text-anchor="middle">The Client's Budget Wall</text>
+
+  <!-- Old path label -->
+  <text x="430" y="503" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#7a6030" text-anchor="middle" opacity="0.6">old path (overgrown)</text>
+
+  <!-- Sea label -->
+  <text x="115" y="672" font-family="'IM Fell English', serif" font-style="italic" font-size="12" fill="#6a5020" opacity="0.55" transform="rotate(-3,115,672)">Sea of Undifferentiated Value</text>
+
+  <!-- ===== COMPASS ROSE ===== -->
+  <g transform="translate(1000, 660)">
+    <circle r="32" fill="#f2e8d0" stroke="#8b6914" stroke-width="1.2"/>
+    <circle r="28" fill="none" stroke="#8b6914" stroke-width="0.5" stroke-dasharray="3,3"/>
+    <line x1="0" y1="-28" x2="0" y2="28" stroke="#8b6914" stroke-width="0.7"/>
+    <line x1="-28" y1="0" x2="28" y2="0" stroke="#8b6914" stroke-width="0.7"/>
+    <line x1="-20" y1="-20" x2="20" y2="20" stroke="#8b6914" stroke-width="0.4" opacity="0.5"/>
+    <line x1="20" y1="-20" x2="-20" y2="20" stroke="#8b6914" stroke-width="0.4" opacity="0.5"/>
+    <polygon points="0,-26 -5,-10 0,-14 5,-10" fill="#c0392b"/>
+    <polygon points="0,-14 -5,-10 0,26 5,-10" fill="#5a3e1b"/>
+    <circle r="3" fill="#8b6914"/>
+    <text y="-32" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">N</text>
+    <text y="42"  font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">S</text>
+    <text x="36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">E</text>
+    <text x="-36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">W</text>
+  </g>
+
+  <!-- ===== LEGEND ===== -->
+  <g transform="translate(300, 678)">
+    <rect x="0" y="0" width="420" height="42" rx="3" fill="#f2e8d0" stroke="#8b6914" stroke-width="1"/>
+    <text x="210" y="13" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="1">LEGEND</text>
+    <circle cx="18" cy="27" r="5" fill="#c0392b" stroke="white" stroke-width="1.2"/>
+    <text x="27" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Landmark Pin</text>
+    <line x1="115" y1="27" x2="143" y2="27" stroke="#8b6914" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <text x="147" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Unclear Route</text>
+    <line x1="230" y1="27" x2="258" y2="27" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <text x="262" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Path to Defence</text>
+    <rect x="340" y="21" width="22" height="12" fill="url(#stone-wall)" stroke="#6a5030" stroke-width="0.8"/>
+    <text x="366" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Budget Wall</text>
+  </g>
+
+  <!-- ===== CLICKABLE PINS ===== -->
+
+  <!-- PIN 1: The Prep Quarter -->
+  <g class="pin-group" data-id="prep-quarter" transform="translate(245,198)" onclick="openSidebar('prep-quarter')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">1</text>
+  </g>
+
+  <!-- PIN 2: The Room -->
+  <g class="pin-group" data-id="the-room" transform="translate(750,228)" onclick="openSidebar('the-room')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">2</text>
+  </g>
+
+  <!-- PIN 3: The Craft Gap -->
+  <g class="pin-group" data-id="craft-gap" transform="translate(520,218)" onclick="openSidebar('craft-gap')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">3</text>
+  </g>
+
+  <!-- PIN 4: Client's Budget Wall -->
+  <g class="pin-group" data-id="budget-wall" transform="translate(550,574)" onclick="openSidebar('budget-wall')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">4</text>
+  </g>
+
+  <!-- PIN 5: The Defence -->
+  <g class="pin-group" data-id="the-defence" transform="translate(890,108)" onclick="openSidebar('the-defence')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">5</text>
+  </g>
+
+  <!-- PIN 6: AI Bridge -->
+  <g class="pin-group" data-id="ai-bridge" transform="translate(550,308)" onclick="openSidebar('ai-bridge')">
+    <line x1="0" y1="0" x2="0" y2="14" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">6</text>
+  </g>
+
+</svg>
+
+<!-- ===== SIDEBAR ===== -->
+<div id="sidebar">
+  <button id="sidebar-close" onclick="closeSidebar()">✕</button>
+  <div id="sidebar-inner">
+    <div class="s-tag" id="s-tag"></div>
+    <div class="s-title" id="s-title"></div>
+    <div class="s-desc" id="s-desc"></div>
+    <div class="s-quote" id="s-quote"></div>
+    <div class="s-tension-label">⚡ Tension</div>
+    <div class="s-tension" id="s-tension"></div>
+  </div>
+  <div id="sidebar-footer">Table IV · Marco van Hout · AI Exploration Café</div>
+</div>
+
+</div>
+
+<script>
+const data = {
+  'prep-quarter': {
+    tag: 'Landmark 1 · West District',
+    title: 'The Prep Quarter',
+    desc: 'Agendas, handouts, slides, materials, content generation, drafting. AI took most of it. The lights are still on but the work is mostly gone. Time has been returned — but the question of what to do with that time arrived without an answer.',
+    quote: '"Agenda building. Handouts. Worksheets. Slides. Content generation. Drafting materials. That gives time back but it also raises the question: what do you do with that time? And what remains that only you can do?"',
+    tension: 'The Prep Quarter feels like loss. It is actually an opportunity. The problem is that nobody told facilitators what to build in the space it left behind.'
+  },
+  'the-room': {
+    tag: 'Landmark 2 · Central Territory',
+    title: 'The Room',
+    desc: 'The half worth owning. Adapting, noticing the experience, knowing what to do in the moment. Reading the energy. Knowing when to slow down. Sensing what\'s happening under the surface. AI does not have a pass for this territory.',
+    quote: '"The value moves to the room, to the human read you can\'t easily put into words. That is what AI cannot do. It is also the hardest thing to defend on a budget." — Marco van Hout',
+    tension: 'The Room is the most valuable territory on this map. It is also the hardest to put on an invoice.'
+  },
+  'craft-gap': {
+    tag: 'Landmark 3 · Central Ravine',
+    title: 'The Craft Gap',
+    desc: 'The chasm between junior and senior work that used to take years to cross. AI builds a bridge over it. The question is whether crossing the bridge skips the learning or just the suffering. Where does judgement come from if you never did the junior work?',
+    quote: '"AI may help less experienced facilitators produce more senior-looking work. But if people can jump to the output without building the understanding underneath, where do they learn the craft?"',
+    tension: 'The bridge over the Craft Gap is real and useful. What it cannot carry is the experience that used to be built in the crossing.'
+  },
+  'budget-wall': {
+    tag: 'Landmark 4 · South Wall',
+    title: 'The Client\'s Budget Wall',
+    desc: 'On one side: what the human room costs. On the other: what AI can approximate for a fraction of the price. The wall does not understand the difference. Clients want to reach more people with non-human facilitation. It\'s cheaper. The question they\'re not asking is whether it\'s better.',
+    quote: '"Clients want to reach more people with non-human facilitation. It\'s cheaper. The question they\'re not asking is whether it\'s better — and that\'s the question we need to be asking for them."',
+    tension: 'The Budget Wall is not the enemy. It is a question in disguise. The answer requires being able to articulate what happens in The Room in terms the wall can hear.'
+  },
+  'the-defence': {
+    tag: 'Landmark 5 · Northeast · Unmapped',
+    title: 'The Defence',
+    desc: 'The place where facilitators can articulate the value of The Room in terms clients recognise. Nobody has fully mapped it yet. It requires a language for the intangible — for reading the room, for the human pulse, for the things that happen in the space between the agenda items.',
+    quote: '"What do you tell a client who doesn\'t yet see why the human room costs what it costs, when AI can deliver something that looks professional for a fraction of the price?"',
+    tension: 'The Defence is not about defending the past. It is about naming what The Room actually does — in a language that travels across the Budget Wall.'
+  },
+  'ai-bridge': {
+    tag: 'Landmark 6 · New Construction',
+    title: 'The AI Bridge',
+    desc: 'AI helps less experienced facilitators produce more senior-looking outputs. The bridge is real. It is also untested at scale. The question is not whether it holds weight — it\'s whether the crossing teaches you anything.',
+    quote: '"If you can skip straight to senior-level output with AI, where does judgement come from?"',
+    tension: 'A bridge that skips the hard part is still a bridge. What it cannot carry is the understanding built in the difficult crossing.'
+  }
+};
+
+function openSidebar(id) {
+  const d = data[id];
+  if (!d) return;
+  document.getElementById('s-tag').textContent = d.tag;
+  document.getElementById('s-title').textContent = d.title;
+  document.getElementById('s-desc').textContent = d.desc;
+  document.getElementById('s-quote').textContent = d.quote;
+  document.getElementById('s-tension').textContent = d.tension;
+  document.getElementById('sidebar').classList.add('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+document.getElementById('map-svg').addEventListener('click', function(e) {
+  if (!e.target.closest('.pin-group')) closeSidebar();
+});
+</script>
+</body>
+</html>

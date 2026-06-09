@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The AI Fieldwork Expedition Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a0e04;
+    min-height: 100vh;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  #map-wrapper {
+    position: relative;
+    width: 1200px;
+    height: 1200px;
+    flex-shrink: 0;
+    margin: auto;
+  }
+  #map-svg { width: 100%; height: 100%; display: block; }
+  .pin-group { cursor: pointer; }
+  .pin-group:hover .pin-circle { filter: brightness(1.2) drop-shadow(0 0 8px rgba(192,57,43,0.8)); }
+  .pin-circle { transition: filter 0.2s; }
+  #sidebar {
+    position: absolute;
+    top: 0; right: 0;
+    width: 340px; height: 100%;
+    background: #fdf6e3;
+    border-left: 3px solid #8b6914;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column;
+    z-index: 20; overflow: hidden;
+  }
+  #sidebar.open { transform: translateX(0); }
+  #sidebar-inner { flex: 1; overflow-y: auto; padding: 28px 22px 20px; }
+  #sidebar-close {
+    position: absolute; top: 12px; right: 14px;
+    background: none; border: none; font-size: 22px;
+    cursor: pointer; color: #5a3e1b; line-height: 1; font-family: 'Cinzel', serif;
+  }
+  #sidebar-close:hover { color: #c0392b; }
+  .s-tag {
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #c0392b; background: #fce8e6; border: 1px solid #c0392b;
+    display: inline-block; padding: 2px 8px; border-radius: 2px; margin-bottom: 10px;
+  }
+  .s-title {
+    font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: #2c1a06;
+    line-height: 1.3; margin-bottom: 10px; border-bottom: 1px solid #c9a84c; padding-bottom: 8px;
+  }
+  .s-desc { font-family: 'IM Fell English', serif; font-size: 13px; color: #3a2a10; line-height: 1.65; margin-bottom: 14px; }
+  .s-quote {
+    font-family: 'IM Fell English', serif; font-style: italic; font-size: 13px; color: #1a1a1a;
+    border-left: 3px solid #c0392b; padding: 8px 10px; background: #fdf0d0; line-height: 1.6; margin-bottom: 14px;
+  }
+  .s-tension-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #8b6914; margin-bottom: 5px; }
+  .s-tension { font-family: 'IM Fell English', serif; font-size: 12px; color: #5a3e1b; line-height: 1.6; background: #f5e6c0; border: 1px dashed #b8962a; padding: 8px 10px; border-radius: 3px; }
+  #sidebar-footer { padding: 10px 22px; border-top: 1px solid #c9a84c; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.1em; color: #8b6914; text-align: center; }
+</style>
+</head>
+<body>
+<div id="map-wrapper">
+<svg id="map-svg" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <filter id="parchment" x="0%" y="0%" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+    <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+    <feBlend in="SourceGraphic" in2="gray" mode="multiply" result="blend"/>
+    <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+  </filter>
+  <filter id="pin-shadow"><feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity="0.4"/></filter>
+  <filter id="oracle-glow">
+    <feGaussianBlur stdDeviation="12" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="crater-glow">
+    <feGaussianBlur stdDeviation="8" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="naming-glow">
+    <feGaussianBlur stdDeviation="6" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <radialGradient id="vignette" cx="50%" cy="50%" r="60%">
+    <stop offset="40%" stop-color="transparent"/>
+    <stop offset="100%" stop-color="#100804" stop-opacity="0.65"/>
+  </radialGradient>
+  <radialGradient id="crater-grad" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#080402"/>
+    <stop offset="60%" stop-color="#1a0e06"/>
+    <stop offset="100%" stop-color="#2c1808"/>
+  </radialGradient>
+  <radialGradient id="crater-rim" cx="50%" cy="50%" r="50%">
+    <stop offset="70%" stop-color="transparent"/>
+    <stop offset="100%" stop-color="#c0392b" stop-opacity="0.3"/>
+  </radialGradient>
+  <radialGradient id="oracle-grad" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#f8f080" stop-opacity="0.9"/>
+    <stop offset="50%" stop-color="#e0c030" stop-opacity="0.5"/>
+    <stop offset="100%" stop-color="#c09010" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="naming-grad" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+    <stop offset="70%" stop-color="#f0e8d0" stop-opacity="0.4"/>
+    <stop offset="100%" stop-color="#e0d0a8" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="higher-goal-grad" cx="50%" cy="100%" r="80%">
+    <stop offset="0%" stop-color="#f8e060" stop-opacity="0.6"/>
+    <stop offset="100%" stop-color="#f8e060" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="blank-page-grad" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+    <stop offset="80%" stop-color="#f8f0e0" stop-opacity="0.4"/>
+    <stop offset="100%" stop-color="#f2e8d0" stop-opacity="0"/>
+  </radialGradient>
+  <pattern id="water-lines" x="0" y="0" width="24" height="9" patternUnits="userSpaceOnUse">
+    <path d="M0 4.5 Q6 1.5 12 4.5 Q18 7.5 24 4.5" stroke="#88b4d0" stroke-width="0.6" fill="none" opacity="0.5"/>
+  </pattern>
+  <pattern id="forest-dots" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
+    <circle cx="7" cy="7" r="2.5" fill="#3a5a28" opacity="0.4"/>
+  </pattern>
+  <pattern id="elevation-lines" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+    <line x1="0" y1="8" x2="8" y2="0" stroke="#9a7830" stroke-width="0.5" opacity="0.35"/>
+  </pattern>
+  <pattern id="hedge-mini" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+    <circle cx="3" cy="3" r="1.5" fill="#3a5820" opacity="0.5"/>
+    <circle cx="8" cy="8" r="1.2" fill="#4a6828" opacity="0.4"/>
+  </pattern>
+  <clipPath id="ocean-clip">
+    <circle cx="600" cy="600" r="555"/>
+  </clipPath>
+  <clipPath id="land-clip">
+    <!-- Clip to the landmass (territory ring) -->
+    <path d="M 557.5 526 A 85 85 0 1 1 557.4 526 Z M 355 176 A 490 490 0 1 1 354.9 176 Z" fill-rule="evenodd"/>
+  </clipPath>
+</defs>
+
+<!-- ===== PARCHMENT BASE ===== -->
+<rect width="1200" height="1200" fill="#e8dcc0"/>
+<rect width="1200" height="1200" fill="url(#parchment)" opacity="0.2"/>
+
+<!-- ===== OUTER OCEAN ===== -->
+<circle cx="600" cy="600" r="555" fill="#b8d4e8"/>
+<rect x="45" y="45" width="1110" height="1110" fill="url(#water-lines)" clip-path="url(#ocean-clip)"/>
+
+<!-- ===== TERRITORY WEDGES ===== -->
+<!-- Pablo / Time Economy — 240°→300° — ochre tan -->
+<path d="M 355 176 A 490 490 0 0 1 845 176 L 642.5 527 A 85 85 0 0 0 557.5 527 Z"
+  fill="#c8b870" stroke="#9a8840" stroke-width="0.8"/>
+
+<!-- Maria / Learning Landscape — 300°→360° — muted green -->
+<path d="M 845 176 A 490 490 0 0 1 1090 600 L 685 600 A 85 85 0 0 0 642.5 527 Z"
+  fill="#b0c880" stroke="#7a9840" stroke-width="0.8"/>
+
+<!-- Eric / Ownership Gap — 0°→60° — warm ochre -->
+<path d="M 1090 600 A 490 490 0 0 1 845 1024 L 642.5 673.5 A 85 85 0 0 0 685 600 Z"
+  fill="#c8a840" stroke="#9a7820" stroke-width="0.8"/>
+
+<!-- Srishti / Delegation Dilemma — 60°→90° — neutral mixed -->
+<path d="M 845 1024 A 490 490 0 0 1 600 1090 L 600 685 A 85 85 0 0 0 642.5 673.5 Z"
+  fill="#c0b880" stroke="#9a9060" stroke-width="0.8"/>
+
+<!-- Josh / Measurement Maze — 90°→150° — parchment gold -->
+<path d="M 600 1090 A 490 490 0 0 1 176 845 L 526.5 642.5 A 85 85 0 0 0 600 685 Z"
+  fill="#c0b068" stroke="#8a8030" stroke-width="0.8"/>
+
+<!-- Nina / The Interior — 150°→210° — dark forest -->
+<path d="M 176 845 A 490 490 0 0 1 176 355 L 526.5 557.5 A 85 85 0 0 0 526.5 642.5 Z"
+  fill="#7a9868" stroke="#5a7848" stroke-width="0.8"/>
+
+<!-- Marco / Unbundled Facilitation — 210°→240° — warm tan -->
+<path d="M 176 355 A 490 490 0 0 1 355 176 L 557.5 527 A 85 85 0 0 0 526.5 557.5 Z"
+  fill="#c0b060" stroke="#8a8030" stroke-width="0.8"/>
+
+<!-- ===== TERRITORY TERRAIN DETAIL ===== -->
+
+<!-- PABLO — Blank Page clearing (sacred white at r=200 from center) -->
+<ellipse cx="600" cy="400" rx="52" ry="38" fill="url(#blank-page-grad)" filter="url(#naming-glow)" opacity="0.9"/>
+<ellipse cx="600" cy="400" rx="40" ry="28" fill="white" opacity="0.75" stroke="#c9a84c" stroke-width="0.8" stroke-dasharray="4,3"/>
+<!-- Gold pocket deposits scattered in Pablo -->
+<g opacity="0.8">
+  <ellipse cx="530" cy="210" rx="14" ry="8" fill="#f0c030" opacity="0.7"/>
+  <ellipse cx="650" cy="225" rx="11" ry="7" fill="#f0c030" opacity="0.65"/>
+  <ellipse cx="580" cy="270" rx="9" ry="6" fill="#e8b820" opacity="0.6"/>
+  <ellipse cx="680" cy="195" rx="12" ry="7" fill="#f0c030" opacity="0.6"/>
+  <ellipse cx="500" cy="255" rx="10" ry="6" fill="#e8b820" opacity="0.55"/>
+</g>
+<!-- Higher Goal glow at top -->
+<ellipse cx="600" cy="125" rx="80" ry="50" fill="url(#higher-goal-grad)" opacity="0.7"/>
+<!-- Voice Flatland (south outer Pablo) — pale strip -->
+<path d="M 438 415 Q 490 445 600 460 Q 710 445 762 415 Q 740 460 720 490 L 480 490 Z"
+  fill="#d8d0b0" opacity="0.4"/>
+
+<!-- MARIA — green Conditions Field, mountain marker, blue peninsula -->
+<!-- Green field patch -->
+<ellipse cx="950" cy="470" rx="80" ry="55" fill="#90c070" opacity="0.45"/>
+<!-- Mountain triangle (Mt Event Trap) -->
+<polygon points="890,310 860,380 920,380" fill="#8b7040" stroke="#5a3e1b" stroke-width="1" opacity="0.75"/>
+<polygon points="890,310 875,345 905,345" fill="#a08050" opacity="0.6"/>
+<!-- Snow cap -->
+<polygon points="890,310 882,328 898,328" fill="#f0ebe0" opacity="0.7"/>
+<!-- AI Peninsula extending outward (blue-toned) -->
+<ellipse cx="1048" cy="410" rx="55" ry="32" fill="#8ab8d8" opacity="0.55" stroke="#4a88b8" stroke-width="0.6"/>
+<!-- Fade Zone coast (outer edge of Maria toward Pablo) — misty -->
+<path d="M 845 176 Q 880 200 920 240 Q 960 275 1000 310 L 1000 280 Q 960 248 920 212 Q 880 176 845 176 Z"
+  fill="#d8cdb8" opacity="0.5"/>
+
+<!-- ERIC — Build Zone district, Metric Void outer flatland -->
+<!-- Build Zone (ochre cluster) -->
+<ellipse cx="930" cy="688" rx="75" ry="55" fill="#c8a030" opacity="0.4"/>
+<!-- Small building marks in Build Zone -->
+<rect x="905" y="665" width="20" height="24" fill="#b08020" opacity="0.5" stroke="#8b6010" stroke-width="0.6"/>
+<rect x="932" y="660" width="24" height="28" fill="#c09030" opacity="0.5" stroke="#8b6010" stroke-width="0.6"/>
+<rect x="963" y="668" width="18" height="22" fill="#b08020" opacity="0.5" stroke="#8b6010" stroke-width="0.6"/>
+<!-- Metric Void (pale outer flatland) -->
+<ellipse cx="1028" cy="760" rx="60" ry="45" fill="#e0d8c0" opacity="0.7" stroke="#b8a878" stroke-width="0.7" stroke-dasharray="4,3"/>
+<!-- Bedrock (dark stone under Build Zone) -->
+<ellipse cx="885" cy="745" rx="55" ry="30" fill="#7a7060" opacity="0.4"/>
+
+<!-- SRISHTI — Can/Should Border arc, elevated Muscle Zone inner, archipelago -->
+<!-- Muscle Zone elevation (inner, warmer) -->
+<ellipse cx="665" cy="850" rx="55" ry="40" fill="#c0a848" opacity="0.35"/>
+<ellipse cx="665" cy="850" rx="50" ry="35" fill="url(#elevation-lines)" opacity="0.5"/>
+<!-- Can/Should Border arc (arc within Srishti territory at r=250) -->
+<path d="M 725 817 A 250 250 0 0 1 600 850" stroke="#c0392b" stroke-width="2" fill="none" stroke-dasharray="8,5" opacity="0.7"/>
+<!-- Archipelago islands (southeast outer) -->
+<ellipse cx="820" cy="1020" rx="28" ry="18" fill="#a0c070" opacity="0.7" stroke="#5a8030" stroke-width="0.6"/>
+<ellipse cx="870" cy="1045" rx="20" ry="13" fill="#90b060" opacity="0.65" stroke="#5a8030" stroke-width="0.5"/>
+<ellipse cx="775" cy="1042" rx="16" ry="11" fill="#98b868" opacity="0.6" stroke="#5a8030" stroke-width="0.5"/>
+<!-- First Output (glittering on border) -->
+<ellipse cx="720" cy="948" rx="22" ry="15" fill="#f8e040" opacity="0.7" filter="url(#naming-glow)"/>
+<polygon points="720,935 724,946 735,942 727,950 730,961 720,955 710,961 713,950 705,942 716,946" fill="#f0c830" opacity="0.8"/>
+
+<!-- JOSH — maze hedges, NET Formula inscription, Usage Counter tower, Sticky Note -->
+<!-- Maze hedge bands -->
+<g stroke="#4a6828" stroke-width="6" stroke-linecap="square" fill="none" opacity="0.55">
+  <line x1="490" y1="978" x2="540" y2="960"/>
+  <line x1="420" y1="950" x2="470" y2="932"/>
+  <line x1="470" y1="968" x2="500" y2="950"/>
+  <line x1="455" y1="998" x2="498" y2="980"/>
+  <line x1="408" y1="922" x2="440" y2="908"/>
+</g>
+<!-- NET Formula Inscription (stone slab, center of Josh) -->
+<rect x="418" y="875" width="85" height="55" rx="3" fill="#a09070" stroke="#6a5a3a" stroke-width="1.5" opacity="0.85"/>
+<text x="460" y="893" font-family="'Cinzel', serif" font-size="6.5" font-weight="700" fill="#f2e8d0" text-anchor="middle" letter-spacing="0.5">NET PRODUCTIVITY =</text>
+<line x1="422" y1="896" x2="499" y2="896" stroke="#6a5a3a" stroke-width="0.6" opacity="0.6"/>
+<text x="460" y="906" font-family="'Cinzel', serif" font-size="6" fill="#f2e8d0" text-anchor="middle">Value(H+M) − Friction</text>
+<text x="460" y="916" font-family="'Cinzel', serif" font-size="6" fill="#f5b0a0" text-anchor="middle">− Cognitive Load − Latency</text>
+<!-- Usage Counter tower (outer Josh) -->
+<rect x="540" y="958" width="22" height="30" fill="#c8a040" stroke="#7a6010" stroke-width="0.8" opacity="0.75"/>
+<polygon points="540,958 551,942 562,958" fill="#b89030" opacity="0.7"/>
+<!-- Scoreboard -->
+<rect x="543" y="948" width="16" height="10" fill="#2a1a08" stroke="#c0392b" stroke-width="0.5" rx="1" opacity="0.8"/>
+<text x="551" y="955.5" font-family="'Cinzel', serif" font-size="5.5" fill="#f0c040" text-anchor="middle">847</text>
+<!-- Governance Wasteland (outer Josh) — cracked pale -->
+<ellipse cx="325" cy="932" rx="65" ry="45" fill="#c8b898" opacity="0.6"/>
+<!-- Cracks -->
+<path d="M290 910 L305 935 L295 955" stroke="#9a8a60" stroke-width="0.8" fill="none" opacity="0.5"/>
+<path d="M320 905 L328 930 L318 950" stroke="#9a8a60" stroke-width="0.7" fill="none" opacity="0.4"/>
+<!-- Sticky Note (on inward path, tiny) -->
+<rect x="549" y="772" width="16" height="14" rx="1" fill="#f5e040" stroke="#c8b020" stroke-width="0.6" opacity="0.9" transform="rotate(-4,557,779)"/>
+<text x="557" y="779" font-family="'IM Fell English', serif" font-size="5" fill="#2a1a06" text-anchor="middle" transform="rotate(-4,557,779)">who am I</text>
+<text x="557" y="785" font-family="'IM Fell English', serif" font-size="5" fill="#2a1a06" text-anchor="middle" transform="rotate(-4,557,779)">if I no longer</text>
+<!-- OKR Horizon glow (inner east of Josh) -->
+<ellipse cx="580" cy="740" rx="35" ry="25" fill="#f8e060" opacity="0.25" filter="url(#naming-glow)"/>
+
+<!-- NINA — dark Craft Landscape forest, Opacity Wall outer, Naming Place clearing -->
+<!-- Rich forest Craft Landscape (center of Nina) -->
+<ellipse cx="320" cy="700" rx="120" ry="95" fill="#5a7848" opacity="0.55"/>
+<ellipse cx="320" cy="700" rx="115" ry="90" fill="url(#forest-dots)" opacity="0.6"/>
+<!-- Individual trees in Craft Landscape -->
+<g fill="#2a4a18" opacity="0.7">
+  <polygon points="268,648 261,670 275,670"/>
+  <polygon points="285,638 278,660 292,660"/>
+  <polygon points="305,632 298,655 312,655"/>
+  <polygon points="325,630 318,653 332,653"/>
+  <polygon points="345,634 338,656 352,656"/>
+  <polygon points="362,642 355,665 369,665"/>
+  <polygon points="374,656 367,678 381,678"/>
+  <polygon points="372,678 365,700 379,700"/>
+  <polygon points="355,700 348,722 362,722"/>
+  <polygon points="330,715 323,738 337,738"/>
+  <polygon points="298,720 291,743 305,743"/>
+  <polygon points="272,710 265,733 279,733"/>
+  <polygon points="255,690 248,713 262,713"/>
+  <polygon points="252,666 245,688 259,688"/>
+</g>
+<!-- Opacity Wall (outer west strip of Nina) -->
+<rect x="138" y="760" width="38" height="170" fill="#7a7060" stroke="#4a4030" stroke-width="1.2" opacity="0.7"/>
+<!-- Wall crenellations -->
+<g fill="#8a8070" stroke="#4a4030" stroke-width="0.6" opacity="0.7">
+  <rect x="140" y="750" width="10" height="14"/>
+  <rect x="154" y="750" width="10" height="14"/>
+  <rect x="168" y="750" width="10" height="14"/>
+</g>
+<!-- Naming Place clearing (inner Nina, facing crater) -->
+<ellipse cx="450" cy="645" rx="45" ry="32" fill="url(#naming-grad)" filter="url(#naming-glow)" opacity="0.85"/>
+<ellipse cx="450" cy="645" rx="32" ry="22" fill="#f8f4ec" opacity="0.6" stroke="#c9a84c" stroke-width="0.8" stroke-dasharray="3,3"/>
+<!-- Monoculture Flatland (outer south strip of Nina) -->
+<path d="M 176 845 Q 230 870 280 875 L 280 920 Q 230 918 176 890 Z" fill="#d0c8a8" opacity="0.55"/>
+<!-- Oracle glow on Josh/Srishti/Nina corner — placed at r=230 from center, angle=90° (Josh) -->
+<ellipse cx="600" cy="830" rx="55" ry="42" fill="url(#oracle-grad)" filter="url(#oracle-glow)" opacity="0.7"/>
+<rect x="584" y="838" width="32" height="38" fill="#d4b030" stroke="#8b6010" stroke-width="1" opacity="0.8"/>
+<polygon points="600,808 590,840 610,840" fill="#e8c840" stroke="#8b6010" stroke-width="0.8" opacity="0.85"/>
+
+<!-- MARCO — Craft Gap ravine (radial), warm Room inner, cool Prep outer, AI Bridge -->
+<!-- Prep Quarter (outer, cooler) -->
+<ellipse cx="275" cy="410" rx="85" ry="65" fill="#b0a888" opacity="0.45"/>
+<!-- Prep buildings (faded) -->
+<rect x="238" y="370" width="22" height="28" fill="#b0a880" stroke="#888060" stroke-width="0.6" opacity="0.55"/>
+<rect x="265" y="362" width="26" height="32" fill="#b8b090" stroke="#888060" stroke-width="0.6" opacity="0.5"/>
+<rect x="297" y="373" width="20" height="25" fill="#a8a078" stroke="#888060" stroke-width="0.6" opacity="0.48"/>
+<!-- The Room (inner, warm amber) -->
+<ellipse cx="465" cy="468" rx="68" ry="52" fill="#c8a040" opacity="0.45"/>
+<!-- Room warm buildings -->
+<rect x="440" y="444" width="28" height="32" fill="#d4a030" stroke="#8b6010" stroke-width="0.8" opacity="0.7"/>
+<polygon points="440,444 454,428 468,444" fill="#b88020" opacity="0.7"/>
+<rect x="448" y="456" width="8" height="10" fill="#f8e060" opacity="0.65" rx="1"/>
+<rect x="460" y="456" width="8" height="10" fill="#f8d840" opacity="0.6" rx="1"/>
+<!-- AI Bridge (crossing the Craft Gap ravine — placed near 210° at r=215) -->
+<!-- Bridge at r=215 crossing the 210° radial: -->
+<!-- Bridge runs roughly from (420,485) to (450,460) perpendicular to ravine -->
+<line x1="415" y1="490" x2="445" y2="462" stroke="#e0d090" stroke-width="5" opacity="0.7"/>
+<line x1="415" y1="490" x2="445" y2="462" stroke="#c8b870" stroke-width="2.5" opacity="0.5" stroke-dasharray="4,3"/>
+<!-- Bridge posts -->
+<g stroke="#c8b870" stroke-width="1.5" opacity="0.7">
+  <line x1="422" y1="486" x2="420" y2="494"/>
+  <line x1="432" y1="477" x2="430" y2="485"/>
+  <line x1="442" y1="467" x2="440" y2="475"/>
+</g>
+<!-- Budget Wall (outer south of Marco) -->
+<path d="M 355 176 Q 300 220 260 290 L 240 280 Q 280 208 340 163 Z" fill="#9a8858" opacity="0.4" stroke="#6a5030" stroke-width="0.8"/>
+<!-- Defence (unmapped inner NE of Marco) -->
+<ellipse cx="395" cy="365" rx="45" ry="32" fill="#d8c890" opacity="0.35" stroke="#b8a060" stroke-width="0.8" stroke-dasharray="4,3"/>
+
+<!-- ===== CRAFT GAP RAVINE (shared border Nina/Marco, radial at 210°) ===== -->
+<!-- Deep dark crack along 210° radial from inner to outer -->
+<path d="M 526.5 557.5 L 176 355" stroke="#180e04" stroke-width="5" opacity="0.7"/>
+<path d="M 524 560 L 178 358" stroke="#2a1808" stroke-width="2" opacity="0.5"/>
+<path d="M 529 555 L 174 352" stroke="#2a1808" stroke-width="2" opacity="0.5"/>
+<!-- Jagged edges suggestion -->
+<g stroke="#3a2010" stroke-width="1" opacity="0.35" fill="none">
+  <path d="M 517 561 L 510 552 L 503 563 L 496 554 L 489 565 L 482 556"/>
+  <path d="M 420 512 L 413 503 L 406 514 L 399 505 L 392 516 L 385 507"/>
+</g>
+
+<!-- ===== EXPEDITION RING ===== -->
+<circle cx="600" cy="600" r="320" fill="none" stroke="#8b6914" stroke-width="4" opacity="0.65"/>
+<circle cx="600" cy="600" r="320" fill="none" stroke="#c8a850" stroke-width="1.5" opacity="0.4"/>
+<!-- Direction arrows on ring (clockwise) -->
+<g fill="#8b6914" opacity="0.7">
+  <!-- Arrow at top (Pablo, going right/clockwise) -->
+  <polygon points="620,280 607,274 607,286"/>
+  <!-- Arrow at right (Maria/Eric) -->
+  <polygon points="920,618 914,605 926,605"/>
+  <!-- Arrow at bottom -->
+  <polygon points="582,920 586,907 594,913" transform="rotate(180,588,913)"/>
+  <!-- Arrow at left (Nina) -->
+  <polygon points="282,582 288,595 276,595"/>
+</g>
+<!-- Expedition Ring waymarker label -->
+<rect x="825" y="442" width="105" height="18" rx="2" fill="#f2e8d0" stroke="#8b6914" stroke-width="0.8" opacity="0.9"/>
+<text x="877" y="454" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="0.5">THE EXPEDITION RING</text>
+
+<!-- ===== INWARD PATHS (7 radial dashed lines from ring to crater) ===== -->
+<g stroke="#2c1808" stroke-width="1.8" fill="none" stroke-dasharray="7,5" opacity="0.7">
+  <!-- Pablo (270°): (600,280)→(600,515) -->
+  <line x1="600" y1="280" x2="600" y2="515"/>
+  <!-- Maria (330°): (877,440)→(673,557.5) -->
+  <line x1="877" y1="440" x2="673" y2="557.5"/>
+  <!-- Eric (30°): (877,760)→(673.5,642.5) -->
+  <line x1="877" y1="760" x2="673.5" y2="642.5"/>
+  <!-- Srishti (75°): (683,909)→(622,682) -->
+  <line x1="683" y1="909" x2="622" y2="682"/>
+  <!-- Josh (120°): (440,877)→(557.5,673.5) -->
+  <line x1="440" y1="877" x2="557.5" y2="673.5"/>
+  <!-- Nina (180°): (280,600)→(515,600) -->
+  <line x1="280" y1="600" x2="515" y2="600"/>
+  <!-- Marco (225°): (374,374)→(543,543) -->
+  <line x1="374" y1="374" x2="543" y2="543"/>
+</g>
+<!-- Inward Path label near crater -->
+<rect x="490" y="530" width="88" height="16" rx="2" fill="#1a0e04" opacity="0.7"/>
+<text x="534" y="541" font-family="'IM Fell English', serif" font-style="italic" font-size="8.5" fill="#c9a84c" text-anchor="middle">The Inward Path</text>
+
+<!-- ===== TERRITORY BOUNDARY LINES ===== -->
+<g stroke="#8b6914" stroke-width="1.2" fill="none" opacity="0.35" stroke-dasharray="4,4">
+  <!-- 240° boundary (Pablo/Marco) -->
+  <line x1="557.5" y1="526" x2="355" y2="176"/>
+  <!-- 300° boundary (Pablo/Maria) -->
+  <line x1="642.5" y1="526" x2="845" y2="176"/>
+  <!-- 0° boundary (Maria/Eric) -->
+  <line x1="685" y1="600" x2="1090" y2="600"/>
+  <!-- 60° boundary (Eric/Srishti) -->
+  <line x1="642.5" y1="673.5" x2="845" y2="1024"/>
+  <!-- 90° boundary (Srishti/Josh) -->
+  <line x1="600" y1="685" x2="600" y2="1090"/>
+  <!-- 150° boundary (Josh/Nina) -->
+  <line x1="526.5" y1="642.5" x2="176" y2="845"/>
+  <!-- 210° boundary (Nina/Marco) — this is the Craft Gap, shown as thick dark line above -->
+</g>
+
+<!-- ===== IDENTITY CRATER (center) ===== -->
+<!-- Outer glow -->
+<circle cx="600" cy="600" r="105" fill="none" stroke="#c0392b" stroke-width="1.5" opacity="0.3" stroke-dasharray="5,4"/>
+<circle cx="600" cy="600" r="95" fill="none" stroke="#8b0000" stroke-width="0.8" opacity="0.25"/>
+<!-- Crater body -->
+<circle cx="600" cy="600" r="85" fill="url(#crater-grad)" stroke="#3a2010" stroke-width="2"/>
+<!-- Crater rim glow -->
+<circle cx="600" cy="600" r="85" fill="url(#crater-rim)"/>
+<!-- Crater texture lines (volcanic) -->
+<g stroke="#3a2010" stroke-width="0.7" fill="none" opacity="0.4">
+  <path d="M 540 570 Q 560 580 555 600 Q 560 620 540 630"/>
+  <path d="M 660 570 Q 640 580 645 600 Q 640 620 660 630"/>
+  <path d="M 570 540 Q 580 558 600 555 Q 620 558 630 540"/>
+  <path d="M 570 660 Q 580 642 600 645 Q 620 642 630 660"/>
+</g>
+<!-- Monolith / carved stone at crater rim -->
+<rect x="588" y="526" width="24" height="38" rx="2" fill="#3a2810" stroke="#6a5020" stroke-width="1.2"/>
+<rect x="591" y="529" width="18" height="32" rx="1" fill="#4a3818" opacity="0.8"/>
+<!-- Inscription on monolith (tiny but present) -->
+<text x="600" y="540" font-family="'IM Fell English', serif" font-style="italic" font-size="5" fill="#c9a84c" text-anchor="middle" opacity="0.8">"Who am I</text>
+<text x="600" y="547" font-family="'IM Fell English', serif" font-style="italic" font-size="5" fill="#c9a84c" text-anchor="middle" opacity="0.8">as a professional</text>
+<text x="600" y="554" font-family="'IM Fell English', serif" font-style="italic" font-size="5" fill="#c9a84c" text-anchor="middle" opacity="0.75">if I no longer</text>
+<text x="600" y="561" font-family="'IM Fell English', serif" font-style="italic" font-size="5" fill="#c9a84c" text-anchor="middle" opacity="0.75">do xyz?"</text>
+<!-- Crater label -->
+<text x="600" y="608" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#c9a84c" text-anchor="middle" letter-spacing="0.5">THE IDENTITY</text>
+<text x="600" y="620" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#c9a84c" text-anchor="middle" letter-spacing="0.5">CRATER</text>
+<!-- Crater note -->
+<text x="600" y="634" font-family="'IM Fell English', serif" font-style="italic" font-size="7" fill="#a08040" text-anchor="middle" opacity="0.7">underneath everything</text>
+
+<!-- ===== ORACLE LABEL ===== -->
+<text x="600" y="800" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#8b6010" text-anchor="middle" opacity="0.75">The Oracle</text>
+
+<!-- ===== FADE ZONE COAST LABEL ===== -->
+<text x="960" y="280" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#7a6040" text-anchor="middle" opacity="0.65" transform="rotate(30,960,280)">Fade Zone Coast</text>
+
+<!-- ===== AI BRIDGE LABEL ===== -->
+<text x="405" y="450" font-family="'IM Fell English', serif" font-style="italic" font-size="8" fill="#8b6914" text-anchor="middle" opacity="0.7">AI Bridge</text>
+
+<!-- ===== HIGHER GOAL LABEL ===== -->
+<text x="600" y="112" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="#c0392b" text-anchor="middle" opacity="0.7">The Higher Goal ↑</text>
+<!-- Dotted border at top edge showing "beyond current map" -->
+<path d="M 540 120 Q 600 105 660 120" stroke="#c0392b" stroke-width="1.2" fill="none" stroke-dasharray="5,5" opacity="0.55"/>
+<text x="600" y="95" font-family="'IM Fell English', serif" font-style="italic" font-size="8" fill="#c0392b" text-anchor="middle" opacity="0.5">beyond current map</text>
+
+<!-- ===== TERRA INCOGNITA (outer ocean questions) ===== -->
+<!-- These float in the outer ocean ring -->
+<text x="600" y="68" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#4a7898" text-anchor="middle" opacity="0.6">What would learning look like without content?</text>
+
+<text x="1100" y="490" font-family="'IM Fell English', serif" font-style="italic" font-size="9.5" fill="#4a7898" text-anchor="middle" opacity="0.55" transform="rotate(30,1100,490)">How do we keep learning from each other without displacement?</text>
+
+<text x="1065" y="820" font-family="'IM Fell English', serif" font-style="italic" font-size="9.5" fill="#4a7898" text-anchor="middle" opacity="0.55" transform="rotate(60,1065,820)">How can newer practitioners use AI without losing foundational skills?</text>
+
+<text x="145" y="820" font-family="'IM Fell English', serif" font-style="italic" font-size="9.5" fill="#4a7898" text-anchor="middle" opacity="0.55" transform="rotate(-60,145,820)">How do we slow down when AI is sold for fast output?</text>
+
+<text x="145" y="490" font-family="'IM Fell English', serif" font-style="italic" font-size="9.5" fill="#4a7898" text-anchor="middle" opacity="0.55" transform="rotate(-30,145,490)">How will L&amp;D identity shift — and who is guiding that shift?</text>
+
+<text x="600" y="1128" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#4a7898" text-anchor="middle" opacity="0.6">Is automation the goal — or a means to a higher goal?</text>
+
+<!-- Sea of Open Questions label -->
+<text x="600" y="1092" font-family="'IM Fell English', serif" font-style="italic" font-size="13" fill="#4a7898" text-anchor="middle" opacity="0.55">The Sea of Open Questions</text>
+
+<!-- ===== TERRITORY LABELS ===== -->
+
+<!-- PABLO (270° — top) -->
+<text x="600" y="298" font-family="'Cinzel', serif" font-size="13" font-weight="700" fill="#2c1a06" text-anchor="middle">The Time Economy</text>
+<text x="600" y="312" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#6a4e20" text-anchor="middle">Pablo Alvarez · Table VI</text>
+
+<!-- MARIA (330° — NE) -->
+<text x="908" y="440" font-family="'Cinzel', serif" font-size="12" font-weight="700" fill="#2c1a06" text-anchor="middle">The Learning</text>
+<text x="908" y="454" font-family="'Cinzel', serif" font-size="12" font-weight="700" fill="#2c1a06" text-anchor="middle">Landscape</text>
+<text x="908" y="468" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#6a4e20" text-anchor="middle">Maria Campillo · Table I</text>
+
+<!-- ERIC (30° — E) -->
+<text x="912" y="745" font-family="'Cinzel', serif" font-size="12" font-weight="700" fill="#2c1a06" text-anchor="middle">The Ownership</text>
+<text x="912" y="759" font-family="'Cinzel', serif" font-size="12" font-weight="700" fill="#2c1a06" text-anchor="middle">Gap</text>
+<text x="912" y="773" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#6a4e20" text-anchor="middle">Eric Grant · Table II</text>
+
+<!-- SRISHTI (75° — SE, small territory) -->
+<text x="712" y="900" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#2c1a06" text-anchor="middle">The Delegation</text>
+<text x="712" y="913" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#2c1a06" text-anchor="middle">Dilemma</text>
+<text x="712" y="926" font-family="'IM Fell English', serif" font-style="italic" font-size="9.5" fill="#6a4e20" text-anchor="middle">Srishti Sehgal · Table V</text>
+
+<!-- JOSH (120° — S) -->
+<text x="450" y="882" font-family="'Cinzel', serif" font-size="12" font-weight="700" fill="#2c1a06" text-anchor="middle">The Measurement</text>
+<text x="450" y="896" font-family="'Cinzel', serif" font-size="12" font-weight="700" fill="#2c1a06" text-anchor="middle">Maze</text>
+<text x="450" y="910" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#6a4e20" text-anchor="middle">Josh Cavalier · Table III</text>
+
+<!-- NINA (180° — W) -->
+<text x="268" y="630" font-family="'Cinzel', serif" font-size="13" font-weight="700" fill="#f2e8d0" text-anchor="middle">The Interior</text>
+<text x="268" y="645" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#d0c8a8" text-anchor="middle">Nina Pavlovska · Table VII</text>
+
+<!-- MARCO (225° — NW, small territory) -->
+<text x="372" y="392" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#2c1a06" text-anchor="middle">The Unbundled</text>
+<text x="372" y="405" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#2c1a06" text-anchor="middle">Facilitation</text>
+<text x="372" y="418" font-family="'IM Fell English', serif" font-style="italic" font-size="9.5" fill="#6a4e20" text-anchor="middle">Marco van Hout · Table IV</text>
+
+<!-- ===== MAP TITLE ===== -->
+<rect x="14" y="14" width="1172" height="712" fill="none"/>
+<!-- Title band at top -->
+<text x="600" y="40" font-family="'Cinzel', serif" font-size="22" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="3">THE AI FIELDWORK EXPEDITION MAP</text>
+<text x="600" y="57" font-family="'IM Fell English', serif" font-style="italic" font-size="12" fill="#6a4e20" text-anchor="middle">What AI actually changes about the work of L&amp;D</text>
+<text x="600" y="70" font-family="'Cinzel', serif" font-size="9" fill="#8b6914" text-anchor="middle" letter-spacing="1">L&amp;D SHAKERS · AI EXPLORATION CAFÉ · 2025</text>
+
+<!-- ===== LEGEND / BOTTOM ===== -->
+<rect x="185" y="1145" width="830" height="38" rx="3" fill="#f2e8d0" stroke="#8b6914" stroke-width="1" opacity="0.92"/>
+<text x="600" y="1157" font-family="'IM Fell English', serif" font-style="italic" font-size="11" fill="#5a3e1b" text-anchor="middle">"A good round leaves the question clearer, not necessarily answered."</text>
+<text x="600" y="1173" font-family="'Cinzel', serif" font-size="8.5" fill="#8b6914" text-anchor="middle" letter-spacing="0.5">— AI Exploration Café, June 2025</text>
+
+<!-- Legend icons -->
+<g transform="translate(215,1150)">
+  <circle cx="8" cy="10" r="6" fill="#c0392b" stroke="white" stroke-width="1.2"/>
+  <text x="18" y="14" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Territory</text>
+  <line x1="78" y1="10" x2="104" y2="10" stroke="#8b6914" stroke-width="3.5" opacity="0.65"/>
+  <text x="108" y="14" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Expedition Ring</text>
+  <line x1="208" y1="10" x2="234" y2="10" stroke="#2c1808" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.8"/>
+  <text x="238" y="14" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Inward Path</text>
+  <line x1="318" y1="10" x2="344" y2="10" stroke="#180e04" stroke-width="4" opacity="0.7"/>
+  <text x="348" y="14" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Craft Gap Ravine</text>
+</g>
+
+<!-- ===== COMPASS ROSE (bottom right) ===== -->
+<g transform="translate(1110, 1100)">
+  <circle r="42" fill="#f2e8d0" stroke="#8b6914" stroke-width="1.5"/>
+  <circle r="36" fill="none" stroke="#8b6914" stroke-width="0.5" stroke-dasharray="3,3"/>
+  <line x1="0" y1="-36" x2="0" y2="36" stroke="#8b6914" stroke-width="0.8"/>
+  <line x1="-36" y1="0" x2="36" y2="0" stroke="#8b6914" stroke-width="0.8"/>
+  <line x1="-26" y1="-26" x2="26" y2="26" stroke="#8b6914" stroke-width="0.5" opacity="0.5"/>
+  <line x1="26" y1="-26" x2="-26" y2="26" stroke="#8b6914" stroke-width="0.5" opacity="0.5"/>
+  <polygon points="0,-34 -6,-14 0,-18 6,-14" fill="#c0392b"/>
+  <polygon points="0,-18 -6,-14 0,34 6,-14" fill="#5a3e1b"/>
+  <circle r="4" fill="#8b6914"/>
+  <text y="-40" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">N</text>
+  <text y="52" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">S</text>
+  <text x="46" y="4" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">E</text>
+  <text x="-46" y="4" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">W</text>
+</g>
+
+<!-- ===== DECORATIVE BORDER ===== -->
+<rect x="14" y="14" width="1172" height="1172" fill="none" stroke="#8b6914" stroke-width="2.5"/>
+<rect x="20" y="20" width="1160" height="1160" fill="none" stroke="#8b6914" stroke-width="0.8" stroke-dasharray="5,4"/>
+<!-- Tick marks at territory boundaries (clock positions on border) -->
+<!-- Corner ornaments -->
+<g stroke="#8b6914" stroke-width="1.5" fill="none">
+  <path d="M14 14 L44 14 M14 14 L14 44"/>
+  <path d="M1186 14 L1156 14 M1186 14 L1186 44"/>
+  <path d="M14 1186 L44 1186 M14 1186 L14 1156"/>
+  <path d="M1186 1186 L1156 1186 M1186 1186 L1186 1156"/>
+</g>
+<circle cx="14" cy="14" r="5" fill="#8b6914"/>
+<circle cx="1186" cy="14" r="5" fill="#8b6914"/>
+<circle cx="14" cy="1186" r="5" fill="#8b6914"/>
+<circle cx="1186" cy="1186" r="5" fill="#8b6914"/>
+
+<!-- ===== VIGNETTE ===== -->
+<rect width="1200" height="1200" fill="url(#vignette)"/>
+
+<!-- ===== CLICKABLE PINS ===== -->
+
+<!-- Pablo (Table VI) — (600, 305) -->
+<g class="pin-group" data-id="pablo" transform="translate(600,288)" onclick="openSidebar('pablo')">
+  <line x1="0" y1="0" x2="0" y2="24" stroke="#8b0000" stroke-width="2"/>
+  <circle class="pin-circle" cx="0" cy="0" r="13" fill="#c0392b" stroke="white" stroke-width="2.2" filter="url(#pin-shadow)"/>
+  <text x="0" y="5" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">VI</text>
+</g>
+
+<!-- Maria (Table I) — (875, 435) -->
+<g class="pin-group" data-id="maria" transform="translate(875,422)" onclick="openSidebar('maria')">
+  <line x1="0" y1="0" x2="0" y2="24" stroke="#8b0000" stroke-width="2"/>
+  <circle class="pin-circle" cx="0" cy="0" r="13" fill="#c0392b" stroke="white" stroke-width="2.2" filter="url(#pin-shadow)"/>
+  <text x="0" y="5" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">I</text>
+</g>
+
+<!-- Eric (Table II) — (875, 718) -->
+<g class="pin-group" data-id="eric" transform="translate(875,705)" onclick="openSidebar('eric')">
+  <line x1="0" y1="0" x2="0" y2="24" stroke="#8b0000" stroke-width="2"/>
+  <circle class="pin-circle" cx="0" cy="0" r="13" fill="#c0392b" stroke="white" stroke-width="2.2" filter="url(#pin-shadow)"/>
+  <text x="0" y="5" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">II</text>
+</g>
+
+<!-- Srishti (Table V) — (698, 870) -->
+<g class="pin-group" data-id="srishti" transform="translate(698,858)" onclick="openSidebar('srishti')">
+  <line x1="0" y1="0" x2="0" y2="24" stroke="#8b0000" stroke-width="2"/>
+  <circle class="pin-circle" cx="0" cy="0" r="13" fill="#c0392b" stroke="white" stroke-width="2.2" filter="url(#pin-shadow)"/>
+  <text x="0" y="5" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">V</text>
+</g>
+
+<!-- Josh (Table III) — (448, 848) -->
+<g class="pin-group" data-id="josh" transform="translate(448,835)" onclick="openSidebar('josh')">
+  <line x1="0" y1="0" x2="0" y2="24" stroke="#8b0000" stroke-width="2"/>
+  <circle class="pin-circle" cx="0" cy="0" r="13" fill="#c0392b" stroke="white" stroke-width="2.2" filter="url(#pin-shadow)"/>
+  <text x="0" y="5" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">III</text>
+</g>
+
+<!-- Nina (Table VII) — (295, 570) -->
+<g class="pin-group" data-id="nina" transform="translate(295,558)" onclick="openSidebar('nina')">
+  <line x1="0" y1="0" x2="0" y2="24" stroke="#8b0000" stroke-width="2"/>
+  <circle class="pin-circle" cx="0" cy="0" r="13" fill="#c0392b" stroke="white" stroke-width="2.2" filter="url(#pin-shadow)"/>
+  <text x="0" y="5" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">VII</text>
+</g>
+
+<!-- Marco (Table IV) — (378, 378) -->
+<g class="pin-group" data-id="marco" transform="translate(378,365)" onclick="openSidebar('marco')">
+  <line x1="0" y1="0" x2="0" y2="24" stroke="#8b0000" stroke-width="2"/>
+  <circle class="pin-circle" cx="0" cy="0" r="13" fill="#c0392b" stroke="white" stroke-width="2.2" filter="url(#pin-shadow)"/>
+  <text x="0" y="5" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">IV</text>
+</g>
+
+<!-- Identity Crater (center) — star pin -->
+<g class="pin-group" data-id="crater" transform="translate(600,600)" onclick="openSidebar('crater')">
+  <circle class="pin-circle" cx="0" cy="0" r="15" fill="#8b0000" stroke="#f0c840" stroke-width="2.5" filter="url(#pin-shadow)"/>
+  <text x="0" y="5" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#f0c840" text-anchor="middle">★</text>
+</g>
+
+</svg>
+
+<!-- ===== SIDEBAR ===== -->
+<div id="sidebar">
+  <button id="sidebar-close" onclick="closeSidebar()">✕</button>
+  <div id="sidebar-inner">
+    <div class="s-tag" id="s-tag"></div>
+    <div class="s-title" id="s-title"></div>
+    <div class="s-desc" id="s-desc"></div>
+    <div class="s-quote" id="s-quote"></div>
+    <div class="s-tension-label">⚡ Tension</div>
+    <div class="s-tension" id="s-tension"></div>
+  </div>
+  <div id="sidebar-footer">AI Fieldwork Expedition · L&D Shakers · 2025</div>
+</div>
+</div>
+
+<script>
+const data = {
+  'crater': {
+    tag: 'The Center of the World',
+    title: 'The Identity Crater',
+    desc: 'Every territory on this map orbits this question. It appeared on a sticky note at Table 3. Nobody put it on the agenda. Everyone felt it. The identity crisis is not a side effect of AI adoption — it is the main event. The crater does not move. The expedition routes pass near it, around it, and — on the inward path — directly toward it.',
+    quote: '"\'Who am I as a professional if I no longer do xyz?\' Written on a sticky note at the table. Not said out loud. That gap is underneath every single productivity conversation."',
+    tension: 'The crater is not a problem to solve. It is a question to inhabit. The practitioners who get closest to it are the ones who stop trying to route around it.'
+  },
+  'pablo': {
+    tag: '12 o\'clock · Pablo Alvarez · Table VI',
+    title: 'The Time Economy',
+    desc: 'Open highland with scattered automation pockets and a sacred Blank Page at center. The terrain is deceptively varied — time is being saved in small deposits across the map, but the journey from those pockets to the Thinking Quarter is not automatic. The Higher Goal sits at the very northern edge of this territory, beyond the current map.',
+    quote: '"Is automation the goal, or is it a means to a higher goal? We didn\'t get to answer this. That might be the most important question." — Pablo Alvarez',
+    tension: 'The Blank Page is protected at center. The Voice Flatland spreads south as a warning. The road from Automation Pockets to Thinking Quarter exists, but you have to choose to build it. The Inward Path runs south through the Blank Page — the most direct route toward the crater on the whole map.'
+  },
+  'maria': {
+    tag: '2 o\'clock · Maria Campillo · Table I',
+    title: 'The Learning Landscape',
+    desc: 'Expansive territory with Mt. Event Trap as its tallest feature and the Conditions for Change Field open to the east. The AI Possibility Peninsula extends outward beyond the expedition ring. The Fade Zone coasts the outer northern shore — where learning dissolves after the session ends.',
+    quote: '"Are we designing training as an event or conditions for something to change over time? And where does AI fit in that shift?" — Maria Campillo',
+    tension: 'The Event Trap is a gravitational field. The Long Road to the Conditions Field is real but rarely taken. Most maps in this territory only show the mountain. The Inward Path runs through the Conditions Field — the longest inward route on the map, showing how far this territory sits emotionally from the crater.'
+  },
+  'eric': {
+    tag: '4 o\'clock · Eric Grant · Table II',
+    title: 'The Ownership Gap',
+    desc: 'A busy industrial district at center, with the Quality Checkpoint unmanned on the main road, the Metric Void spreading as pale flatland toward the outer edge, and the Foundations Bedrock visible beneath everything. The Consultant\'s Path runs as the inward route — toward the crater.',
+    quote: '"Our role is shifting. From content creators to consultants and connectors: accompanying people to build effective learning, connecting needs with expertise, creating communities for sharing, coaching on behaviour change." — Eric Grant',
+    tension: 'The Build Zone keeps expanding without governance. The Metric Void grows every time an initiative launches without agreed success criteria. The Quality Checkpoint exists — nobody is standing there. The Consultant\'s Path is one of the clearest inward routes on the map.'
+  },
+  'srishti': {
+    tag: '5 o\'clock · Srishti Sehgal · Table V',
+    title: 'The Delegation Dilemma',
+    desc: 'The Can/Should Border runs as a visible arc through this territory — a second ring within the ring. The Muscle Zone rises as elevated inner terrain. The First Output sits glittering on the border. The Parallel Experiments Archipelago sits offshore in the Sea of Open Questions. The Oracle is visible on the southern boundary, shared with Josh\'s territory.',
+    quote: '"Just because AI can produce something does not mean we should hand over that part of the work. The table kept returning to this distinction. Noticing it is the skill." — Srishti Sehgal',
+    tension: 'The Can/Should Border has no customs officer. The Muscle Zone atrophies quietly. The archipelago experiments alone, with no ferry between islands. The Inward Path passes through the Muscle Zone — the high ground worth protecting.'
+  },
+  'josh': {
+    tag: '6 o\'clock · Josh Cavalier · Table III',
+    title: 'The Measurement Maze',
+    desc: 'Maze terrain with the NET Formula Inscription at center — the most legible text after the title on this territory\'s individual map. The Usage Counter tower marks the most visited, least useful landmark. The Value Engine sits harder to reach. The Sticky Note is directly on the Inward Path — tiny, findable if you look. The Oracle glows on the northern boundary.',
+    quote: '"NET productivity = the value created by the system minus the friction, cognitive load, and latency caused by the interface between human and machine. That\'s the right unit. Almost nobody is measuring it." — Josh Cavalier',
+    tension: 'The Triple Demand Crossroads is unresolvable without a choice about priorities. The Sticky Note on the Inward Path contains the question underneath all the measurement questions. The NET Formula Inscription faces the crater directly — the intellectual answer to the emotional question at the center.'
+  },
+  'nina': {
+    tag: '8 o\'clock · Nina Pavlovska · Table VII',
+    title: 'The Interior',
+    desc: 'The richest, most textured terrain on the world map. The Opacity Wall faces outward along the western edge. The Craft Landscape — forests, hills, identity — occupies the center. The Naming Place clearing faces inward, toward the crater. The Monoculture Flatland spreads south. The Craft Gap Ravine marks the border with Marco\'s territory to the northwest.',
+    quote: '"The resistance was not just about AI. It was about what people did not want to lose. Naming that is not the same as solving it, but it is the right place to start." — Nina Pavlovska',
+    tension: 'The Craft Landscape is not just a place of production — it is a place of identity. When AI changes how you work here, it changes who you are while working. The Opacity Wall faces outward; the Naming Place faces inward. This territory has the most explicit inward/outward tension on the entire map.'
+  },
+  'marco': {
+    tag: '10 o\'clock · Marco van Hout · Table IV',
+    title: 'The Unbundled Facilitation',
+    desc: 'The Craft Gap Ravine runs along the southern boundary — one of the world map\'s major geological features, visible from neighboring territories. The Room faces inward toward the crater. The Prep Quarter sits cooler and emptier on the outer edge. The AI Bridge crosses the ravine. The Defence is unmapped to the northeast, partially charted.',
+    quote: '"The value moves to the room, to the human read you can\'t easily put into words. That is what AI cannot do. It is also the hardest thing to defend on a budget." — Marco van Hout',
+    tension: 'The Craft Gap is shared with Nina\'s territory — the world\'s most visible geological fault. The Room faces the crater. The AI Bridge is gleaming and new and untested. The Inward Path runs through The Room and across the ravine — the crossing is the point.'
+  }
+};
+
+function openSidebar(id) {
+  const d = data[id];
+  if (!d) return;
+  document.getElementById('s-tag').textContent = d.tag;
+  document.getElementById('s-title').textContent = d.title;
+  document.getElementById('s-desc').textContent = d.desc;
+  document.getElementById('s-quote').textContent = d.quote;
+  document.getElementById('s-tension').textContent = d.tension;
+  document.getElementById('sidebar').classList.add('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+document.getElementById('map-svg').addEventListener('click', function(e) {
+  if (!e.target.closest('.pin-group')) closeSidebar();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Delegation Dilemma — Table V · Srishti Sehgal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2a1f0e;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; font-family: 'IM Fell English', serif; overflow: hidden;
+  }
+  #map-wrapper { position: relative; width: 1100px; height: 740px; flex-shrink: 0; }
+  #map-svg { width: 100%; height: 100%; display: block; }
+  .pin-group { cursor: pointer; }
+  .pin-group:hover .pin-circle { filter: brightness(1.2) drop-shadow(0 0 6px rgba(192,57,43,0.7)); }
+  .pin-circle { transition: filter 0.2s; }
+  #sidebar {
+    position: absolute; top: 0; right: 0; width: 320px; height: 100%;
+    background: #fdf6e3; border-left: 3px solid #8b6914;
+    transform: translateX(100%); transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column; z-index: 10; overflow: hidden;
+  }
+  #sidebar.open { transform: translateX(0); }
+  #sidebar-inner { flex: 1; overflow-y: auto; padding: 24px 20px 20px; }
+  #sidebar-close {
+    position: absolute; top: 10px; right: 12px; background: none; border: none;
+    font-size: 22px; cursor: pointer; color: #5a3e1b; line-height: 1; font-family: 'Cinzel', serif;
+  }
+  #sidebar-close:hover { color: #c0392b; }
+  .s-tag {
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #c0392b; background: #fce8e6; border: 1px solid #c0392b;
+    display: inline-block; padding: 2px 8px; border-radius: 2px; margin-bottom: 10px;
+  }
+  .s-title {
+    font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700; color: #2c1a06;
+    line-height: 1.3; margin-bottom: 10px; border-bottom: 1px solid #c9a84c; padding-bottom: 8px;
+  }
+  .s-desc { font-family: 'IM Fell English', serif; font-size: 13px; color: #3a2a10; line-height: 1.65; margin-bottom: 14px; }
+  .s-quote {
+    font-family: 'IM Fell English', serif; font-style: italic; font-size: 13px; color: #1a1a1a;
+    border-left: 3px solid #c0392b; padding: 8px 10px; background: #fdf0d0; line-height: 1.6; margin-bottom: 14px;
+  }
+  .s-tension-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #8b6914; margin-bottom: 5px; }
+  .s-tension { font-family: 'IM Fell English', serif; font-size: 12px; color: #5a3e1b; line-height: 1.6; background: #f5e6c0; border: 1px dashed #b8962a; padding: 8px 10px; border-radius: 3px; }
+  #sidebar-footer { padding: 10px 20px; border-top: 1px solid #c9a84c; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.1em; color: #8b6914; text-align: center; }
+</style>
+</head>
+<body>
+<div id="map-wrapper">
+<svg id="map-svg" viewBox="0 0 1100 740" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="parchment-texture" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+      <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="blend"/>
+      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="pin-shadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="glitter-glow">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="terrain-rough" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves="2" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+      <feBlend in="SourceGraphic" in2="gray" mode="multiply" result="blend"/>
+      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="60%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#1a0e04" stop-opacity="0.48"/>
+    </radialGradient>
+    <!-- West: cool flat mechanics -->
+    <linearGradient id="west-tone" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c0b89a"/>
+      <stop offset="100%" stop-color="#ccc4a4"/>
+    </linearGradient>
+    <!-- East: warmer elevated muscle -->
+    <linearGradient id="east-tone" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c8b880"/>
+      <stop offset="100%" stop-color="#b89040"/>
+    </linearGradient>
+    <!-- North: new expansion territory -->
+    <linearGradient id="north-expansion" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d8e8c0"/>
+      <stop offset="100%" stop-color="#c8d4a8"/>
+    </linearGradient>
+    <!-- Glitter gradient for First Output -->
+    <radialGradient id="first-output-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f8e840" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#f0c020" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#c89000" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Water for sea -->
+    <pattern id="water-lines" x="0" y="0" width="20" height="8" patternUnits="userSpaceOnUse">
+      <path d="M0 4 Q5 1 10 4 Q15 7 20 4" stroke="#8ab8d4" stroke-width="0.5" fill="none" opacity="0.5"/>
+    </pattern>
+    <!-- Mechanics district texture (flat, ruled) -->
+    <pattern id="ruled-flat" x="0" y="0" width="20" height="12" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="11" x2="20" y2="11" stroke="#a09878" stroke-width="0.4" opacity="0.3"/>
+    </pattern>
+    <!-- Muscle zone elevation hatch -->
+    <pattern id="elevation-hatch" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="8" x2="8" y2="0" stroke="#9a7830" stroke-width="0.5" opacity="0.35"/>
+    </pattern>
+    <!-- Island shore dots -->
+    <pattern id="island-shore" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="0.8" fill="#7a9a60" opacity="0.4"/>
+    </pattern>
+    <!-- Creative expansion soft dots -->
+    <pattern id="expansion-dots" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
+      <circle cx="7" cy="7" r="1.2" fill="#7aaa50" opacity="0.2"/>
+    </pattern>
+  </defs>
+
+  <!-- ===== PARCHMENT BASE ===== -->
+  <rect width="1100" height="740" fill="#f2e8d0"/>
+  <rect width="1100" height="740" fill="url(#parchment-texture)" opacity="0.18"/>
+
+  <!-- ===== DECORATIVE BORDER ===== -->
+  <rect x="14" y="14" width="1072" height="712" fill="none" stroke="#8b6914" stroke-width="2.5"/>
+  <rect x="20" y="20" width="1060" height="700" fill="none" stroke="#8b6914" stroke-width="0.8" stroke-dasharray="4,3"/>
+  <g stroke="#8b6914" stroke-width="1.2" fill="none">
+    <path d="M14 14 L40 14 M14 14 L14 40"/>
+    <path d="M1086 14 L1060 14 M1086 14 L1086 40"/>
+    <path d="M14 726 L40 726 M14 726 L14 700"/>
+    <path d="M1086 726 L1060 726 M1086 726 L1086 700"/>
+    <circle cx="14"   cy="14"  r="4" fill="#8b6914"/>
+    <circle cx="1086" cy="14"  r="4" fill="#8b6914"/>
+    <circle cx="14"   cy="726" r="4" fill="#8b6914"/>
+    <circle cx="1086" cy="726" r="4" fill="#8b6914"/>
+  </g>
+
+  <!-- ===== SEA (south-east, around archipelago) ===== -->
+  <ellipse cx="880" cy="590" rx="260" ry="155" fill="#b8d4e8" opacity="0.65"/>
+  <ellipse cx="880" cy="590" rx="260" ry="155" fill="url(#water-lines)"/>
+  <text x="870" y="620" font-family="'IM Fell English', serif" font-style="italic" font-size="12" fill="#4a7a9b" text-anchor="middle" opacity="0.6">Sea of Parallel Experiments</text>
+
+  <!-- ===== LANDMASS ===== -->
+  <path d="M50 108 Q175 74 360 84 Q540 68 690 88 Q820 76 960 125 Q1040 158 1055 242 Q1070 330 1050 430 Q1025 515 958 562 Q870 610 725 625 Q560 642 390 628 Q230 615 130 572 Q58 532 44 442 Q28 340 42 225 Q45 158 50 108 Z"
+    fill="#d0c49a" stroke="#a08840" stroke-width="1"/>
+
+  <!-- ===== WEST SIDE: Mechanics District (cool, flat) ===== -->
+  <path d="M55 130 Q175 95 350 105 Q450 100 490 115 L490 580 Q440 592 330 578 Q200 560 120 515 Q60 478 48 400 Q34 308 50 210 Z"
+    fill="#c0b898" opacity="0.45"/>
+  <path d="M55 130 Q175 95 350 105 Q450 100 490 115 L490 580 Q440 592 330 578 Q200 560 120 515 Q60 478 48 400 Q34 308 50 210 Z"
+    fill="url(#ruled-flat)"/>
+
+  <!-- ===== EAST SIDE: Muscle Zone (warmer, elevated) ===== -->
+  <path d="M560 100 Q700 82 840 102 Q950 118 1020 175 Q1065 220 1058 310 Q1050 400 1025 460 Q990 520 930 558 Q855 598 740 612 Q640 622 560 610 Z"
+    fill="#c8b878" opacity="0.45"/>
+  <path d="M560 100 Q700 82 840 102 Q950 118 1020 175 Q1065 220 1058 310 Q1050 400 1025 460 Q990 520 930 558 Q855 598 740 612 Q640 622 560 610 Z"
+    fill="url(#elevation-hatch)"/>
+  <!-- Elevation contours for Muscle Zone high ground -->
+  <path d="M620 200 Q720 178 820 195 Q900 210 940 260 Q970 300 960 360 Q948 420 910 458 Q860 495 780 508 Q700 515 640 495 Q590 478 572 440 Q555 405 562 360 Q570 315 595 278 Q608 252 620 200"
+    fill="#c8a850" opacity="0.22" stroke="#a08030" stroke-width="0.8"/>
+  <path d="M650 225 Q745 205 835 222 Q900 238 928 285 Q950 320 942 375 Q930 430 893 460 Q848 488 775 498 Q702 505 648 482 Q602 462 588 422 Q575 385 582 348 Q592 308 616 275 Q630 250 650 225"
+    fill="#c8a050" opacity="0.18" stroke="#a08030" stroke-width="0.6"/>
+
+  <!-- ===== NORTH: Creative Expansion territory ===== -->
+  <path d="M300 88 Q450 60 600 72 Q720 60 820 88 Q870 100 900 115 Q820 76 700 82 Q580 70 450 80 Q380 82 300 88 Z"
+    fill="#c8d8a8" opacity="0.5"/>
+  <!-- Expansion region proper -->
+  <ellipse cx="545" cy="128" rx="220" ry="68" fill="#d0e0b0" opacity="0.5"/>
+  <ellipse cx="545" cy="128" rx="220" ry="68" fill="url(#expansion-dots)"/>
+  <!-- Lighter "new land" feel -->
+  <ellipse cx="545" cy="118" rx="185" ry="52" fill="#e0eecc" opacity="0.3"/>
+  <!-- Partial charting lines -->
+  <g stroke="#7aaa50" stroke-width="0.6" fill="none" opacity="0.35" stroke-dasharray="4,3">
+    <line x1="360" y1="115" x2="720" y2="108"/>
+    <line x1="370" y1="128" x2="710" y2="122"/>
+    <line x1="395" y1="142" x2="690" y2="138"/>
+  </g>
+  <!-- New territory marker -->
+  <text x="545" y="115" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#4a7a28" text-anchor="middle" opacity="0.6">terra nova</text>
+
+  <!-- ===== THE CAN/SHOULD BORDER (vertical spine through center) ===== -->
+  <!-- Main border line -->
+  <line x1="525" y1="96" x2="525" y2="635" stroke="#c0392b" stroke-width="2.2" stroke-dasharray="12,7" opacity="0.75"/>
+  <!-- Border posts / markers every ~100px -->
+  <g fill="#c0392b" opacity="0.6">
+    <rect x="520" y="175" width="10" height="10" rx="1"/>
+    <rect x="520" y="270" width="10" height="10" rx="1"/>
+    <rect x="520" y="365" width="10" height="10" rx="1"/>
+    <rect x="520" y="460" width="10" height="10" rx="1"/>
+    <rect x="520" y="555" width="10" height="10" rx="1"/>
+  </g>
+  <!-- Border labels -->
+  <text x="525" y="94" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#c0392b" text-anchor="middle" letter-spacing="1">CAN / SHOULD</text>
+  <!-- West side label -->
+  <text x="390" y="175" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#8a7050" text-anchor="middle" opacity="0.75">← AI can do this</text>
+  <!-- East side label -->
+  <text x="665" y="175" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#7a5010" text-anchor="middle" opacity="0.8">keep this →</text>
+
+  <!-- ===== MECHANICS DISTRICT BUILDINGS ===== -->
+  <!-- Building cluster: decks, drafts, templates -->
+  <rect x="148" y="255" width="42" height="52" fill="#b8b090" stroke="#888060" stroke-width="0.8" opacity="0.7"/>
+  <polygon points="148,255 169,238 190,255" fill="#a0a078" stroke="#888060" stroke-width="0.6" opacity="0.65"/>
+  <rect x="157" y="278" width="11" height="14" fill="#d4cca8" opacity="0.55" rx="1"/>
+  <rect x="173" y="278" width="11" height="14" fill="#d4cca8" opacity="0.55" rx="1"/>
+  <!-- Handover arrow on building -->
+  <text x="169" y="258" font-family="'IM Fell English', serif" font-size="8" fill="#888060" text-anchor="middle" opacity="0.6">→ AI</text>
+
+  <rect x="210" y="230" width="52" height="60" fill="#c0b898" stroke="#888060" stroke-width="0.8" opacity="0.65"/>
+  <polygon points="210,230 236,210 262,230" fill="#a8a080" stroke="#888060" stroke-width="0.6" opacity="0.6"/>
+  <rect x="218" y="260" width="13" height="18" fill="#d4cca8" opacity="0.5" rx="1"/>
+  <rect x="238" y="260" width="13" height="18" fill="#d4cca8" opacity="0.5" rx="1"/>
+
+  <rect x="285" y="265" width="38" height="46" fill="#b0a888" stroke="#888060" stroke-width="0.8" opacity="0.6"/>
+  <polygon points="285,265 304,250 323,265" fill="#a09878" stroke="#888060" stroke-width="0.6" opacity="0.55"/>
+  <rect x="292" y="285" width="10" height="13" fill="#d4cca8" opacity="0.45" rx="1"/>
+  <rect x="307" y="285" width="10" height="13" fill="#d4cca8" opacity="0.45" rx="1"/>
+
+  <!-- District road grid (faint) -->
+  <g stroke="#a09878" stroke-width="0.8" opacity="0.2">
+    <line x1="50" y1="310" x2="490" y2="310"/>
+    <line x1="50" y1="380" x2="490" y2="380"/>
+    <line x1="180" y1="150" x2="180" y2="590"/>
+    <line x1="310" y1="130" x2="310" y2="590"/>
+  </g>
+
+  <!-- ===== INTERN DESK (southwest) ===== -->
+  <!-- Small desk landmark -->
+  <rect x="108" y="472" width="55" height="35" fill="#c8a850" stroke="#8b6010" stroke-width="1.2" rx="2"/>
+  <!-- Desk surface items: paper stacks -->
+  <rect x="113" y="477" width="18" height="12" fill="#f2e8d0" stroke="#a09060" stroke-width="0.6" rx="1"/>
+  <rect x="116" y="479" width="12" height="8" fill="#e8dcc0" stroke="#a09060" stroke-width="0.4" rx="1"/>
+  <!-- Paper on desk suggesting review -->
+  <rect x="136" y="477" width="20" height="14" fill="#f2e8d0" stroke="#a09060" stroke-width="0.6" rx="1"/>
+  <!-- Chair -->
+  <rect x="122" y="506" width="22" height="4" fill="#7a5010" stroke="#5a3e1b" stroke-width="0.6" rx="1"/>
+  <line x1="126" y1="510" x2="126" y2="522" stroke="#7a5010" stroke-width="1.5"/>
+  <line x1="140" y1="510" x2="140" y2="522" stroke="#7a5010" stroke-width="1.5"/>
+  <line x1="122" y1="518" x2="145" y2="518" stroke="#7a5010" stroke-width="1.2"/>
+  <!-- Reminder sign -->
+  <rect x="92" y="453" width="86" height="18" fill="#f5e8b0" stroke="#c8a030" stroke-width="0.8" rx="2"/>
+  <text x="135" y="465" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#5a3e1b" text-anchor="middle">review before submit</text>
+
+  <!-- ===== FIRST OUTPUT (center — on the border, glittering) ===== -->
+  <!-- Glow halo -->
+  <ellipse cx="525" cy="368" rx="70" ry="55" fill="url(#first-output-glow)" filter="url(#glitter-glow)" opacity="0.7"/>
+  <!-- Glitter star points -->
+  <g fill="#f8d030" opacity="0.85">
+    <polygon points="525,318 529,332 543,328 533,338 537,352 525,344 513,352 517,338 507,328 521,332"/>
+  </g>
+  <!-- Sparkle dots -->
+  <g fill="#f8e040" opacity="0.7">
+    <circle cx="498" cy="340" r="2.5"/>
+    <circle cx="552" cy="345" r="2"/>
+    <circle cx="510" cy="395" r="2.5"/>
+    <circle cx="542" cy="392" r="2"/>
+    <circle cx="490" cy="370" r="1.8"/>
+    <circle cx="560" cy="372" r="1.5"/>
+    <circle cx="525" cy="410" r="2"/>
+  </g>
+  <!-- Subtle warning mark -->
+  <text x="525" y="422" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#c0392b" text-anchor="middle" opacity="0.7">⚠ stop here?</text>
+
+  <!-- ===== MUSCLE ZONE (east elevated territory) ===== -->
+  <!-- Elevated plateau edge -->
+  <path d="M600 210 Q700 190 800 205 Q870 218 900 265 Q925 305 915 360 Q902 415 865 450 Q820 482 750 492 Q682 498 638 470 Q600 445 588 400 Q576 358 585 316 Q595 272 600 210"
+    fill="#b89030" opacity="0.22" stroke="#8a6820" stroke-width="1.2"/>
+  <!-- High ground shading -->
+  <path d="M620 230 Q710 212 800 228 Q858 242 882 285 Q900 322 890 370 Q876 420 842 448 Q800 472 738 480 Q675 484 638 458 Q605 433 595 395 Q585 358 593 324 Q603 288 620 230"
+    fill="#c0a040" opacity="0.16"/>
+  <!-- Muscle zone activity lines (thinking, depth) -->
+  <g stroke="#8a6820" stroke-width="0.7" fill="none" opacity="0.3">
+    <path d="M640 310 Q680 300 720 308 Q760 316 800 305"/>
+    <path d="M645 335 Q685 325 725 333 Q765 341 805 330"/>
+    <path d="M648 360 Q688 350 728 358 Q768 366 808 355"/>
+    <path d="M650 385 Q690 375 730 383 Q770 391 805 380"/>
+  </g>
+  <!-- "High Ground" label lines suggesting topography -->
+  <text x="752" y="345" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#7a5010" text-anchor="middle" opacity="0.45">high ground</text>
+
+  <!-- ===== PARALLEL EXPERIMENTS ARCHIPELAGO (southeast islands) ===== -->
+  <!-- Island 1 -->
+  <ellipse cx="820" cy="545" rx="42" ry="28" fill="#a8c880" opacity="0.75" stroke="#5a8030" stroke-width="0.8"/>
+  <ellipse cx="820" cy="545" rx="42" ry="28" fill="url(#island-shore)"/>
+  <rect x="808" y="530" width="12" height="14" fill="#8aaa60" stroke="#4a7020" stroke-width="0.6" opacity="0.7"/>
+  <polygon points="808,530 814,520 820,530" fill="#6a8a40" opacity="0.65"/>
+  <!-- Island 2 -->
+  <ellipse cx="910" cy="510" rx="35" ry="22" fill="#98b870" opacity="0.7" stroke="#5a8030" stroke-width="0.7"/>
+  <ellipse cx="910" cy="510" rx="35" ry="22" fill="url(#island-shore)"/>
+  <rect x="900" y="498" width="10" height="12" fill="#8aaa60" stroke="#4a7020" stroke-width="0.6" opacity="0.65"/>
+  <polygon points="900,498 905,490 910,498" fill="#6a8a40" opacity="0.6"/>
+  <!-- Island 3 -->
+  <ellipse cx="970" cy="560" rx="30" ry="20" fill="#a0c070" opacity="0.68" stroke="#5a8030" stroke-width="0.7"/>
+  <rect x="962" y="548" width="9" height="11" fill="#8aaa60" stroke="#4a7020" stroke-width="0.6" opacity="0.6"/>
+  <!-- Island 4 (smaller) -->
+  <ellipse cx="858" cy="600" rx="24" ry="16" fill="#90b068" opacity="0.65" stroke="#5a8030" stroke-width="0.6"/>
+  <!-- Island 5 (smallest) -->
+  <ellipse cx="942" cy="590" rx="18" ry="12" fill="#88a860" opacity="0.6" stroke="#5a8030" stroke-width="0.6"/>
+  <!-- Islands disconnected — no ferry -->
+  <!-- Dotted lines showing lack of connection -->
+  <line x1="862" y1="545" x2="875" y2="516" stroke="#7a9060" stroke-width="0.8" stroke-dasharray="3,4" opacity="0.35"/>
+  <line x1="945" y1="510" x2="958" y2="540" stroke="#7a9060" stroke-width="0.8" stroke-dasharray="3,4" opacity="0.35"/>
+  <line x1="838" y1="565" x2="848" y2="588" stroke="#7a9060" stroke-width="0.8" stroke-dasharray="3,4" opacity="0.35"/>
+  <!-- "No ferry" annotation -->
+  <text x="893" y="553" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#5a7840" text-anchor="middle" opacity="0.6">no ferry</text>
+
+  <!-- ===== ROUTES ===== -->
+  <!-- Main road: Mechanics → First Output → Muscle Zone -->
+  <path d="M365 365 Q420 365 460 367 Q488 368 505 368"
+    stroke="#8b6914" stroke-width="2.5" fill="none" opacity="0.6"/>
+  <!-- Most people stop here (dashed after First Output) -->
+  <path d="M545 368 Q580 368 618 368 Q650 368 680 368"
+    stroke="#8b6914" stroke-width="2" fill="none" stroke-dasharray="9,5" opacity="0.5"/>
+  <!-- Arrow toward Muscle Zone -->
+  <polygon points="680,368 666,362 666,374" fill="#8b6914" opacity="0.5"/>
+
+  <!-- Path: Intern Desk → Can/Should Border -->
+  <path d="M162 472 Q200 455 260 430 Q320 405 400 388 Q450 378 500 374"
+    stroke="#7a5020" stroke-width="1.5" fill="none" stroke-dasharray="6,4" opacity="0.5"/>
+
+  <!-- Creative Expansion connection (road heading north from border) -->
+  <path d="M525 150 Q525 148 525 135"
+    stroke="#5a8028" stroke-width="1.5" fill="none" stroke-dasharray="5,4" opacity="0.5"/>
+  <polygon points="525,128 521,138 529,138" fill="#5a8028" opacity="0.5"/>
+
+  <!-- ===== VIGNETTE ===== -->
+  <rect width="1100" height="740" fill="url(#vignette)"/>
+
+  <!-- ===== MAP TITLE ===== -->
+  <text x="550" y="52" font-family="'Cinzel', serif" font-size="26" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="2">The Delegation Dilemma</text>
+  <text x="550" y="72" font-family="'IM Fell English', serif" font-style="italic" font-size="13" fill="#6a4e20" text-anchor="middle">Table V · Srishti Sehgal · What would you leave for yourself?</text>
+  <line x1="200" y1="80" x2="900" y2="80" stroke="#8b6914" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- ===== LANDMARK LABELS ===== -->
+  <text x="245" y="205" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#6a6040" text-anchor="middle">The Mechanics</text>
+  <text x="245" y="217" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#6a6040" text-anchor="middle">District</text>
+
+  <text x="752" y="218" font-family="'Cinzel', serif" font-size="12" font-weight="700" fill="#2c1a06" text-anchor="middle">The Muscle Zone</text>
+
+  <text x="525" y="300" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#8b6010" text-anchor="middle">The First</text>
+  <text x="525" y="312" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#8b6010" text-anchor="middle">Output</text>
+
+  <text x="135" y="443" font-family="'Cinzel', serif" font-size="9.5" font-weight="700" fill="#2c1a06" text-anchor="middle">The Intern Desk</text>
+
+  <text x="545" y="655" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="#c0392b" text-anchor="middle" letter-spacing="1">THE CAN / SHOULD BORDER</text>
+
+  <text x="545" y="145" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#3a6018" text-anchor="middle">The Creative</text>
+  <text x="545" y="157" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#3a6018" text-anchor="middle">Expansion</text>
+
+  <text x="890" y="482" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">Parallel Experiments</text>
+  <text x="890" y="494" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">Archipelago</text>
+
+  <!-- Sea label -->
+  <text x="115" y="672" font-family="'IM Fell English', serif" font-style="italic" font-size="12" fill="#6a5020" opacity="0.55" transform="rotate(-3,115,672)">Sea of Undelegated Potential</text>
+
+  <!-- ===== COMPASS ROSE ===== -->
+  <g transform="translate(1000, 660)">
+    <circle r="32" fill="#f2e8d0" stroke="#8b6914" stroke-width="1.2"/>
+    <circle r="28" fill="none" stroke="#8b6914" stroke-width="0.5" stroke-dasharray="3,3"/>
+    <line x1="0" y1="-28" x2="0" y2="28" stroke="#8b6914" stroke-width="0.7"/>
+    <line x1="-28" y1="0" x2="28" y2="0" stroke="#8b6914" stroke-width="0.7"/>
+    <line x1="-20" y1="-20" x2="20" y2="20" stroke="#8b6914" stroke-width="0.4" opacity="0.5"/>
+    <line x1="20" y1="-20" x2="-20" y2="20" stroke="#8b6914" stroke-width="0.4" opacity="0.5"/>
+    <polygon points="0,-26 -5,-10 0,-14 5,-10" fill="#c0392b"/>
+    <polygon points="0,-14 -5,-10 0,26 5,-10" fill="#5a3e1b"/>
+    <circle r="3" fill="#8b6914"/>
+    <text y="-32" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">N</text>
+    <text y="42"  font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">S</text>
+    <text x="36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">E</text>
+    <text x="-36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">W</text>
+  </g>
+
+  <!-- ===== LEGEND ===== -->
+  <g transform="translate(295, 678)">
+    <rect x="0" y="0" width="430" height="42" rx="3" fill="#f2e8d0" stroke="#8b6914" stroke-width="1"/>
+    <text x="215" y="13" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="1">LEGEND</text>
+    <circle cx="18" cy="27" r="5" fill="#c0392b" stroke="white" stroke-width="1.2"/>
+    <text x="27" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Landmark Pin</text>
+    <line x1="110" y1="27" x2="138" y2="27" stroke="#c0392b" stroke-width="2" stroke-dasharray="6,4"/>
+    <text x="142" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Can / Should Border</text>
+    <line x1="265" y1="27" x2="293" y2="27" stroke="#8b6914" stroke-width="2" opacity="0.6"/>
+    <text x="297" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Main Road (full journey)</text>
+  </g>
+
+  <!-- ===== CLICKABLE PINS ===== -->
+
+  <!-- PIN 1: The Mechanics District -->
+  <g class="pin-group" data-id="mechanics-district" transform="translate(245,192)" onclick="openSidebar('mechanics-district')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">1</text>
+  </g>
+
+  <!-- PIN 2: The Muscle Zone -->
+  <g class="pin-group" data-id="muscle-zone" transform="translate(752,205)" onclick="openSidebar('muscle-zone')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">2</text>
+  </g>
+
+  <!-- PIN 3: The First Output (on the border) -->
+  <g class="pin-group" data-id="first-output" transform="translate(525,288)" onclick="openSidebar('first-output')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">3</text>
+  </g>
+
+  <!-- PIN 4: The Intern Desk -->
+  <g class="pin-group" data-id="intern-desk" transform="translate(135,430)" onclick="openSidebar('intern-desk')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">4</text>
+  </g>
+
+  <!-- PIN 5: The Can/Should Border -->
+  <g class="pin-group" data-id="can-should-border" transform="translate(525,475)" onclick="openSidebar('can-should-border')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">5</text>
+  </g>
+
+  <!-- PIN 6: The Creative Expansion -->
+  <g class="pin-group" data-id="creative-expansion" transform="translate(545,132)" onclick="openSidebar('creative-expansion')">
+    <line x1="0" y1="0" x2="0" y2="18" stroke="#8b0000" stroke-width="1.5"/>
+    <circle class="pin-circle" cx="0" cy="0" r="9" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">6</text>
+  </g>
+
+  <!-- PIN 7: Parallel Experiments Archipelago -->
+  <g class="pin-group" data-id="archipelago" transform="translate(890,468)" onclick="openSidebar('archipelago')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">7</text>
+  </g>
+
+</svg>
+
+<!-- ===== SIDEBAR ===== -->
+<div id="sidebar">
+  <button id="sidebar-close" onclick="closeSidebar()">✕</button>
+  <div id="sidebar-inner">
+    <div class="s-tag" id="s-tag"></div>
+    <div class="s-title" id="s-title"></div>
+    <div class="s-desc" id="s-desc"></div>
+    <div class="s-quote" id="s-quote"></div>
+    <div class="s-tension-label">⚡ Tension</div>
+    <div class="s-tension" id="s-tension"></div>
+  </div>
+  <div id="sidebar-footer">Table V · Srishti Sehgal · AI Exploration Café</div>
+</div>
+
+</div>
+
+<script>
+const data = {
+  'mechanics-district': {
+    tag: 'Landmark 1 · West District',
+    title: 'The Mechanics District',
+    desc: 'Decks, drafts, content, templates, summaries. Hand them over. That\'s fine. This district is real and useful but it is not where the value of the professional lives. The handover is already happening.',
+    quote: '"People mentioned not having to build decks from scratch, getting support with content, and freeing up brain space for business conversations, stakeholder work, and deeper thinking."',
+    tension: 'Handing over the Mechanics District is not the risk. The risk is not noticing when you start handing over the territory next door.'
+  },
+  'muscle-zone': {
+    tag: 'Landmark 2 · Elevated Terrain',
+    title: 'The Muscle Zone',
+    desc: 'Critical thinking, creative depth, stakeholder judgment, decision-making. Still yours. Use it or lose it. The Muscle Zone atrophies when you stop visiting. AI can enter this territory — but only you can keep it alive.',
+    quote: '"Creativity, decision-making, stakeholder work, and content can all be helped by AI — but they can also be weakened by it. The skill is noticing which side you are landing on."',
+    tension: 'The Muscle Zone does not disappear suddenly. It fades. The warning signs are subtle — answers that come too easily, first drafts that feel good enough, thinking that stops before it gets uncomfortable.'
+  },
+  'first-output': {
+    tag: 'Landmark 3 · On the Border',
+    title: 'The First Output',
+    desc: 'Looks polished. Sounds intelligent. Easy to submit as-is. Many stop here. The First Output is not wrong — it is just the beginning of the thinking, not the end. Stopping here means accepting the intern\'s first draft as the final answer.',
+    quote: '"AI may make \'good enough\' easier to accept. The first output often looks polished and sounds intelligent. That can make it tempting to stop too soon."',
+    tension: 'The First Output is the most visited landmark on this map. It is also a trap. The thinking that happens after it is where the real value lives.'
+  },
+  'intern-desk': {
+    tag: 'Landmark 4 · Southwest Reminder',
+    title: 'The Intern Desk',
+    desc: 'A grounding landmark. You would not submit an intern\'s work to the board without reviewing it. The same logic applies here. The desk is a reminder that AI output requires the same oversight, judgment, and ownership as any junior collaborator\'s work.',
+    quote: '"Work with AI like you would work with a new intern. You would not submit their work to a board without reviewing it. Do not do that with AI either." — Srishti Sehgal',
+    tension: 'The Intern Desk is not about distrust. It is about professional responsibility. The person who submits the work owns the work.'
+  },
+  'can-should-border': {
+    tag: 'Landmark 5 · Central Border',
+    title: 'The Can / Should Border',
+    desc: 'The most important boundary on this map. Hard to see. Easy to cross without noticing. Just because AI can produce something does not mean you should hand over that part of the work. Noticing when you are crossing this border is the skill.',
+    quote: '"Just because AI can produce something does not mean we should hand over that part of the work. The table kept returning to this distinction. Noticing it is the skill."',
+    tension: 'The Can/Should Border has no customs officer. You cross it yourself, without a stamp, often without realising. The border only becomes visible in retrospect.'
+  },
+  'creative-expansion': {
+    tag: 'Landmark 6 · New Territory North',
+    title: 'The Creative Expansion',
+    desc: 'AI lets people make things they could not easily make before. This is a real and genuine expansion of what is possible. New territory that did not exist before. The risk is mistaking "I can" for "I should" — and wandering into the expansion without knowing where the Can/Should Border is.',
+    quote: '"AI can help people make things they could not easily make before. That is a genuine expansion of what\'s possible. The risk is mistaking \'I can\' for \'I should\' and handing over the parts of the work that still matter."',
+    tension: 'The Creative Expansion is real. It is also where the Can/Should Border is hardest to see — because everything looks possible and nothing looks like a cost.'
+  },
+  'archipelago': {
+    tag: 'Landmark 7 · Southeast Islands',
+    title: 'The Parallel Experiments Archipelago',
+    desc: 'Every team doing their own thing. Figuring it out in separate corners. No collective learning across the islands. Shadow AI adoption becomes dozens of parallel experiments with no shared map.',
+    quote: '"Every team ends up doing their own thing. Stuff moves fast. Without shared direction, \'AI adoption\' becomes dozens of parallel experiments with no collective learning across them."',
+    tension: 'The islands are not wrong to experiment. They are wrong to do it alone. The archipelago needs a ferry.'
+  }
+};
+
+function openSidebar(id) {
+  const d = data[id];
+  if (!d) return;
+  document.getElementById('s-tag').textContent = d.tag;
+  document.getElementById('s-title').textContent = d.title;
+  document.getElementById('s-desc').textContent = d.desc;
+  document.getElementById('s-quote').textContent = d.quote;
+  document.getElementById('s-tension').textContent = d.tension;
+  document.getElementById('sidebar').classList.add('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+document.getElementById('map-svg').addEventListener('click', function(e) {
+  if (!e.target.closest('.pin-group')) closeSidebar();
+});
+</script>
+</body>
+</html>

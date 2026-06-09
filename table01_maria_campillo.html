@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Learning Landscape — Table I · Maria Campillo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #2a1f0e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'IM Fell English', serif;
+    overflow: hidden;
+  }
+
+  #map-wrapper {
+    position: relative;
+    width: 1100px;
+    height: 740px;
+    flex-shrink: 0;
+  }
+
+  #map-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Pins */
+  .pin-group {
+    cursor: pointer;
+  }
+  .pin-group:hover .pin-circle {
+    filter: brightness(1.2) drop-shadow(0 0 6px rgba(192,57,43,0.7));
+  }
+  .pin-circle {
+    transition: filter 0.2s;
+  }
+
+  /* Sidebar */
+  #sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100%;
+    background: #fdf6e3;
+    border-left: 3px solid #8b6914;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    overflow: hidden;
+  }
+  #sidebar.open {
+    transform: translateX(0);
+  }
+
+  #sidebar-inner {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 20px 20px;
+  }
+
+  #sidebar-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #5a3e1b;
+    line-height: 1;
+    font-family: 'Cinzel', serif;
+  }
+  #sidebar-close:hover { color: #c0392b; }
+
+  .s-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #c0392b;
+    background: #fce8e6;
+    border: 1px solid #c0392b;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 10px;
+  }
+
+  .s-title {
+    font-family: 'Cinzel', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #2c1a06;
+    line-height: 1.3;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #c9a84c;
+    padding-bottom: 8px;
+  }
+
+  .s-desc {
+    font-family: 'IM Fell English', serif;
+    font-size: 13px;
+    color: #3a2a10;
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+
+  .s-quote {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: #1a1a1a;
+    border-left: 3px solid #c0392b;
+    padding: 8px 10px;
+    background: #fdf0d0;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .s-tension-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8b6914;
+    margin-bottom: 5px;
+  }
+
+  .s-tension {
+    font-family: 'IM Fell English', serif;
+    font-size: 12px;
+    color: #5a3e1b;
+    line-height: 1.6;
+    background: #f5e6c0;
+    border: 1px dashed #b8962a;
+    padding: 8px 10px;
+    border-radius: 3px;
+  }
+
+  #sidebar-footer {
+    padding: 10px 20px;
+    border-top: 1px solid #c9a84c;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: #8b6914;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div id="map-wrapper">
+
+<svg id="map-svg" viewBox="0 0 1100 740" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Parchment texture via filter -->
+    <filter id="parchment-texture" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+      <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="blend"/>
+      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <!-- Water texture -->
+    <pattern id="water-lines" x="0" y="0" width="20" height="8" patternUnits="userSpaceOnUse">
+      <path d="M0 4 Q5 1 10 4 Q15 7 20 4" stroke="#8ab8d4" stroke-width="0.6" fill="none" opacity="0.5"/>
+    </pattern>
+    <!-- Decorative border pattern -->
+    <pattern id="border-pattern" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+      <rect width="30" height="30" fill="none" stroke="#8b6914" stroke-width="0.3"/>
+      <circle cx="15" cy="15" r="2" fill="#8b6914" opacity="0.3"/>
+    </pattern>
+    <!-- Drop shadow for pins -->
+    <filter id="pin-shadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <!-- Vignette -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="60%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#1a0e04" stop-opacity="0.45"/>
+    </radialGradient>
+    <!-- Mountain hatch -->
+    <pattern id="mountain-hatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="6" x2="6" y2="0" stroke="#7a6040" stroke-width="0.4" opacity="0.4"/>
+    </pattern>
+    <!-- Green field dots -->
+    <pattern id="field-dots" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="5" cy="5" r="0.8" fill="#5a7a3a" opacity="0.35"/>
+    </pattern>
+  </defs>
+
+  <!-- ===== PARCHMENT BASE ===== -->
+  <rect width="1100" height="740" fill="#f2e8d0"/>
+  <rect width="1100" height="740" fill="url(#parchment-texture)" opacity="0.18"/>
+
+  <!-- ===== DECORATIVE BORDER ===== -->
+  <rect x="14" y="14" width="1072" height="712" fill="none" stroke="#8b6914" stroke-width="2.5"/>
+  <rect x="20" y="20" width="1060" height="700" fill="none" stroke="#8b6914" stroke-width="0.8" stroke-dasharray="4,3"/>
+  <!-- corner ornaments -->
+  <g stroke="#8b6914" stroke-width="1.2" fill="none">
+    <path d="M14 14 L40 14 M14 14 L14 40"/>
+    <path d="M1086 14 L1060 14 M1086 14 L1086 40"/>
+    <path d="M14 726 L40 726 M14 726 L14 700"/>
+    <path d="M1086 726 L1060 726 M1086 726 L1086 700"/>
+    <circle cx="14" cy="14" r="4" fill="#8b6914"/>
+    <circle cx="1086" cy="14" r="4" fill="#8b6914"/>
+    <circle cx="14" cy="726" r="4" fill="#8b6914"/>
+    <circle cx="1086" cy="726" r="4" fill="#8b6914"/>
+  </g>
+
+  <!-- ===== WATER / SEA (south + east) ===== -->
+  <ellipse cx="900" cy="680" rx="280" ry="120" fill="#b8d4e8" opacity="0.7"/>
+  <ellipse cx="880" cy="660" rx="260" ry="100" fill="url(#water-lines)"/>
+  <text x="870" y="665" font-family="'IM Fell English', serif" font-style="italic" font-size="13" fill="#4a7a9b" text-anchor="middle" opacity="0.7">Mare Possibilitatis</text>
+
+  <!-- ===== TERRAIN LANDMASS ===== -->
+  <!-- Main island shape -->
+  <path d="M70 120 Q150 80 300 90 Q420 70 520 95 Q640 75 760 100 Q870 90 960 130 Q1020 160 1040 220 Q1060 290 1040 380 Q1020 470 980 530 Q930 590 860 620 Q780 650 680 640 Q560 650 440 630 Q320 620 220 590 Q130 560 80 500 Q40 450 45 370 Q35 280 70 200 Z"
+    fill="#d4c49a" stroke="#a08840" stroke-width="1"/>
+
+  <!-- Interior terrain fill -->
+  <path d="M100 160 Q200 120 380 130 Q520 110 650 135 Q780 120 900 160 Q970 190 990 260 Q1000 340 970 420 Q940 490 880 530 Q800 570 680 575 Q540 585 400 565 Q270 555 180 510 Q100 470 80 400 Q60 330 80 250 Z"
+    fill="#c8b888" opacity="0.5"/>
+
+  <!-- Green meadow / field region (east) -->
+  <ellipse cx="760" cy="350" rx="160" ry="120" fill="#9ab87a" opacity="0.55"/>
+  <ellipse cx="760" cy="350" rx="160" ry="120" fill="url(#field-dots)"/>
+
+  <!-- Northwest highlands -->
+  <ellipse cx="190" cy="250" rx="130" ry="95" fill="#8faa70" opacity="0.5"/>
+
+  <!-- Southern misty fade zone -->
+  <ellipse cx="450" cy="570" rx="200" ry="80" fill="#c8bda0" opacity="0.6"/>
+  <!-- Mist effect -->
+  <ellipse cx="450" cy="570" rx="190" ry="70" fill="white" opacity="0.22"/>
+
+  <!-- ===== MOUNTAIN — MT. EVENT TRAP ===== -->
+  <!-- Mountain base shadow -->
+  <ellipse cx="320" cy="390" rx="145" ry="50" fill="#6a5030" opacity="0.2"/>
+  <!-- Mountain body -->
+  <polygon points="320,155 200,395 440,395" fill="#8b7040" stroke="#5a3e1b" stroke-width="1.5"/>
+  <polygon points="320,155 255,280 385,280" fill="#a08050" stroke="#6a4e20" stroke-width="0.8"/>
+  <!-- Snow cap -->
+  <polygon points="320,155 295,210 345,210" fill="#f0ebe0"/>
+  <!-- Mountain hatch overlay -->
+  <polygon points="320,155 200,395 440,395" fill="url(#mountain-hatch)" opacity="0.6"/>
+  <!-- Ridge lines -->
+  <line x1="320" y1="155" x2="250" y2="300" stroke="#5a3e1b" stroke-width="0.8" opacity="0.4"/>
+  <line x1="320" y1="155" x2="380" y2="310" stroke="#5a3e1b" stroke-width="0.8" opacity="0.4"/>
+  <line x1="320" y1="155" x2="310" y2="320" stroke="#5a3e1b" stroke-width="0.8" opacity="0.4"/>
+
+  <!-- Tension dashed ring around Mt. Event Trap -->
+  <ellipse cx="320" cy="310" rx="175" ry="115" fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="8,5" opacity="0.75"/>
+
+  <!-- ===== HIGHLANDS (NW) ===== -->
+  <!-- Rolling hills -->
+  <ellipse cx="175" cy="240" rx="60" ry="38" fill="#7a9a5a" stroke="#4a7030" stroke-width="0.8"/>
+  <ellipse cx="225" cy="228" rx="50" ry="32" fill="#8aaa6a" stroke="#4a7030" stroke-width="0.8"/>
+  <ellipse cx="155" cy="265" rx="45" ry="28" fill="#6a9050" stroke="#3a6020" stroke-width="0.8"/>
+  <!-- Trees (simplified) -->
+  <g fill="#3a6020" opacity="0.7">
+    <polygon points="155,220 148,245 162,245"/>
+    <polygon points="145,228 139,248 151,248"/>
+    <polygon points="195,215 188,238 202,238"/>
+    <polygon points="215,205 208,228 222,228"/>
+    <polygon points="230,215 224,235 236,235"/>
+  </g>
+
+  <!-- ===== CONDITIONS FIELD ===== -->
+  <!-- Open field -->
+  <ellipse cx="770" cy="355" rx="115" ry="85" fill="#a8c878" opacity="0.6" stroke="#6a9040" stroke-width="0.8" stroke-dasharray="none"/>
+  <!-- Field texture lines -->
+  <g stroke="#7a9a50" stroke-width="0.5" opacity="0.4">
+    <line x1="665" y1="340" x2="870" y2="340"/>
+    <line x1="660" y1="355" x2="875" y2="355"/>
+    <line x1="668" y1="370" x2="872" y2="370"/>
+    <line x1="680" y1="385" x2="860" y2="385"/>
+  </g>
+  <!-- Wildflower dots -->
+  <g opacity="0.5">
+    <circle cx="700" cy="340" r="2.5" fill="#e8c840"/>
+    <circle cx="720" cy="360" r="2" fill="#e8c840"/>
+    <circle cx="755" cy="330" r="2.5" fill="#e0a030"/>
+    <circle cx="790" cy="375" r="2" fill="#e8c840"/>
+    <circle cx="820" cy="345" r="2.5" fill="#c8e040"/>
+    <circle cx="840" cy="365" r="2" fill="#e0a030"/>
+    <circle cx="710" cy="385" r="2" fill="#e8c840"/>
+    <circle cx="760" cy="400" r="2.5" fill="#c8e040"/>
+    <circle cx="800" cy="395" r="2" fill="#e8c840"/>
+  </g>
+
+  <!-- ===== AI PENINSULA (east, blue-toned) ===== -->
+  <path d="M960 300 Q1020 280 1050 330 Q1070 370 1050 420 Q1020 460 970 450 Q930 440 920 400 Q910 360 940 330 Z"
+    fill="#8ab8d8" opacity="0.55" stroke="#4a88b8" stroke-width="0.8"/>
+  <!-- Water wash over peninsula -->
+  <path d="M960 300 Q1020 280 1050 330 Q1070 370 1050 420 Q1020 460 970 450 Q930 440 920 400 Q910 360 940 330 Z"
+    fill="url(#water-lines)" opacity="0.4"/>
+
+  <!-- ===== FADE ZONE (southern mist) ===== -->
+  <!-- Mist layers -->
+  <ellipse cx="440" cy="580" rx="175" ry="60" fill="#d8cdb8" opacity="0.7"/>
+  <ellipse cx="455" cy="575" rx="155" ry="48" fill="white" opacity="0.28"/>
+  <ellipse cx="430" cy="583" rx="130" ry="38" fill="#c8bda8" opacity="0.3"/>
+
+  <!-- ===== PATHS ===== -->
+  <!-- Main road (solid) up the mountain -->
+  <path d="M320 395 Q310 430 340 470 Q360 500 380 530"
+    stroke="#8b6914" stroke-width="2" fill="none" stroke-dasharray="none" opacity="0.6"/>
+
+  <!-- Red dashed arrow: Mountain base → Fade Zone (gravitational pull) -->
+  <path d="M360 445 Q400 510 440 560"
+    stroke="#c0392b" stroke-width="1.8" fill="none" stroke-dasharray="7,4" opacity="0.75"/>
+  <!-- Arrow head -->
+  <polygon points="440,560 430,548 450,548" fill="#c0392b" opacity="0.75"/>
+
+  <!-- Brown dashed path: Event Trap foot → Conditions Field (The Long Road) -->
+  <path d="M445 390 Q520 370 600 355 Q660 348 680 350"
+    stroke="#7a5020" stroke-width="2" fill="none" stroke-dasharray="10,6" opacity="0.8"/>
+
+  <!-- Blue dashed path: AI Peninsula → Conditions Field -->
+  <path d="M925 375 Q880 368 860 360"
+    stroke="#2a6898" stroke-width="1.8" fill="none" stroke-dasharray="8,5" opacity="0.75"/>
+  <!-- Arrow head toward field -->
+  <polygon points="860,360 875,352 875,368" fill="#2a6898" opacity="0.75"/>
+
+  <!-- ===== VIGNETTE ===== -->
+  <rect width="1100" height="740" fill="url(#vignette)"/>
+
+  <!-- ===== MAP TITLE ===== -->
+  <text x="550" y="52" font-family="'Cinzel', serif" font-size="26" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="2">The Learning Landscape</text>
+  <text x="550" y="72" font-family="'IM Fell English', serif" font-style="italic" font-size="13" fill="#6a4e20" text-anchor="middle">Table I · Maria Campillo · Event or Conditions for Change?</text>
+  <line x1="200" y1="80" x2="900" y2="80" stroke="#8b6914" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- ===== LANDMARK LABELS ===== -->
+  <!-- Mt. Event Trap -->
+  <text x="320" y="142" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#2c1a06" text-anchor="middle">Mt. Event Trap</text>
+
+  <!-- Conditions Field -->
+  <text x="770" y="285" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">Conditions for</text>
+  <text x="770" y="298" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">Change Field</text>
+
+  <!-- Fade Zone -->
+  <text x="440" y="605" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#5a4a30" text-anchor="middle" font-style="italic">The Fade Zone</text>
+
+  <!-- Humans Highlands -->
+  <text x="182" y="195" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">The Humans</text>
+  <text x="182" y="207" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">Highlands</text>
+
+  <!-- AI Peninsula -->
+  <text x="990" y="360" font-family="'Cinzel', serif" font-size="9.5" font-weight="700" fill="#1a3a5a" text-anchor="middle">AI as Possibility</text>
+  <text x="990" y="372" font-family="'Cinzel', serif" font-size="9.5" font-weight="700" fill="#1a3a5a" text-anchor="middle">Peninsula</text>
+
+  <!-- The Long Road label -->
+  <text x="555" y="338" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#7a5020" text-anchor="middle" transform="rotate(-5,555,338)">The Long Road</text>
+
+  <!-- ===== SEA LABELS ===== -->
+  <text x="100" y="660" font-family="'IM Fell English', serif" font-style="italic" font-size="12" fill="#6a5020" opacity="0.6" transform="rotate(-5,100,660)">Sea of Competing Priorities</text>
+
+  <!-- ===== COMPASS ROSE (bottom right) ===== -->
+  <g transform="translate(1000, 660)">
+    <!-- Outer ring -->
+    <circle r="32" fill="#f2e8d0" stroke="#8b6914" stroke-width="1.2"/>
+    <circle r="28" fill="none" stroke="#8b6914" stroke-width="0.5" stroke-dasharray="3,3"/>
+    <!-- Cardinal spokes -->
+    <line x1="0" y1="-28" x2="0" y2="28" stroke="#8b6914" stroke-width="0.7"/>
+    <line x1="-28" y1="0" x2="28" y2="0" stroke="#8b6914" stroke-width="0.7"/>
+    <line x1="-20" y1="-20" x2="20" y2="20" stroke="#8b6914" stroke-width="0.4" opacity="0.5"/>
+    <line x1="20" y1="-20" x2="-20" y2="20" stroke="#8b6914" stroke-width="0.4" opacity="0.5"/>
+    <!-- North arrow -->
+    <polygon points="0,-26 -5,-10 0,-14 5,-10" fill="#c0392b"/>
+    <polygon points="0,-14 -5,-10 0,26 5,-10" fill="#5a3e1b"/>
+    <!-- Center dot -->
+    <circle r="3" fill="#8b6914"/>
+    <!-- Cardinal labels -->
+    <text y="-32" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">N</text>
+    <text y="42" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">S</text>
+    <text x="36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">E</text>
+    <text x="-36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">W</text>
+  </g>
+
+  <!-- ===== LEGEND (bottom center) ===== -->
+  <g transform="translate(380, 678)">
+    <rect x="0" y="0" width="310" height="42" rx="3" fill="#f2e8d0" stroke="#8b6914" stroke-width="1"/>
+    <text x="155" y="13" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="1">LEGEND</text>
+    <!-- items -->
+    <circle cx="18" cy="27" r="5" fill="#c0392b" stroke="white" stroke-width="1.2"/>
+    <text x="27" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Landmark Pin</text>
+    <!-- dashed red -->
+    <line x1="100" y1="27" x2="128" y2="27" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <text x="132" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Gravitational Pull</text>
+    <!-- dashed brown -->
+    <line x1="218" y1="27" x2="246" y2="27" stroke="#7a5020" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <text x="250" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Long Road</text>
+  </g>
+
+  <!-- ===== CLICKABLE PINS ===== -->
+
+  <!-- PIN 1: Mt. Event Trap -->
+  <g class="pin-group" data-id="event-trap" transform="translate(320,230)" onclick="openSidebar('event-trap')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">1</text>
+  </g>
+
+  <!-- PIN 2: Conditions for Change Field -->
+  <g class="pin-group" data-id="conditions-field" transform="translate(770,330)" onclick="openSidebar('conditions-field')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">2</text>
+  </g>
+
+  <!-- PIN 3: The Fade Zone -->
+  <g class="pin-group" data-id="fade-zone" transform="translate(440,538)" onclick="openSidebar('fade-zone')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">3</text>
+  </g>
+
+  <!-- PIN 4: The Humans Highlands -->
+  <g class="pin-group" data-id="humans-highlands" transform="translate(182,215)" onclick="openSidebar('humans-highlands')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">4</text>
+  </g>
+
+  <!-- PIN 5: AI as Possibility Peninsula -->
+  <g class="pin-group" data-id="ai-peninsula" transform="translate(988,395)" onclick="openSidebar('ai-peninsula')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">5</text>
+  </g>
+
+  <!-- PIN 6: The Long Road -->
+  <g class="pin-group" data-id="long-road" transform="translate(545,358)" onclick="openSidebar('long-road')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">6</text>
+  </g>
+
+</svg>
+
+<!-- ===== SIDEBAR ===== -->
+<div id="sidebar">
+  <button id="sidebar-close" onclick="closeSidebar()">✕</button>
+  <div id="sidebar-inner">
+    <div class="s-tag" id="s-tag"></div>
+    <div class="s-title" id="s-title"></div>
+    <div class="s-desc" id="s-desc"></div>
+    <div class="s-quote" id="s-quote"></div>
+    <div class="s-tension-label">⚡ Tension</div>
+    <div class="s-tension" id="s-tension"></div>
+  </div>
+  <div id="sidebar-footer">Table I · Maria Campillo · AI Exploration Café</div>
+</div>
+
+</div><!-- end map-wrapper -->
+
+<script>
+const data = {
+  'event-trap': {
+    tag: 'Landmark 1 · Tallest Peak',
+    title: 'Mt. Event Trap',
+    desc: 'The tallest peak on the map and the most visited. AI makes the road here faster, production cheaper, delivery easier. The faster the ascent becomes, the harder it is to justify taking the longer route to the Conditions Field.',
+    quote: '"The faster AI makes production, the more it reinforces training as an event, because delivery gets easier. L&D as a conditions designer requires a different kind of investment — one AI doesn\'t automatically point us toward."',
+    tension: 'The event trap is not just a design choice. It is a gravitational field. Once you are on the mountain road, the altitude feels like progress.'
+  },
+  'conditions-field': {
+    tag: 'Landmark 2 · Open Field',
+    title: 'Conditions for Change Field',
+    desc: 'Further out. Wilder. No paved road in. This is where learning is designed not as a moment but as an environment — where the conditions for something to actually change over time are deliberately put in place.',
+    quote: '"Are we designing training as an event or conditions for something to change over time? And where does AI fit in that shift?" — Maria Campillo',
+    tension: 'Reaching this field requires resisting the pull of the mountain. Most organisations have a map that only shows the mountain.'
+  },
+  'fade-zone': {
+    tag: 'Landmark 3 · Misty South',
+    title: 'The Fade Zone',
+    desc: 'What happens after the session ends. People return to competing priorities. The learning fades unless something keeps it alive. AI that only accelerates production cannot prevent the Fade Zone from claiming what was built.',
+    quote: '"People may leave a session inspired, then return to competing priorities, and the learning fades unless something keeps it alive."',
+    tension: 'The Fade Zone is invisible during production. It only appears after delivery. By then, the next event is already being built.'
+  },
+  'humans-highlands': {
+    tag: 'Landmark 4 · Northwest Settlement',
+    title: 'The Humans Highlands',
+    desc: 'The most important settlement on the map. This is where actual learning happens — from people, with people, guided by people. AI cannot experience the frustration, emotion, spark, ownership, or belonging involved in learning.',
+    quote: '"We still need humans to learn from, with, and to guide us along. The learning happens to the human." — Maria Campillo',
+    tension: 'AI cannot read the room. Noticing when someone is lost, or when a group needs to slow down, still requires a human presence in the highlands.'
+  },
+  'ai-peninsula': {
+    tag: 'Landmark 5 · Eastern Peninsula',
+    title: 'AI as Possibility Peninsula',
+    desc: 'Not a threat — a potential route. AI can help support learning over time by tracking questions, spotting patterns, personalising experiences, or supporting specific tasks through agents. Its pathway runs toward the Conditions Field, not the mountain.',
+    quote: '"AI could help support learning over time. By tracking questions, spotting patterns, helping personalise experiences, or supporting specific tasks through agents. The ingredients are there, if the model is right."',
+    tension: 'The peninsula exists. The path from it to the Conditions Field is shorter than the road from the Event Trap. The question is whether anyone is building it.'
+  },
+  'long-road': {
+    tag: 'Landmark 6 · Dashed Path',
+    title: 'The Long Road',
+    desc: 'The route from the foot of Mt. Event Trap to the Conditions for Change Field. It requires a different kind of investment — more time in the design phase, more willingness to sit with uncertainty, more intention about what learning is for.',
+    quote: '"L&D as a conditions designer requires a different kind of investment, one AI doesn\'t automatically point us toward."',
+    tension: 'The Long Road is not slower because it is worse. It is slower because it is asking a harder question.'
+  }
+};
+
+function openSidebar(id) {
+  const d = data[id];
+  if (!d) return;
+  document.getElementById('s-tag').textContent = d.tag;
+  document.getElementById('s-title').textContent = d.title;
+  document.getElementById('s-desc').textContent = d.desc;
+  document.getElementById('s-quote').textContent = d.quote;
+  document.getElementById('s-tension').textContent = d.tension;
+  document.getElementById('sidebar').classList.add('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// Close on map click outside pins
+document.getElementById('map-svg').addEventListener('click', function(e) {
+  if (!e.target.closest('.pin-group')) closeSidebar();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Interior — Table VII · Nina Pavlovska</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1e1508;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; font-family: 'IM Fell English', serif; overflow: hidden;
+  }
+  #map-wrapper { position: relative; width: 1100px; height: 740px; flex-shrink: 0; }
+  #map-svg { width: 100%; height: 100%; display: block; }
+  .pin-group { cursor: pointer; }
+  .pin-group:hover .pin-circle { filter: brightness(1.2) drop-shadow(0 0 6px rgba(192,57,43,0.7)); }
+  .pin-circle { transition: filter 0.2s; }
+  #sidebar {
+    position: absolute; top: 0; right: 0; width: 320px; height: 100%;
+    background: #fdf6e3; border-left: 3px solid #8b6914;
+    transform: translateX(100%); transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column; z-index: 10; overflow: hidden;
+  }
+  #sidebar.open { transform: translateX(0); }
+  #sidebar-inner { flex: 1; overflow-y: auto; padding: 24px 20px 20px; }
+  #sidebar-close {
+    position: absolute; top: 10px; right: 12px; background: none; border: none;
+    font-size: 22px; cursor: pointer; color: #5a3e1b; line-height: 1; font-family: 'Cinzel', serif;
+  }
+  #sidebar-close:hover { color: #c0392b; }
+  .s-tag {
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #c0392b; background: #fce8e6; border: 1px solid #c0392b;
+    display: inline-block; padding: 2px 8px; border-radius: 2px; margin-bottom: 10px;
+  }
+  .s-title {
+    font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700; color: #2c1a06;
+    line-height: 1.3; margin-bottom: 10px; border-bottom: 1px solid #c9a84c; padding-bottom: 8px;
+  }
+  .s-desc { font-family: 'IM Fell English', serif; font-size: 13px; color: #3a2a10; line-height: 1.65; margin-bottom: 14px; }
+  .s-quote {
+    font-family: 'IM Fell English', serif; font-style: italic; font-size: 13px; color: #1a1a1a;
+    border-left: 3px solid #c0392b; padding: 8px 10px; background: #fdf0d0; line-height: 1.6; margin-bottom: 14px;
+  }
+  .s-tension-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #8b6914; margin-bottom: 5px; }
+  .s-tension { font-family: 'IM Fell English', serif; font-size: 12px; color: #5a3e1b; line-height: 1.6; background: #f5e6c0; border: 1px dashed #b8962a; padding: 8px 10px; border-radius: 3px; }
+  #sidebar-footer { padding: 10px 20px; border-top: 1px solid #c9a84c; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.1em; color: #8b6914; text-align: center; }
+</style>
+</head>
+<body>
+<div id="map-wrapper">
+<svg id="map-svg" viewBox="0 0 1100 740" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Slightly darker parchment for introspective tone -->
+    <filter id="parchment-texture" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+      <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="blend"/>
+      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="pin-shadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <filter id="oracle-glow">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="naming-glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="stone-rough" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="turbulence" baseFrequency="0.9" numOctaves="3" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+      <feBlend in="SourceGraphic" in2="gray" mode="multiply"/>
+    </filter>
+    <!-- Darker vignette for interior mood -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="65%">
+      <stop offset="50%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#100a02" stop-opacity="0.62"/>
+    </radialGradient>
+    <radialGradient id="oracle-radial" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f8f0a0" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#e0c040" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#c09010" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="naming-radial" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/>
+      <stop offset="60%" stop-color="#f0e8d0" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#e0d0a8" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Stone wall pattern -->
+    <pattern id="stone-wall" x="0" y="0" width="30" height="20" patternUnits="userSpaceOnUse">
+      <rect width="30" height="20" fill="#7a7060"/>
+      <rect x="0" y="0" width="28" height="9" fill="#8a8070" stroke="#5a5040" stroke-width="0.5"/>
+      <rect x="2" y="11" width="26" height="8" fill="#828065" stroke="#5a5040" stroke-width="0.5"/>
+      <line x1="14" y1="0" x2="14" y2="10" stroke="#5a5040" stroke-width="0.5"/>
+    </pattern>
+    <!-- Forest texture for Craft Landscape -->
+    <pattern id="forest-trees" x="0" y="0" width="20" height="22" patternUnits="userSpaceOnUse">
+      <polygon points="10,2 4,18 16,18" fill="#3a5a28" opacity="0.55"/>
+      <rect x="9" y="18" width="3" height="4" fill="#5a3810" opacity="0.5"/>
+    </pattern>
+    <!-- Flat monoculture lines -->
+    <pattern id="mono-lines" x="0" y="0" width="25" height="10" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="9" x2="25" y2="9" stroke="#a8a088" stroke-width="0.4" opacity="0.4"/>
+    </pattern>
+    <!-- Craft landscape dots (rich, varied) -->
+    <pattern id="craft-dots" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+      <circle cx="6" cy="6" r="1.5" fill="#6a8a40" opacity="0.3"/>
+    </pattern>
+    <!-- Gymnasium hatch -->
+    <pattern id="gym-hatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="6" x2="6" y2="0" stroke="#8a6828" stroke-width="0.5" opacity="0.4"/>
+    </pattern>
+  </defs>
+
+  <!-- ===== DARKER PARCHMENT BASE (introspective) ===== -->
+  <rect width="1100" height="740" fill="#e8dcc0"/>
+  <rect width="1100" height="740" fill="url(#parchment-texture)" opacity="0.22"/>
+  <!-- Slight overall darkening -->
+  <rect width="1100" height="740" fill="#2a1808" opacity="0.08"/>
+
+  <!-- ===== DECORATIVE BORDER ===== -->
+  <rect x="14" y="14" width="1072" height="712" fill="none" stroke="#6a5010" stroke-width="2.5"/>
+  <rect x="20" y="20" width="1060" height="700" fill="none" stroke="#6a5010" stroke-width="0.8" stroke-dasharray="4,3"/>
+  <g stroke="#6a5010" stroke-width="1.2" fill="none">
+    <path d="M14 14 L40 14 M14 14 L14 40"/>
+    <path d="M1086 14 L1060 14 M1086 14 L1086 40"/>
+    <path d="M14 726 L40 726 M14 726 L14 700"/>
+    <path d="M1086 726 L1060 726 M1086 726 L1086 700"/>
+    <circle cx="14"   cy="14"  r="4" fill="#6a5010"/>
+    <circle cx="1086" cy="14"  r="4" fill="#6a5010"/>
+    <circle cx="14"   cy="726" r="4" fill="#6a5010"/>
+    <circle cx="1086" cy="726" r="4" fill="#6a5010"/>
+  </g>
+
+  <!-- ===== LANDMASS ===== -->
+  <path d="M50 115 Q172 78 358 88 Q538 70 705 90 Q868 78 978 128 Q1052 162 1060 250 Q1072 340 1050 440 Q1024 524 950 570 Q860 618 712 632 Q548 648 382 630 Q226 614 126 570 Q52 530 40 442 Q24 338 40 228 Q43 160 50 115 Z"
+    fill="#c8bc98" stroke="#8a7030" stroke-width="1.2"/>
+
+  <!-- ===== MONOCULTURE FLATLAND (south — pale, uniform) ===== -->
+  <path d="M85 535 Q215 512 395 522 Q555 528 700 520 Q840 512 965 528 Q952 570 860 618 Q712 632 548 648 Q382 630 226 614 Q126 570 85 535 Z"
+    fill="#d8d0b0" opacity="0.9"/>
+  <path d="M85 535 Q215 512 395 522 Q555 528 700 520 Q840 512 965 528 Q952 570 860 618 Q712 632 548 648 Q382 630 226 614 Q126 570 85 535 Z"
+    fill="url(#mono-lines)"/>
+  <!-- Unsettling uniformity lines -->
+  <g stroke="#a8a080" stroke-width="0.5" opacity="0.28">
+    <line x1="90"  y1="542" x2="958" y2="534"/>
+    <line x1="98"  y1="556" x2="950" y2="548"/>
+    <line x1="108" y1="570" x2="940" y2="563"/>
+    <line x1="122" y1="584" x2="925" y2="578"/>
+    <line x1="142" y1="598" x2="905" y2="593"/>
+  </g>
+  <text x="530" y="565" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#7a7858" text-anchor="middle" opacity="0.58">from a distance it looks like alignment</text>
+
+  <!-- ===== CRAFT LANDSCAPE (center — richest, most textured terrain) ===== -->
+  <!-- Forest hills base -->
+  <ellipse cx="470" cy="330" rx="230" ry="165" fill="#8aaa60" opacity="0.42"/>
+  <ellipse cx="470" cy="330" rx="230" ry="165" fill="url(#craft-dots)"/>
+  <!-- Forest overlay — trees -->
+  <ellipse cx="470" cy="330" rx="215" ry="152" fill="url(#forest-trees)" opacity="0.5"/>
+  <!-- Rolling hills within -->
+  <ellipse cx="410" cy="295" rx="80" ry="55" fill="#7aa050" opacity="0.4"/>
+  <ellipse cx="510" cy="310" rx="70" ry="48" fill="#8ab060" opacity="0.35"/>
+  <ellipse cx="470" cy="370" rx="90" ry="60" fill="#6a9040" opacity="0.38"/>
+  <!-- Warmth layer -->
+  <ellipse cx="460" cy="325" rx="170" ry="120" fill="#c09038" opacity="0.08"/>
+  <!-- Individual trees -->
+  <g fill="#2a4a18" opacity="0.65">
+    <polygon points="355,290 346,318 364,318"/>
+    <polygon points="370,275 361,303 379,303"/>
+    <polygon points="390,268 381,295 399,295"/>
+    <polygon points="408,262 399,290 417,290"/>
+    <polygon points="430,258 421,285 439,285"/>
+    <polygon points="455,255 446,282 464,282"/>
+    <polygon points="478,258 469,286 487,286"/>
+    <polygon points="500,262 491,290 509,290"/>
+    <polygon points="520,270 511,298 529,298"/>
+    <polygon points="540,282 531,310 549,310"/>
+    <polygon points="558,295 549,323 567,323"/>
+    <polygon points="570,312 561,340 579,340"/>
+    <polygon points="565,335 556,363 574,363"/>
+    <polygon points="550,358 541,386 559,386"/>
+    <polygon points="350,340 341,368 359,368"/>
+    <polygon points="362,368 353,396 371,396"/>
+    <polygon points="388,390 379,418 397,418"/>
+    <polygon points="415,405 406,433 424,433"/>
+    <polygon points="445,412 436,440 454,440"/>
+  </g>
+  <!-- Tree trunks -->
+  <g stroke="#5a3810" stroke-width="1.2" opacity="0.4">
+    <line x1="355" y1="318" x2="355" y2="325"/>
+    <line x1="390" y1="295" x2="390" y2="302"/>
+    <line x1="430" y1="285" x2="430" y2="292"/>
+    <line x1="478" y1="282" x2="478" y2="289"/>
+    <line x1="540" y1="310" x2="540" y2="317"/>
+    <line x1="565" y1="340" x2="565" y2="347"/>
+    <line x1="350" y1="368" x2="350" y2="375"/>
+    <line x1="415" y1="433" x2="415" y2="440"/>
+  </g>
+  <!-- Craft richness: small detail marks -->
+  <g stroke="#5a7a30" stroke-width="0.6" fill="none" opacity="0.3">
+    <circle cx="430" cy="340" r="12"/>
+    <circle cx="490" cy="355" r="10"/>
+    <circle cx="460" cy="300" r="14"/>
+  </g>
+
+  <!-- ===== OPACITY WALL (west edge — imposing stone) ===== -->
+  <rect x="38" y="115" width="52" height="515" fill="url(#stone-wall)" stroke="#4a4030" stroke-width="2" filter="url(#stone-rough)"/>
+  <!-- Wall crenellation top -->
+  <g fill="#8a8070" stroke="#4a4030" stroke-width="0.8">
+    <rect x="38"  y="100" width="14" height="18"/>
+    <rect x="56"  y="100" width="14" height="18"/>
+    <rect x="74"  y="100" width="14" height="18"/>
+  </g>
+  <!-- Wall shadow -->
+  <rect x="90" y="115" width="12" height="515" fill="#1a0e04" opacity="0.18"/>
+  <!-- Wall crack -->
+  <path d="M60 200 L57 240 L62 280 L58 320" stroke="#2a1808" stroke-width="1" fill="none" opacity="0.35"/>
+  <!-- "What is on the other side?" -->
+  <text x="66" y="640" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#e8dcc0" text-anchor="middle" opacity="0.55" transform="rotate(-90,66,640)">what is on the other side?</text>
+
+  <!-- ===== THE ORACLE (center-north — towering, glowing, magnetic) ===== -->
+  <!-- Radial glow -->
+  <ellipse cx="560" cy="195" rx="130" ry="105" fill="url(#oracle-radial)" filter="url(#oracle-glow)" opacity="0.85"/>
+  <!-- Second glow ring -->
+  <ellipse cx="560" cy="195" rx="90" ry="72" fill="#f8e878" opacity="0.18"/>
+  <!-- Tower base -->
+  <rect x="536" y="225" width="48" height="55" fill="#d4b030" stroke="#8b6010" stroke-width="1.5"/>
+  <!-- Tower middle -->
+  <rect x="543" y="175" width="34" height="52" fill="#e0c040" stroke="#8b6010" stroke-width="1.2"/>
+  <!-- Tower top spire -->
+  <polygon points="560,120 548,178 572,178" fill="#f0d050" stroke="#8b6010" stroke-width="1"/>
+  <!-- Battlements -->
+  <g fill="#d4b030" stroke="#8b6010" stroke-width="0.8">
+    <rect x="543" y="165" width="9" height="12"/>
+    <rect x="556" y="165" width="9" height="12"/>
+    <rect x="569" y="165" width="9" height="12"/>
+  </g>
+  <!-- Oracle eye / window (the all-seeing quality) -->
+  <ellipse cx="560" cy="205" rx="12" ry="8" fill="#2a1808" stroke="#f0d050" stroke-width="1.2"/>
+  <ellipse cx="560" cy="205" rx="6" ry="4" fill="#f8e050" opacity="0.7"/>
+  <!-- Magnetic pull lines -->
+  <g stroke="#d4a020" stroke-width="0.7" fill="none" opacity="0.3" stroke-dasharray="3,3">
+    <path d="M350 260 Q430 240 520 215"/>
+    <path d="M310 320 Q390 305 525 230"/>
+    <path d="M700 250 Q640 230 590 215"/>
+    <path d="M750 310 Q690 295 595 240"/>
+  </g>
+  <!-- "everyone defers here" label -->
+  <text x="560" y="152" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#8b6010" text-anchor="middle" opacity="0.65">everyone defers here</text>
+
+  <!-- ===== CRITICAL THINKING GYMNASIUM (center-east — sturdy, slightly worn) ===== -->
+  <rect x="740" y="282" width="72" height="58" fill="#b09040" stroke="#7a6020" stroke-width="1.4" filter="url(#gym-hatch)"/>
+  <rect x="740" y="282" width="72" height="58" fill="url(#gym-hatch)"/>
+  <polygon points="740,282 776,258 812,282" fill="#9a7828" stroke="#7a6020" stroke-width="1.2"/>
+  <!-- Worn windows -->
+  <rect x="748" y="302" width="14" height="16" fill="#d4c080" opacity="0.55" rx="1" stroke="#7a6020" stroke-width="0.5"/>
+  <rect x="770" y="302" width="14" height="16" fill="#c8b070" opacity="0.5" rx="1" stroke="#7a6020" stroke-width="0.5"/>
+  <rect x="792" y="302" width="12" height="16" fill="#c0a860" opacity="0.45" rx="1" stroke="#7a6020" stroke-width="0.5"/>
+  <!-- Door -->
+  <rect x="762" y="322" width="14" height="18" fill="#5a3810" rx="1"/>
+  <!-- Slightly worn sign -->
+  <rect x="749" y="268" width="54" height="14" fill="#e8d890" stroke="#a08020" stroke-width="0.7" rx="1"/>
+  <text x="776" y="278" font-family="'Cinzel', serif" font-size="7" fill="#5a3810" text-anchor="middle" font-weight="700">GYMNASIUM</text>
+  <!-- Rust marks on equipment suggestion (window bars fading) -->
+  <line x1="751" y1="302" x2="751" y2="318" stroke="#8a6020" stroke-width="0.8" opacity="0.35"/>
+  <line x1="760" y1="302" x2="760" y2="318" stroke="#8a6020" stroke-width="0.8" opacity="0.3"/>
+  <!-- "at risk" annotation -->
+  <text x="776" y="352" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#c0392b" text-anchor="middle" opacity="0.65">open — but visited less</text>
+
+  <!-- ===== NAMING PLACE (east — clearing, light, calm) ===== -->
+  <!-- Light clearing glow -->
+  <ellipse cx="930" cy="370" rx="115" ry="90" fill="url(#naming-radial)" filter="url(#naming-glow)" opacity="0.85"/>
+  <!-- Clearing ground -->
+  <ellipse cx="930" cy="370" rx="90" ry="70" fill="#f0e8d0" opacity="0.7" stroke="#c9a84c" stroke-width="1.2" stroke-dasharray="5,4"/>
+  <ellipse cx="930" cy="370" rx="68" ry="52" fill="#f8f4ec" opacity="0.5"/>
+  <!-- Light rays suggestion -->
+  <g stroke="#e0c850" stroke-width="0.7" opacity="0.2">
+    <line x1="930" y1="302" x2="930" y2="280"/>
+    <line x1="960" y1="312" x2="978" y2="296"/>
+    <line x1="970" y1="345" x2="992" y2="342"/>
+    <line x1="900" y1="312" x2="882" y2="296"/>
+    <line x1="890" y1="345" x2="868" y2="342"/>
+  </g>
+  <!-- Center marker -->
+  <circle cx="930" cy="370" r="8" fill="#c9a84c" opacity="0.4"/>
+  <circle cx="930" cy="370" r="4" fill="#c9a84c" opacity="0.6"/>
+  <!-- Text inside -->
+  <text x="930" y="367" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#6a4e20" text-anchor="middle" opacity="0.7">start here</text>
+
+  <!-- ===== SCRATCH PATH (narrow, parallel, hand-drawn alongside main road) ===== -->
+  <!-- Main route (fast, magnetic — drawn first as reference) -->
+  <path d="M102 335 Q180 330 255 328 Q320 326 370 322 Q420 318 460 316 Q490 314 520 314"
+    stroke="#8b6914" stroke-width="2.5" fill="none" opacity="0.55"/>
+  <path d="M520 314 Q545 310 560 285 Q570 268 562 245"
+    stroke="#8b6914" stroke-width="2.5" fill="none" opacity="0.55"/>
+  <!-- Arrow to oracle -->
+  <polygon points="562,245 555,258 569,258" fill="#8b6914" opacity="0.55"/>
+
+  <!-- Scratch Path — parallel, narrower, slightly above main road, hand-drawn feel -->
+  <path d="M102 310 Q183 304 258 301 Q324 298 372 293 Q422 288 462 284 Q492 281 524 279"
+    stroke="#5a3e1b" stroke-width="1.2" fill="none" stroke-dasharray="6,3" opacity="0.7"/>
+  <!-- Hand-drawn quality: slight wobble via multiple short segments -->
+  <path d="M524 279 Q542 272 555 260 Q564 250 561 235"
+    stroke="#5a3e1b" stroke-width="1.2" fill="none" stroke-dasharray="5,3" opacity="0.65"/>
+  <!-- "Scratch Path" label along it -->
+  <text x="340" y="278" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#5a3e1b" text-anchor="middle" opacity="0.72" transform="rotate(-2,340,278)">The Scratch Path ↑ slower · deliberate · protective</text>
+
+  <!-- Route: Gymnasium → Naming Place -->
+  <path d="M814 320 Q855 335 885 348 Q906 358 918 362"
+    stroke="#7a9050" stroke-width="1.8" fill="none" stroke-dasharray="8,5" opacity="0.6"/>
+  <polygon points="918,362 905,356 905,368" fill="#7a9050" opacity="0.6"/>
+
+  <!-- Warning path south → Monoculture Flatland (from Oracle base) -->
+  <path d="M558 280 Q554 360 545 430 Q538 475 530 522"
+    stroke="#c0392b" stroke-width="1.5" fill="none" stroke-dasharray="7,5" opacity="0.5"/>
+  <polygon points="530,522 524,509 536,509" fill="#c0392b" opacity="0.5"/>
+  <text x="570" y="415" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#c0392b" text-anchor="start" opacity="0.6">at scale →</text>
+
+  <!-- Return path: Naming Place → Craft Landscape -->
+  <path d="M852 388 Q800 395 750 400 Q700 404 660 400 Q620 395 595 385 Q580 378 570 368"
+    stroke="#5a8028" stroke-width="1.5" fill="none" stroke-dasharray="7,5" opacity="0.55"/>
+  <polygon points="570,368 580,358 582,372" fill="#5a8028" opacity="0.55"/>
+  <!-- Label on return path -->
+  <text x="715" y="418" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#5a8028" text-anchor="middle" opacity="0.6">understanding feeds the making</text>
+
+  <!-- One-way sign on flatland path (no return) -->
+  <rect x="505" y="488" width="62" height="18" fill="#f5e8b0" stroke="#c0392b" stroke-width="0.8" rx="2"/>
+  <text x="536" y="501" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#8b0000" text-anchor="middle">one-way drift</text>
+
+  <!-- ===== VIGNETTE (darker for interior mood) ===== -->
+  <rect width="1100" height="740" fill="url(#vignette)"/>
+
+  <!-- ===== MAP TITLE ===== -->
+  <text x="550" y="50" font-family="'Cinzel', serif" font-size="26" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="2">The Interior</text>
+  <text x="550" y="70" font-family="'IM Fell English', serif" font-style="italic" font-size="12.5" fill="#5a3e1b" text-anchor="middle">Table VII · Nina Pavlovska · What is the version of yourself that resists AI trying to protect?</text>
+  <line x1="160" y1="79" x2="940" y2="79" stroke="#6a5010" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- ===== LANDMARK LABELS ===== -->
+  <text x="66" y="97" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="#2c1a06" text-anchor="middle">Opacity</text>
+  <text x="66" y="108" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="#2c1a06" text-anchor="middle">Wall</text>
+
+  <text x="468" y="180" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#2c1a06" text-anchor="middle">The Craft</text>
+  <text x="468" y="192" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#2c1a06" text-anchor="middle">Landscape</text>
+
+  <text x="560" y="108" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#2c1a06" text-anchor="middle">The Oracle</text>
+
+  <text x="776" y="253" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">Critical Thinking</text>
+  <text x="776" y="264" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">Gymnasium</text>
+
+  <text x="930" y="298" font-family="'Cinzel', serif" font-size="10.5" font-weight="700" fill="#2c1a06" text-anchor="middle">The Naming</text>
+  <text x="930" y="310" font-family="'Cinzel', serif" font-size="10.5" font-weight="700" fill="#2c1a06" text-anchor="middle">Place</text>
+
+  <text x="528" y="625" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#6a6848" text-anchor="middle">The Monoculture</text>
+  <text x="528" y="637" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#6a6848" text-anchor="middle">Flatland</text>
+
+  <!-- Main road label -->
+  <text x="340" y="348" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#8b6914" text-anchor="middle" opacity="0.6" transform="rotate(-2,340,348)">main route ↑ fast · magnetic</text>
+
+  <!-- Sea label (small, bottom) -->
+  <text x="115" y="672" font-family="'IM Fell English', serif" font-style="italic" font-size="11" fill="#5a4818" opacity="0.5" transform="rotate(-3,115,672)">Sea of Unexplored Resistance</text>
+
+  <!-- ===== COMPASS ROSE ===== -->
+  <g transform="translate(1000, 660)">
+    <circle r="32" fill="#e8dcc0" stroke="#6a5010" stroke-width="1.2"/>
+    <circle r="28" fill="none" stroke="#6a5010" stroke-width="0.5" stroke-dasharray="3,3"/>
+    <line x1="0" y1="-28" x2="0" y2="28" stroke="#6a5010" stroke-width="0.7"/>
+    <line x1="-28" y1="0" x2="28" y2="0" stroke="#6a5010" stroke-width="0.7"/>
+    <line x1="-20" y1="-20" x2="20" y2="20" stroke="#6a5010" stroke-width="0.4" opacity="0.5"/>
+    <line x1="20" y1="-20" x2="-20" y2="20" stroke="#6a5010" stroke-width="0.4" opacity="0.5"/>
+    <polygon points="0,-26 -5,-10 0,-14 5,-10" fill="#c0392b"/>
+    <polygon points="0,-14 -5,-10 0,26 5,-10" fill="#3a2810"/>
+    <circle r="3" fill="#6a5010"/>
+    <text y="-32" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">N</text>
+    <text y="42"  font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">S</text>
+    <text x="36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">E</text>
+    <text x="-36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">W</text>
+  </g>
+
+  <!-- ===== LEGEND ===== -->
+  <g transform="translate(270, 678)">
+    <rect x="0" y="0" width="460" height="42" rx="3" fill="#e8dcc0" stroke="#6a5010" stroke-width="1"/>
+    <text x="230" y="13" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="1">LEGEND</text>
+    <circle cx="18" cy="27" r="5" fill="#c0392b" stroke="white" stroke-width="1.2"/>
+    <text x="27" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Landmark Pin</text>
+    <line x1="110" y1="27" x2="138" y2="27" stroke="#8b6914" stroke-width="2.5" opacity="0.6"/>
+    <text x="142" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Main Route</text>
+    <line x1="218" y1="27" x2="246" y2="27" stroke="#5a3e1b" stroke-width="1.2" stroke-dasharray="5,3"/>
+    <text x="250" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">The Scratch Path</text>
+    <line x1="352" y1="27" x2="380" y2="27" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <text x="384" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Warning (oracle drift)</text>
+  </g>
+
+  <!-- ===== CLICKABLE PINS ===== -->
+
+  <!-- PIN 1: The Opacity Wall -->
+  <g class="pin-group" data-id="opacity-wall" transform="translate(108,218)" onclick="openSidebar('opacity-wall')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">1</text>
+  </g>
+
+  <!-- PIN 2: The Craft Landscape -->
+  <g class="pin-group" data-id="craft-landscape" transform="translate(468,168)" onclick="openSidebar('craft-landscape')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">2</text>
+  </g>
+
+  <!-- PIN 3: The Scratch Path -->
+  <g class="pin-group" data-id="scratch-path" transform="translate(300,265)" onclick="openSidebar('scratch-path')">
+    <line x1="0" y1="0" x2="0" y2="18" stroke="#8b0000" stroke-width="1.5"/>
+    <circle class="pin-circle" cx="0" cy="0" r="9" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">3</text>
+  </g>
+
+  <!-- PIN 4: The Critical Thinking Gymnasium -->
+  <g class="pin-group" data-id="gymnasium" transform="translate(776,240)" onclick="openSidebar('gymnasium')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">4</text>
+  </g>
+
+  <!-- PIN 5: The Oracle -->
+  <g class="pin-group" data-id="oracle" transform="translate(560,95)" onclick="openSidebar('oracle')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">5</text>
+  </g>
+
+  <!-- PIN 6: The Naming Place -->
+  <g class="pin-group" data-id="naming-place" transform="translate(930,285)" onclick="openSidebar('naming-place')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">6</text>
+  </g>
+
+  <!-- PIN 7: The Monoculture Flatland -->
+  <g class="pin-group" data-id="monoculture-flatland" transform="translate(528,597)" onclick="openSidebar('monoculture-flatland')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">7</text>
+  </g>
+
+</svg>
+
+<!-- ===== SIDEBAR ===== -->
+<div id="sidebar">
+  <button id="sidebar-close" onclick="closeSidebar()">✕</button>
+  <div id="sidebar-inner">
+    <div class="s-tag" id="s-tag"></div>
+    <div class="s-title" id="s-title"></div>
+    <div class="s-desc" id="s-desc"></div>
+    <div class="s-quote" id="s-quote"></div>
+    <div class="s-tension-label">⚡ Tension</div>
+    <div class="s-tension" id="s-tension"></div>
+  </div>
+  <div id="sidebar-footer">Table VII · Nina Pavlovska · AI Exploration Café</div>
+</div>
+
+</div>
+
+<script>
+const data = {
+  'opacity-wall': {
+    tag: 'Landmark 1 · West Wall',
+    title: 'The Opacity Wall',
+    desc: 'Where resistance lives. Not irrational — a reasonable response to not knowing what is on the other side. When people do not understand what AI can and cannot do, it feels limitless and hard to control. The wall is not the problem. Not knowing what it is protecting against is.',
+    quote: '"When people do not understand what AI can and cannot do, it can feel limitless and hard to control. The resistance is not irrational, it is a reasonable response to opacity."',
+    tension: 'The Opacity Wall is built from the outside in — by opaque systems, unexplained decisions, and tools deployed without context. It cannot be demolished by instruction. Only by understanding.'
+  },
+  'craft-landscape': {
+    tag: 'Landmark 2 · Central Territory',
+    title: 'The Craft Landscape',
+    desc: 'The ideation. The execution. The messy craft of making something. AI does not just change the output — it changes the experience of being here. The grief on this map is about this place. Someone was spending equal time doing the work from scratch alongside the AI output. That is not inefficiency. That is protection.',
+    quote: '"The ideation. The execution. The messy craft of it. AI doesn\'t just change the output, it changes the experience of making something."',
+    tension: 'The Craft Landscape is not just a place of production. It is a place of identity. When AI changes how you work here, it changes who you are while working. That loss is real and it kept surfacing across every table.'
+  },
+  'scratch-path': {
+    tag: 'Landmark 3 · Parallel Path',
+    title: 'The Scratch Path',
+    desc: 'Someone in the room was walking it alongside the AI route. Taking longer. Doing the work from scratch next to the AI output. Not because they did not trust AI. Because they were not ready to let go of the making. That is not inefficiency. That is protection. This path should be on the map.',
+    quote: '"Someone in the room was spending equal time doing the work from scratch alongside the AI output. That\'s not inefficiency. That\'s protection."',
+    tension: 'The Scratch Path is slower. It is also the path where something is being preserved that the faster route cannot carry. The question is not whether to keep walking it — it is knowing why you are.'
+  },
+  'gymnasium': {
+    tag: 'Landmark 4 · Center-East Building',
+    title: 'The Critical Thinking Gymnasium',
+    desc: 'A muscle. Needs use to stay strong. Currently at risk of going unvisited. If everyone defers to the AI oracle for answers, the capacity for thinking things through atrophies. The gymnasium does not close suddenly — it just gets visited less and less until the equipment rusts.',
+    quote: '"The fear that AI becomes the authority, the oracle everyone defers to. And that over time, the muscle of thinking things through atrophies."',
+    tension: 'The Critical Thinking Gymnasium is open. The question is whether anyone is going. Efficiency culture makes skipping it feel rational. It is not.'
+  },
+  'oracle': {
+    tag: 'Landmark 5 · Center-North · Glowing',
+    title: 'The Oracle',
+    desc: 'Where everyone defers. When every answer comes from the same source, the diversity of thinking that makes good decisions possible starts to disappear. The Oracle is not wrong per se — it is dangerous at scale. When everyone consults the same oracle, the map starts to look the same for everyone.',
+    quote: '"If everyone defers to the same AI oracle, we lose the diversity of thinking that makes good decisions possible. That\'s not a productivity problem. It\'s a civilisational one."',
+    tension: 'The Oracle is not evil. It is magnetic. The problem is not using it — it is only using it. Monoculture of thought is not a productivity metric. It does not show up in dashboards until it is too late.'
+  },
+  'naming-place': {
+    tag: 'Landmark 6 · East Clearing',
+    title: 'The Naming Place',
+    desc: 'The most important clearing on this map. Understanding what is actually being protected — the craft, the critical thinking, the identity — is already here. Naming it is not the same as solving it. But it is the right place to start. The resistance stops looking like a problem to fix once you understand what it is protecting.',
+    quote: '"The resistance was not just about AI. It was about what people did not want to lose. Naming that is not the same as solving it, but it is the right place to start." — Nina Pavlovska',
+    tension: 'The Naming Place requires sitting with discomfort long enough to understand it. Most change programmes skip it entirely. That is why the resistance keeps returning.'
+  },
+  'monoculture-flatland': {
+    tag: 'Landmark 7 · South Warning Zone',
+    title: 'The Monoculture Flatland',
+    desc: 'What happens when everyone defers to the same oracle. The diversity of thinking that makes good decisions possible disappears. The flatland spreads slowly and silently. From a distance it looks like alignment. Up close it is the absence of difference.',
+    quote: '"If everyone defers to the same AI oracle, we lose the diversity of thinking that makes good decisions possible. That\'s not a productivity problem. It\'s a civilisational one."',
+    tension: 'The Monoculture Flatland is not the result of bad intentions. It is the result of convenience compounded over time. The antidote is not less AI — it is more deliberate thought about when and why.'
+  }
+};
+
+function openSidebar(id) {
+  const d = data[id];
+  if (!d) return;
+  document.getElementById('s-tag').textContent = d.tag;
+  document.getElementById('s-title').textContent = d.title;
+  document.getElementById('s-desc').textContent = d.desc;
+  document.getElementById('s-quote').textContent = d.quote;
+  document.getElementById('s-tension').textContent = d.tension;
+  document.getElementById('sidebar').classList.add('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+document.getElementById('map-svg').addEventListener('click', function(e) {
+  if (!e.target.closest('.pin-group')) closeSidebar();
+});
+</script>
+</body>
+</html>

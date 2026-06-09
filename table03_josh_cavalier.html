@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Measurement Maze — Table III · Josh Cavalier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #2a1f0e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'IM Fell English', serif;
+    overflow: hidden;
+  }
+
+  #map-wrapper {
+    position: relative;
+    width: 1100px;
+    height: 740px;
+    flex-shrink: 0;
+  }
+
+  #map-svg { width: 100%; height: 100%; display: block; }
+
+  .pin-group { cursor: pointer; }
+  .pin-group:hover .pin-circle {
+    filter: brightness(1.2) drop-shadow(0 0 6px rgba(192,57,43,0.7));
+  }
+  .pin-circle { transition: filter 0.2s; }
+
+  #sidebar {
+    position: absolute;
+    top: 0; right: 0;
+    width: 320px; height: 100%;
+    background: #fdf6e3;
+    border-left: 3px solid #8b6914;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column;
+    z-index: 10; overflow: hidden;
+  }
+  #sidebar.open { transform: translateX(0); }
+
+  #sidebar-inner { flex: 1; overflow-y: auto; padding: 24px 20px 20px; }
+
+  #sidebar-close {
+    position: absolute; top: 10px; right: 12px;
+    background: none; border: none; font-size: 22px;
+    cursor: pointer; color: #5a3e1b; line-height: 1;
+    font-family: 'Cinzel', serif;
+  }
+  #sidebar-close:hover { color: #c0392b; }
+
+  .s-tag {
+    font-family: 'Cinzel', serif; font-size: 9px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: #c0392b; background: #fce8e6;
+    border: 1px solid #c0392b; display: inline-block;
+    padding: 2px 8px; border-radius: 2px; margin-bottom: 10px;
+  }
+  .s-title {
+    font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700;
+    color: #2c1a06; line-height: 1.3; margin-bottom: 10px;
+    border-bottom: 1px solid #c9a84c; padding-bottom: 8px;
+  }
+  .s-desc {
+    font-family: 'IM Fell English', serif; font-size: 13px;
+    color: #3a2a10; line-height: 1.65; margin-bottom: 14px;
+  }
+  .s-quote {
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 13px; color: #1a1a1a;
+    border-left: 3px solid #c0392b; padding: 8px 10px;
+    background: #fdf0d0; line-height: 1.6; margin-bottom: 14px;
+  }
+  .s-tension-label {
+    font-family: 'Cinzel', serif; font-size: 9px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: #8b6914; margin-bottom: 5px;
+  }
+  .s-tension {
+    font-family: 'IM Fell English', serif; font-size: 12px;
+    color: #5a3e1b; line-height: 1.6;
+    background: #f5e6c0; border: 1px dashed #b8962a;
+    padding: 8px 10px; border-radius: 3px;
+  }
+  #sidebar-footer {
+    padding: 10px 20px; border-top: 1px solid #c9a84c;
+    font-family: 'Cinzel', serif; font-size: 9px;
+    letter-spacing: 0.1em; color: #8b6914; text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="map-wrapper">
+
+<svg id="map-svg" viewBox="0 0 1100 740" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="parchment-texture" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+      <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="blend"/>
+      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="pin-shadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="glow-gold">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="stone-rough" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="turbulence" baseFrequency="0.7" numOctaves="3" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+      <feBlend in="SourceGraphic" in2="gray" mode="multiply"/>
+    </filter>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="60%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#1a0e04" stop-opacity="0.48"/>
+    </radialGradient>
+    <radialGradient id="okr-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f0c040" stop-opacity="0.7"/>
+      <stop offset="60%" stop-color="#e09820" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#c87010" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Cracked earth pattern for governance wasteland -->
+    <pattern id="crack-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M10 0 L8 12 L20 18 L14 28 L20 40" stroke="#a09070" stroke-width="0.7" fill="none" opacity="0.6"/>
+      <path d="M30 5 L28 15 L38 22 L32 35" stroke="#a09070" stroke-width="0.5" fill="none" opacity="0.4"/>
+      <path d="M0 20 L12 22 L18 30" stroke="#a09070" stroke-width="0.5" fill="none" opacity="0.4"/>
+    </pattern>
+    <!-- Hedge texture -->
+    <pattern id="hedge-fill" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#3a5a20" opacity="0.6"/>
+      <circle cx="6" cy="6" r="1" fill="#4a6a28" opacity="0.5"/>
+      <circle cx="5" cy="2" r="0.8" fill="#2a4a18" opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <!-- ===== PARCHMENT BASE ===== -->
+  <rect width="1100" height="740" fill="#f2e8d0"/>
+  <rect width="1100" height="740" fill="url(#parchment-texture)" opacity="0.18"/>
+
+  <!-- ===== DECORATIVE BORDER ===== -->
+  <rect x="14" y="14" width="1072" height="712" fill="none" stroke="#8b6914" stroke-width="2.5"/>
+  <rect x="20" y="20" width="1060" height="700" fill="none" stroke="#8b6914" stroke-width="0.8" stroke-dasharray="4,3"/>
+  <g stroke="#8b6914" stroke-width="1.2" fill="none">
+    <path d="M14 14 L40 14 M14 14 L14 40"/>
+    <path d="M1086 14 L1060 14 M1086 14 L1086 40"/>
+    <path d="M14 726 L40 726 M14 726 L14 700"/>
+    <path d="M1086 726 L1060 726 M1086 726 L1086 700"/>
+    <circle cx="14"   cy="14"  r="4" fill="#8b6914"/>
+    <circle cx="1086" cy="14"  r="4" fill="#8b6914"/>
+    <circle cx="14"   cy="726" r="4" fill="#8b6914"/>
+    <circle cx="1086" cy="726" r="4" fill="#8b6914"/>
+  </g>
+
+  <!-- ===== MAP TITLE ===== -->
+  <text x="550" y="52" font-family="'Cinzel', serif" font-size="26" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="2">The Measurement Maze</text>
+  <text x="550" y="72" font-family="'IM Fell English', serif" font-style="italic" font-size="13" fill="#6a4e20" text-anchor="middle">Table III · Josh Cavalier · How do we measure NET productivity?</text>
+  <line x1="200" y1="80" x2="900" y2="80" stroke="#8b6914" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- ===== LANDMASS ===== -->
+  <path d="M55 110 Q180 78 360 88 Q530 70 700 90 Q870 78 980 125 Q1050 158 1058 240 Q1070 330 1048 435 Q1022 520 948 568 Q858 618 710 632 Q545 648 385 632 Q230 618 135 572 Q62 532 48 442 Q32 340 45 228 Q48 162 55 110 Z"
+    fill="#d4c49a" stroke="#a08840" stroke-width="1"/>
+  <path d="M85 148 Q240 112 445 122 Q625 108 795 132 Q920 150 968 225 Q1005 300 988 402 Q962 482 895 528 Q808 572 652 582 Q480 596 330 572 Q196 552 118 498 Q62 458 58 378 Q44 288 68 208 Z"
+    fill="#c8b888" opacity="0.35"/>
+
+  <!-- ===== OKR HORIZON GLOW (far east) ===== -->
+  <ellipse cx="1058" cy="340" rx="120" ry="180" fill="url(#okr-glow)" opacity="0.85" filter="url(#glow-gold)"/>
+  <ellipse cx="1058" cy="340" rx="60" ry="100" fill="#f8e080" opacity="0.25"/>
+
+  <!-- ===== GOVERNANCE WASTELAND (northwest) ===== -->
+  <ellipse cx="175" cy="220" rx="145" ry="105" fill="#c8b898" opacity="0.85"/>
+  <ellipse cx="175" cy="220" rx="145" ry="105" fill="url(#crack-pattern)"/>
+  <!-- Pale bleached center -->
+  <ellipse cx="175" cy="220" rx="100" ry="70" fill="#e0d8c0" opacity="0.35"/>
+  <!-- Cracked lines -->
+  <path d="M100 185 L130 210 L118 238 L145 255" stroke="#9a8a60" stroke-width="1" fill="none" opacity="0.6"/>
+  <path d="M155 165 L165 195 L185 188 L195 220 L178 245" stroke="#9a8a60" stroke-width="0.8" fill="none" opacity="0.55"/>
+  <path d="M200 175 L215 200 L240 195 L248 225" stroke="#9a8a60" stroke-width="0.7" fill="none" opacity="0.5"/>
+  <path d="M130 240 L158 248 L155 268" stroke="#9a8a60" stroke-width="0.7" fill="none" opacity="0.4"/>
+
+  <!-- ===== MAZE HEDGEROWS ===== -->
+  <!-- Outer maze boundary -->
+  <rect x="280" y="140" width="580" height="480" rx="4" fill="none" stroke="#4a6a28" stroke-width="3.5"/>
+  <rect x="280" y="140" width="580" height="480" rx="4" fill="url(#hedge-fill)" opacity="0.0"/>
+
+  <!-- Maze wall helper: thick green hedgerows as path segments -->
+  <!-- Using stroke as hedge walls, fill=#5a7a30 thick lines -->
+  <g stroke="#4a6830" stroke-width="9" stroke-linecap="square" fill="none" opacity="0.85">
+    <!-- Outer frame is drawn above -->
+
+    <!-- Horizontal walls — upper zone -->
+    <line x1="280" y1="210" x2="430" y2="210"/>
+    <line x1="490" y1="210" x2="620" y2="210"/>
+    <line x1="680" y1="210" x2="860" y2="210"/>
+
+    <!-- Horizontal walls — mid-upper zone -->
+    <line x1="340" y1="280" x2="480" y2="280"/>
+    <line x1="540" y1="280" x2="680" y2="280"/>
+    <line x1="730" y1="280" x2="860" y2="280"/>
+
+    <!-- Horizontal walls — center zone -->
+    <line x1="280" y1="350" x2="360" y2="350"/>
+    <line x1="430" y1="350" x2="530" y2="350"/>
+    <line x1="620" y1="350" x2="720" y2="350"/>
+    <line x1="780" y1="350" x2="860" y2="350"/>
+
+    <!-- Horizontal walls — mid-lower zone -->
+    <line x1="310" y1="420" x2="460" y2="420"/>
+    <line x1="520" y1="420" x2="650" y2="420"/>
+    <line x1="700" y1="420" x2="860" y2="420"/>
+
+    <!-- Horizontal walls — lower zone -->
+    <line x1="280" y1="490" x2="400" y2="490"/>
+    <line x1="460" y1="490" x2="600" y2="490"/>
+    <line x1="660" y1="490" x2="800" y2="490"/>
+
+    <!-- Vertical walls — left zone -->
+    <line x1="340" y1="140" x2="340" y2="210"/>
+    <line x1="340" y1="280" x2="340" y2="350"/>
+    <line x1="340" y1="420" x2="340" y2="490"/>
+    <line x1="340" y1="560" x2="340" y2="620"/>
+
+    <line x1="430" y1="140" x2="430" y2="280"/>
+    <line x1="430" y1="350" x2="430" y2="420"/>
+    <line x1="430" y1="490" x2="430" y2="620"/>
+
+    <!-- Vertical walls — center-left -->
+    <line x1="520" y1="210" x2="520" y2="280"/>
+    <line x1="520" y1="350" x2="520" y2="420"/>
+    <line x1="520" y1="490" x2="520" y2="560"/>
+
+    <!-- Vertical walls — center-right -->
+    <line x1="620" y1="140" x2="620" y2="210"/>
+    <line x1="620" y1="280" x2="620" y2="350"/>
+    <line x1="620" y1="420" x2="620" y2="490"/>
+    <line x1="620" y1="560" x2="620" y2="620"/>
+
+    <!-- Vertical walls — right zone -->
+    <line x1="720" y1="140" x2="720" y2="210"/>
+    <line x1="720" y1="280" x2="720" y2="350"/>
+    <line x1="720" y1="420" x2="720" y2="490"/>
+
+    <line x1="810" y1="210" x2="810" y2="280"/>
+    <line x1="810" y1="350" x2="810" y2="420"/>
+    <line x1="810" y1="490" x2="810" y2="560"/>
+  </g>
+
+  <!-- Hedge fill overlay on wall lines -->
+  <g stroke="url(#hedge-fill)" stroke-width="7" stroke-linecap="square" fill="none" opacity="0.45">
+    <line x1="280" y1="210" x2="430" y2="210"/>
+    <line x1="490" y1="210" x2="620" y2="210"/>
+    <line x1="680" y1="210" x2="860" y2="210"/>
+    <line x1="340" y1="280" x2="480" y2="280"/>
+    <line x1="540" y1="280" x2="680" y2="280"/>
+    <line x1="730" y1="280" x2="860" y2="280"/>
+    <line x1="280" y1="350" x2="360" y2="350"/>
+    <line x1="430" y1="350" x2="530" y2="350"/>
+    <line x1="620" y1="350" x2="720" y2="350"/>
+    <line x1="780" y1="350" x2="860" y2="350"/>
+    <line x1="310" y1="420" x2="460" y2="420"/>
+    <line x1="520" y1="420" x2="650" y2="420"/>
+    <line x1="700" y1="420" x2="860" y2="420"/>
+    <line x1="280" y1="490" x2="400" y2="490"/>
+    <line x1="460" y1="490" x2="600" y2="490"/>
+    <line x1="660" y1="490" x2="800" y2="490"/>
+    <line x1="340" y1="140" x2="340" y2="210"/>
+    <line x1="430" y1="140" x2="430" y2="280"/>
+    <line x1="620" y1="140" x2="620" y2="210"/>
+    <line x1="720" y1="140" x2="720" y2="210"/>
+  </g>
+
+  <!-- ===== MAZE FLOOR paths (lighter parchment corridors) ===== -->
+  <!-- Already visible as parchment base between hedges -->
+
+  <!-- ===== WIDE PAVED ROAD to Usage Counter (prominent, center path) ===== -->
+  <path d="M570 620 Q572 560 572 490 Q572 420 572 350 Q572 295 570 260"
+    stroke="#c8a850" stroke-width="6" fill="none" opacity="0.5"/>
+  <path d="M570 620 Q572 560 572 490 Q572 420 572 350 Q572 295 570 260"
+    stroke="#f2d880" stroke-width="2.5" fill="none" opacity="0.4" stroke-dasharray="12,6"/>
+
+  <!-- ===== NARROW PATH to Value Engine + NET Formula ===== -->
+  <path d="M385 550 Q390 490 430 455 Q460 430 480 390 Q490 365 485 330"
+    stroke="#8b6914" stroke-width="2" fill="none" opacity="0.65" stroke-dasharray="8,5"/>
+
+  <!-- Arrow: NET Formula → Value Engine → OKR Horizon -->
+  <path d="M680 370 Q750 355 820 345 Q890 338 960 335"
+    stroke="#c0392b" stroke-width="1.8" fill="none" stroke-dasharray="9,5" opacity="0.7"/>
+  <polygon points="960,335 946,329 946,341" fill="#c0392b" opacity="0.7"/>
+
+  <!-- ===== TRIPLE DEMAND CROSSROADS (center-south) ===== -->
+  <!-- Three roads visibly colliding -->
+  <line x1="570" y1="580" x2="490" y2="560" stroke="#8b6914" stroke-width="3" opacity="0.6"/>
+  <line x1="570" y1="580" x2="650" y2="560" stroke="#8b6914" stroke-width="3" opacity="0.6"/>
+  <line x1="570" y1="580" x2="570" y2="620" stroke="#8b6914" stroke-width="3" opacity="0.6"/>
+  <!-- Crossroads marker -->
+  <circle cx="570" cy="580" r="12" fill="#d4b060" stroke="#8b6914" stroke-width="1.5" opacity="0.85"/>
+  <line x1="563" y1="573" x2="577" y2="587" stroke="#8b6914" stroke-width="1.5" opacity="0.7"/>
+  <line x1="577" y1="573" x2="563" y2="587" stroke="#8b6914" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- ===== USAGE COUNTER TOWER (center, prominent) ===== -->
+  <!-- Tower base -->
+  <rect x="543" y="230" width="58" height="80" fill="#c8a040" stroke="#7a6010" stroke-width="1.5"/>
+  <rect x="543" y="230" width="58" height="80" fill="url(#parchment-texture)" opacity="0.2"/>
+  <!-- Tower body upper -->
+  <rect x="550" y="175" width="44" height="58" fill="#d4b050" stroke="#7a6010" stroke-width="1.2"/>
+  <!-- Battlements -->
+  <rect x="550" y="165" width="10" height="14" fill="#d4b050" stroke="#7a6010" stroke-width="1"/>
+  <rect x="565" y="165" width="10" height="14" fill="#d4b050" stroke="#7a6010" stroke-width="1"/>
+  <rect x="580" y="165" width="10" height="14" fill="#d4b050" stroke="#7a6010" stroke-width="1"/>
+  <!-- Scoreboard display on tower -->
+  <rect x="555" y="183" width="34" height="22" fill="#2a1a08" stroke="#c0392b" stroke-width="1.2" rx="2"/>
+  <text x="572" y="198" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#f0c040" text-anchor="middle">847</text>
+  <!-- Windows -->
+  <rect x="556" y="242" width="12" height="14" fill="#8a6010" opacity="0.7" rx="1"/>
+  <rect x="576" y="242" width="12" height="14" fill="#8a6010" opacity="0.7" rx="1"/>
+  <rect x="556" y="265" width="12" height="14" fill="#8a6010" opacity="0.7" rx="1"/>
+  <rect x="576" y="265" width="12" height="14" fill="#8a6010" opacity="0.7" rx="1"/>
+  <!-- Tower door -->
+  <rect x="562" y="295" width="20" height="15" fill="#5a3e1b" rx="1" opacity="0.8"/>
+
+  <!-- ===== NET FORMULA INSCRIPTION (stone monument, center) ===== -->
+  <!-- Stone slab -->
+  <rect x="375" y="282" width="200" height="130" rx="5" fill="#a09070" stroke="#6a5a3a" stroke-width="2.5" filter="url(#stone-rough)"/>
+  <rect x="378" y="285" width="194" height="124" rx="4" fill="#b8a880" opacity="0.6"/>
+  <!-- Carved inner border -->
+  <rect x="383" y="290" width="184" height="114" rx="3" fill="none" stroke="#6a5a3a" stroke-width="1" opacity="0.5"/>
+  <!-- Formula text — the most prominent text on map -->
+  <text x="475" y="310" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="1" opacity="0.9">NET PRODUCTIVITY =</text>
+  <line x1="388" y1="315" x2="562" y2="315" stroke="#6a5a3a" stroke-width="0.8" opacity="0.5"/>
+  <text x="475" y="332" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#2c1a06" text-anchor="middle">Value (Human + Machine)</text>
+  <text x="465" y="350" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#8b0000" text-anchor="middle">− Friction</text>
+  <text x="465" y="368" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#8b0000" text-anchor="middle">− Cognitive Load</text>
+  <text x="465" y="386" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#8b0000" text-anchor="middle">− Latency</text>
+  <line x1="388" y1="392" x2="562" y2="392" stroke="#6a5a3a" stroke-width="1.2" opacity="0.6"/>
+  <text x="475" y="405" font-family="'Cinzel', serif" font-size="8.5" font-weight="600" fill="#2c1a06" text-anchor="middle" font-style="italic" opacity="0.8">= NET Productivity</text>
+
+  <!-- ===== VALUE ENGINE (east, darker industrial) ===== -->
+  <!-- Main body -->
+  <rect x="840" y="310" width="80" height="60" fill="#6a5030" stroke="#3a2a10" stroke-width="1.5"/>
+  <rect x="840" y="310" width="80" height="60" fill="url(#parchment-texture)" opacity="0.15"/>
+  <!-- Gears suggestion -->
+  <circle cx="862" cy="340" r="14" fill="#4a3820" stroke="#8b6914" stroke-width="1.2"/>
+  <circle cx="862" cy="340" r="8" fill="#3a2810" stroke="#8b6914" stroke-width="0.8"/>
+  <circle cx="897" cy="340" r="11" fill="#5a4830" stroke="#8b6914" stroke-width="1.2"/>
+  <circle cx="897" cy="340" r="6" fill="#3a2810" stroke="#8b6914" stroke-width="0.8"/>
+  <!-- Gear teeth suggestion -->
+  <g stroke="#8b6914" stroke-width="2" opacity="0.6">
+    <line x1="862" y1="322" x2="862" y2="318"/>
+    <line x1="862" y1="358" x2="862" y2="362"/>
+    <line x1="844" y1="340" x2="840" y2="340"/>
+    <line x1="880" y1="340" x2="884" y2="340"/>
+    <line x1="897" y1="325" x2="897" y2="321"/>
+    <line x1="897" y1="355" x2="897" y2="359"/>
+    <line x1="883" y1="340" x2="879" y2="340"/>
+    <line x1="911" y1="340" x2="915" y2="340"/>
+  </g>
+  <!-- Chimney / output pipe -->
+  <rect x="875" y="296" width="10" height="18" fill="#5a4028" stroke="#3a2810" stroke-width="1"/>
+  <rect x="860" y="299" width="10" height="14" fill="#5a4028" stroke="#3a2810" stroke-width="1"/>
+  <!-- Smoke puffs (value output) -->
+  <circle cx="880" cy="290" r="5" fill="#d4c49a" opacity="0.5"/>
+  <circle cx="886" cy="282" r="4" fill="#d4c49a" opacity="0.35"/>
+  <circle cx="865" cy="292" r="4.5" fill="#d4c49a" opacity="0.45"/>
+  <!-- Entry hatch -->
+  <rect x="848" y="352" width="16" height="18" fill="#3a2810" stroke="#8b6914" stroke-width="0.8" rx="1"/>
+
+  <!-- ===== STICKY NOTE (mid-maze, small + almost hidden) ===== -->
+  <rect x="474" y="454" width="26" height="24" rx="1" fill="#f5e040" stroke="#c8b020" stroke-width="0.8" opacity="0.9" transform="rotate(-5,487,466)"/>
+  <text x="487" y="464" font-family="'IM Fell English', serif" font-size="6.5" fill="#2a1a06" text-anchor="middle" transform="rotate(-5,487,466)">Who am I</text>
+  <text x="487" y="473" font-family="'IM Fell English', serif" font-size="6.5" fill="#2a1a06" text-anchor="middle" transform="rotate(-5,487,466)">if I no longer</text>
+
+  <!-- ===== OKR HORIZON LANDMARK (far east) ===== -->
+  <!-- Glowing obelisk -->
+  <polygon points="1048,220 1040,310 1056,310" fill="#d4a020" stroke="#8b6914" stroke-width="1.2" opacity="0.85"/>
+  <rect x="1036" y="308" width="24" height="10" fill="#b88010" stroke="#8b6914" stroke-width="1" opacity="0.85"/>
+  <!-- Glow halos -->
+  <ellipse cx="1048" cy="265" rx="28" ry="50" fill="none" stroke="#f0c040" stroke-width="1" opacity="0.35"/>
+  <ellipse cx="1048" cy="265" rx="40" ry="70" fill="none" stroke="#f0c040" stroke-width="0.7" opacity="0.2"/>
+
+  <!-- ===== VIGNETTE ===== -->
+  <rect width="1100" height="740" fill="url(#vignette)"/>
+
+  <!-- ===== LANDMARK LABELS ===== -->
+  <text x="572" y="158" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">The Usage Counter</text>
+
+  <text x="475" y="274" font-family="'Cinzel', serif" font-size="9.5" font-weight="700" fill="#2c1a06" text-anchor="middle">The NET Formula</text>
+  <text x="475" y="285" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="#5a3e1b" text-anchor="middle" font-style="italic">Inscription</text>
+
+  <text x="875" y="298" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#2c1a06" text-anchor="middle">The Value Engine</text>
+
+  <text x="175" y="152" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#5a4820" text-anchor="middle">The Governance</text>
+  <text x="175" y="164" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#5a4820" text-anchor="middle">Wasteland</text>
+
+  <text x="570" y="560" font-family="'Cinzel', serif" font-size="9.5" font-weight="700" fill="#2c1a06" text-anchor="middle">Triple Demand</text>
+  <text x="570" y="571" font-family="'Cinzel', serif" font-size="9.5" font-weight="700" fill="#2c1a06" text-anchor="middle">Crossroads</text>
+
+  <text x="1050" y="205" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="#b88010" text-anchor="middle">The OKR</text>
+  <text x="1050" y="216" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="#b88010" text-anchor="middle">Horizon</text>
+
+  <!-- Sticky Note label (small, nearby) -->
+  <text x="510" y="472" font-family="'IM Fell English', serif" font-style="italic" font-size="9" fill="#8a6010" text-anchor="start" opacity="0.75">The Sticky Note</text>
+
+  <!-- Sea label -->
+  <text x="130" y="672" font-family="'IM Fell English', serif" font-style="italic" font-size="12" fill="#6a5020" opacity="0.55" transform="rotate(-4,130,672)">Sea of Unexamined Assumptions</text>
+
+  <!-- ===== COMPASS ROSE ===== -->
+  <g transform="translate(1000, 660)">
+    <circle r="32" fill="#f2e8d0" stroke="#8b6914" stroke-width="1.2"/>
+    <circle r="28" fill="none" stroke="#8b6914" stroke-width="0.5" stroke-dasharray="3,3"/>
+    <line x1="0" y1="-28" x2="0" y2="28" stroke="#8b6914" stroke-width="0.7"/>
+    <line x1="-28" y1="0" x2="28" y2="0" stroke="#8b6914" stroke-width="0.7"/>
+    <line x1="-20" y1="-20" x2="20" y2="20" stroke="#8b6914" stroke-width="0.4" opacity="0.5"/>
+    <line x1="20" y1="-20" x2="-20" y2="20" stroke="#8b6914" stroke-width="0.4" opacity="0.5"/>
+    <polygon points="0,-26 -5,-10 0,-14 5,-10" fill="#c0392b"/>
+    <polygon points="0,-14 -5,-10 0,26 5,-10" fill="#5a3e1b"/>
+    <circle r="3" fill="#8b6914"/>
+    <text y="-32" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">N</text>
+    <text y="42" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">S</text>
+    <text x="36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">E</text>
+    <text x="-36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">W</text>
+  </g>
+
+  <!-- ===== LEGEND ===== -->
+  <g transform="translate(310, 678)">
+    <rect x="0" y="0" width="400" height="42" rx="3" fill="#f2e8d0" stroke="#8b6914" stroke-width="1"/>
+    <text x="200" y="13" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="1">LEGEND</text>
+    <circle cx="18" cy="27" r="5" fill="#c0392b" stroke="white" stroke-width="1.2"/>
+    <text x="27" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Landmark Pin</text>
+    <line x1="110" y1="27" x2="138" y2="27" stroke="#c8a850" stroke-width="3.5" opacity="0.7"/>
+    <text x="142" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Main Road (Usage Counter)</text>
+    <line x1="285" y1="27" x2="313" y2="27" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.8"/>
+    <text x="317" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Right Route</text>
+  </g>
+
+  <!-- ===== CLICKABLE PINS ===== -->
+
+  <!-- PIN 1: Usage Counter -->
+  <g class="pin-group" data-id="usage-counter" transform="translate(572,148)" onclick="openSidebar('usage-counter')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">1</text>
+  </g>
+
+  <!-- PIN 2: Value Engine -->
+  <g class="pin-group" data-id="value-engine" transform="translate(875,285)" onclick="openSidebar('value-engine')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">2</text>
+  </g>
+
+  <!-- PIN 3: NET Formula Inscription -->
+  <g class="pin-group" data-id="net-formula" transform="translate(475,262)" onclick="openSidebar('net-formula')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">3</text>
+  </g>
+
+  <!-- PIN 4: Governance Wasteland -->
+  <g class="pin-group" data-id="governance-wasteland" transform="translate(175,140)" onclick="openSidebar('governance-wasteland')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">4</text>
+  </g>
+
+  <!-- PIN 5: The Sticky Note -->
+  <g class="pin-group" data-id="sticky-note" transform="translate(465,445)" onclick="openSidebar('sticky-note')">
+    <line x1="0" y1="0" x2="0" y2="18" stroke="#8b0000" stroke-width="1.5"/>
+    <circle class="pin-circle" cx="0" cy="0" r="8" fill="#c0392b" stroke="white" stroke-width="1.8" filter="url(#pin-shadow)"/>
+    <text x="0" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">5</text>
+  </g>
+
+  <!-- PIN 6: OKR Horizon -->
+  <g class="pin-group" data-id="okr-horizon" transform="translate(1048,192)" onclick="openSidebar('okr-horizon')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">6</text>
+  </g>
+
+  <!-- PIN 7: Triple Demand Crossroads -->
+  <g class="pin-group" data-id="triple-demand" transform="translate(570,548)" onclick="openSidebar('triple-demand')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">7</text>
+  </g>
+
+</svg>
+
+<!-- ===== SIDEBAR ===== -->
+<div id="sidebar">
+  <button id="sidebar-close" onclick="closeSidebar()">✕</button>
+  <div id="sidebar-inner">
+    <div class="s-tag" id="s-tag"></div>
+    <div class="s-title" id="s-title"></div>
+    <div class="s-desc" id="s-desc"></div>
+    <div class="s-quote" id="s-quote"></div>
+    <div class="s-tension-label">⚡ Tension</div>
+    <div class="s-tension" id="s-tension"></div>
+  </div>
+  <div id="sidebar-footer">Table III · Josh Cavalier · AI Exploration Café</div>
+</div>
+
+</div>
+
+<script>
+const data = {
+  'usage-counter': {
+    tag: 'Landmark 1 · Prominent Tower',
+    title: 'The Usage Counter',
+    desc: 'The most visited landmark on the map. Tall, visible, easy to point to. Organisations want visible AI usage — but usage is not the same as value. The tower counts everything. It measures nothing that matters.',
+    quote: '"Organisations want visible AI usage. Usage is not the same as value."',
+    tension: 'The Usage Counter is impressive from a distance. Up close it is just a very tall scoreboard with no game attached.'
+  },
+  'value-engine': {
+    tag: 'Landmark 2 · East Industrial',
+    title: 'The Value Engine',
+    desc: 'The right unit of measurement. NET productivity = the value created by the human and machine together, minus the friction, cognitive load, delay, and quality issues caused by the way they work together. Almost nobody has found this landmark yet.',
+    quote: '"NET productivity = the value created by the system minus the friction, cognitive load, and latency caused by the interface between human and machine. That\'s the right unit. Almost nobody is measuring it."',
+    tension: 'The Value Engine is not harder to build than the Usage Counter. It is harder to sell. Organisations want a number they can put in a slide. The Value Engine produces a question instead.'
+  },
+  'net-formula': {
+    tag: 'Landmark 3 · Stone Monument',
+    title: 'The NET Formula Inscription',
+    desc: 'The core equation carved into the landscape itself. Value Created by Human+Machine MINUS Friction MINUS Cognitive Load MINUS Latency = NET Productivity. This is what the table agreed on. This is what almost nobody is measuring.',
+    quote: '"Pay attention to OKRs, not AI usage. Anchor measurement on outcomes, value created, and the friction at the interface between human and machine." — Josh Cavalier',
+    tension: 'The inscription has been there the whole time. Most expeditions walk past it looking for the Usage Counter.'
+  },
+  'governance-wasteland': {
+    tag: 'Landmark 4 · Northwest Wasteland',
+    title: 'The Governance Wasteland',
+    desc: 'Where Copilot was rolled out with no training, no governance, no map. Training built and immediately out of date. The tools move faster than any enablement programme can follow. Shadow AI is already happening here.',
+    quote: '"Copilot rolled out with no training, no governance. Training built and immediately out of date. The tools move faster than any enablement programme can follow."',
+    tension: 'The Governance Wasteland grows every time a tool is deployed faster than the people using it can be supported. It is not a technology problem. It is a sequencing problem.'
+  },
+  'sticky-note': {
+    tag: 'Landmark 5 · Hidden Marker',
+    title: 'The Sticky Note',
+    desc: 'Found somewhere in the middle of the maze. Written on it: "Who am I as a professional if I no longer do xyz?" Nobody placed it on the agenda. Everyone saw it. It is the identity question underneath every single productivity conversation.',
+    quote: '"\'Who am I as a professional if I no longer do xyz?\' Written on a sticky note at the table. Not said out loud. That gap is underneath every single productivity conversation."',
+    tension: 'The Sticky Note is the most important landmark on this map. It is also the smallest. That is not a coincidence.'
+  },
+  'okr-horizon': {
+    tag: 'Landmark 6 · Far East Horizon',
+    title: 'The OKR Horizon',
+    desc: 'Visible from the maze exit. Almost nobody has made it there. This is where measurement anchors on outcomes and value rather than usage and activity. The horizon keeps moving — but it is real.',
+    quote: '"Pay attention to OKRs, not AI usage. Anchor measurement on outcomes, value created, and the friction at the interface between human and machine."',
+    tension: 'The OKR Horizon is not further away than the Usage Counter. It is just in the opposite direction. Most expeditions are facing the wrong way.'
+  },
+  'triple-demand': {
+    tag: 'Landmark 7 · Impossible Intersection',
+    title: 'The Triple Demand Crossroads',
+    desc: 'Three roads meet here and there is not enough room for all of them. Prove usage. Deliver net productivity. Don\'t break the people doing the work. Three demands, one impossible brief. Every organisation is standing at this crossroads right now.',
+    quote: '"Proving usage, delivering net productivity, and not breaking the people doing the work — three demands, one impossible brief."',
+    tension: 'At a crossroads with three incompatible roads, standing still is also a choice. Most organisations are standing still.'
+  }
+};
+
+function openSidebar(id) {
+  const d = data[id];
+  if (!d) return;
+  document.getElementById('s-tag').textContent = d.tag;
+  document.getElementById('s-title').textContent = d.title;
+  document.getElementById('s-desc').textContent = d.desc;
+  document.getElementById('s-quote').textContent = d.quote;
+  document.getElementById('s-tension').textContent = d.tension;
+  document.getElementById('sidebar').classList.add('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+document.getElementById('map-svg').addEventListener('click', function(e) {
+  if (!e.target.closest('.pin-group')) closeSidebar();
+});
+</script>
+</body>
+</html>

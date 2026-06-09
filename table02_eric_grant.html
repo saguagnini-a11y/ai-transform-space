@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Ownership Gap — Table II · Eric Grant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #2a1f0e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'IM Fell English', serif;
+    overflow: hidden;
+  }
+
+  #map-wrapper {
+    position: relative;
+    width: 1100px;
+    height: 740px;
+    flex-shrink: 0;
+  }
+
+  #map-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .pin-group { cursor: pointer; }
+  .pin-group:hover .pin-circle {
+    filter: brightness(1.2) drop-shadow(0 0 6px rgba(192,57,43,0.7));
+  }
+  .pin-circle { transition: filter 0.2s; }
+
+  #sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100%;
+    background: #fdf6e3;
+    border-left: 3px solid #8b6914;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    overflow: hidden;
+  }
+  #sidebar.open { transform: translateX(0); }
+
+  #sidebar-inner {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 20px 20px;
+  }
+
+  #sidebar-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #5a3e1b;
+    line-height: 1;
+    font-family: 'Cinzel', serif;
+  }
+  #sidebar-close:hover { color: #c0392b; }
+
+  .s-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #c0392b;
+    background: #fce8e6;
+    border: 1px solid #c0392b;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 10px;
+  }
+  .s-title {
+    font-family: 'Cinzel', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #2c1a06;
+    line-height: 1.3;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #c9a84c;
+    padding-bottom: 8px;
+  }
+  .s-desc {
+    font-family: 'IM Fell English', serif;
+    font-size: 13px;
+    color: #3a2a10;
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+  .s-quote {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: #1a1a1a;
+    border-left: 3px solid #c0392b;
+    padding: 8px 10px;
+    background: #fdf0d0;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .s-tension-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8b6914;
+    margin-bottom: 5px;
+  }
+  .s-tension {
+    font-family: 'IM Fell English', serif;
+    font-size: 12px;
+    color: #5a3e1b;
+    line-height: 1.6;
+    background: #f5e6c0;
+    border: 1px dashed #b8962a;
+    padding: 8px 10px;
+    border-radius: 3px;
+  }
+  #sidebar-footer {
+    padding: 10px 20px;
+    border-top: 1px solid #c9a84c;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: #8b6914;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="map-wrapper">
+
+<svg id="map-svg" viewBox="0 0 1100 740" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="parchment-texture" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+      <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="blend"/>
+      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="pin-shadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="stone-texture" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="turbulence" baseFrequency="0.9" numOctaves="4" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+      <feBlend in="SourceGraphic" in2="gray" mode="multiply"/>
+    </filter>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="60%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#1a0e04" stop-opacity="0.45"/>
+    </radialGradient>
+    <!-- Grid pattern for Metric Void -->
+    <pattern id="void-grid" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0 L0 0 0 28" fill="none" stroke="#b8a878" stroke-width="0.4" opacity="0.5"/>
+    </pattern>
+    <!-- Stone hatch for bedrock -->
+    <pattern id="stone-hatch" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="8" x2="8" y2="0" stroke="#7a7060" stroke-width="0.6" opacity="0.5"/>
+      <line x1="-2" y1="2" x2="2" y2="-2" stroke="#7a7060" stroke-width="0.6" opacity="0.3"/>
+    </pattern>
+    <!-- Building hatch for Build Zone -->
+    <pattern id="build-hatch" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+      <rect width="12" height="12" fill="none"/>
+      <line x1="0" y1="0" x2="12" y2="0" stroke="#9a7840" stroke-width="0.4" opacity="0.3"/>
+      <line x1="0" y1="6" x2="12" y2="6" stroke="#9a7840" stroke-width="0.4" opacity="0.3"/>
+    </pattern>
+  </defs>
+
+  <!-- ===== PARCHMENT BASE ===== -->
+  <rect width="1100" height="740" fill="#f2e8d0"/>
+  <rect width="1100" height="740" fill="url(#parchment-texture)" opacity="0.18"/>
+
+  <!-- ===== DECORATIVE BORDER ===== -->
+  <rect x="14" y="14" width="1072" height="712" fill="none" stroke="#8b6914" stroke-width="2.5"/>
+  <rect x="20" y="20" width="1060" height="700" fill="none" stroke="#8b6914" stroke-width="0.8" stroke-dasharray="4,3"/>
+  <g stroke="#8b6914" stroke-width="1.2" fill="none">
+    <path d="M14 14 L40 14 M14 14 L14 40"/>
+    <path d="M1086 14 L1060 14 M1086 14 L1086 40"/>
+    <path d="M14 726 L40 726 M14 726 L14 700"/>
+    <path d="M1086 726 L1060 726 M1086 726 L1086 700"/>
+    <circle cx="14" cy="14" r="4" fill="#8b6914"/>
+    <circle cx="1086" cy="14" r="4" fill="#8b6914"/>
+    <circle cx="14" cy="726" r="4" fill="#8b6914"/>
+    <circle cx="1086" cy="726" r="4" fill="#8b6914"/>
+  </g>
+
+  <!-- ===== LANDMASS ===== -->
+  <path d="M60 110 Q180 75 380 85 Q560 68 720 88 Q880 75 980 120 Q1050 155 1060 240 Q1075 330 1050 430 Q1020 520 950 570 Q860 620 720 635 Q560 650 400 635 Q240 620 140 575 Q65 535 50 440 Q30 340 45 230 Q48 160 60 110 Z"
+    fill="#d4c49a" stroke="#a08840" stroke-width="1"/>
+
+  <!-- Interior base -->
+  <path d="M90 150 Q250 110 460 120 Q640 105 800 130 Q920 150 970 220 Q1010 300 990 400 Q965 480 900 530 Q810 575 660 585 Q490 598 340 575 Q200 555 120 500 Q65 460 60 380 Q48 290 70 210 Z"
+    fill="#c8b888" opacity="0.4"/>
+
+  <!-- ===== FOUNDATIONS BEDROCK (southwest, darker stone) ===== -->
+  <ellipse cx="220" cy="530" rx="175" ry="90" fill="#8a8070" opacity="0.75" stroke="#6a6050" stroke-width="1.2"/>
+  <ellipse cx="220" cy="530" rx="175" ry="90" fill="url(#stone-hatch)" opacity="0.7"/>
+  <!-- Rock texture lines -->
+  <path d="M90 510 Q140 500 190 515 Q240 525 290 510 Q330 498 370 518" stroke="#5a5040" stroke-width="0.8" fill="none" opacity="0.5"/>
+  <path d="M100 535 Q155 525 210 538 Q265 548 320 530 Q355 520 390 535" stroke="#5a5040" stroke-width="0.8" fill="none" opacity="0.4"/>
+  <path d="M105 558 Q160 548 220 560 Q275 568 335 552" stroke="#5a5040" stroke-width="0.8" fill="none" opacity="0.3"/>
+
+  <!-- ===== METRIC VOID (east — pale bleached flatland) ===== -->
+  <!-- Dotted border -->
+  <ellipse cx="830" cy="390" rx="195" ry="150" fill="#e8e0c8" opacity="0.85" stroke="#b8a878" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <ellipse cx="830" cy="390" rx="195" ry="150" fill="url(#void-grid)"/>
+  <!-- Faint ? marks -->
+  <text x="770" y="355" font-family="'IM Fell English', serif" font-size="28" fill="#c8b888" opacity="0.35" text-anchor="middle">?</text>
+  <text x="850" y="410" font-family="'IM Fell English', serif" font-size="22" fill="#c8b888" opacity="0.28" text-anchor="middle">?</text>
+  <text x="800" y="445" font-family="'IM Fell English', serif" font-size="18" fill="#c8b888" opacity="0.25" text-anchor="middle">?</text>
+  <text x="870" y="360" font-family="'IM Fell English', serif" font-size="16" fill="#c8b888" opacity="0.22" text-anchor="middle">?</text>
+
+  <!-- ===== BUILD ZONE (center, ochre/warm) ===== -->
+  <ellipse cx="480" cy="340" rx="180" ry="130" fill="#c8a850" opacity="0.38"/>
+  <ellipse cx="480" cy="340" rx="180" ry="130" fill="url(#build-hatch)"/>
+  <!-- Building shapes -->
+  <!-- Building 1 -->
+  <rect x="390" y="295" width="40" height="50" fill="#b08030" stroke="#7a5010" stroke-width="0.8" opacity="0.7"/>
+  <polygon points="390,295 410,278 430,295" fill="#8a6020" stroke="#7a5010" stroke-width="0.6" opacity="0.7"/>
+  <rect x="400" y="320" width="10" height="25" fill="#e8c870" opacity="0.6"/>
+  <!-- Building 2 -->
+  <rect x="450" y="280" width="55" height="65" fill="#c09040" stroke="#7a5010" stroke-width="0.8" opacity="0.7"/>
+  <polygon points="450,280 477,260 505,280" fill="#9a7030" stroke="#7a5010" stroke-width="0.6" opacity="0.7"/>
+  <rect x="462" y="315" width="12" height="30" fill="#e8c870" opacity="0.6"/>
+  <rect x="482" y="310" width="12" height="35" fill="#e8c870" opacity="0.6"/>
+  <!-- Building 3 -->
+  <rect x="525" y="300" width="38" height="45" fill="#b08030" stroke="#7a5010" stroke-width="0.8" opacity="0.7"/>
+  <polygon points="525,300 544,284 563,300" fill="#8a6020" stroke="#7a5010" stroke-width="0.6" opacity="0.7"/>
+  <rect x="535" y="325" width="10" height="20" fill="#e8c870" opacity="0.6"/>
+  <!-- Small shed -->
+  <rect x="420" y="355" width="28" height="22" fill="#c09040" stroke="#7a5010" stroke-width="0.6" opacity="0.6"/>
+  <polygon points="420,355 434,343 448,355" fill="#9a7030" opacity="0.6"/>
+  <!-- Activity dots -->
+  <circle cx="470" cy="390" r="3" fill="#c0392b" opacity="0.5"/>
+  <circle cx="500" cy="380" r="2.5" fill="#c0392b" opacity="0.4"/>
+  <circle cx="450" cy="400" r="2" fill="#c0392b" opacity="0.35"/>
+
+  <!-- ===== SETTLEMENTS: Communities + Coaching (northeast) ===== -->
+  <!-- Communities for Sharing -->
+  <ellipse cx="790" cy="195" rx="70" ry="45" fill="#9ab87a" opacity="0.6" stroke="#5a8030" stroke-width="0.8"/>
+  <!-- Town houses -->
+  <rect x="756" y="177" width="18" height="22" fill="#7a9a5a" stroke="#4a7030" stroke-width="0.6"/>
+  <polygon points="756,177 765,165 774,177" fill="#5a7a3a" stroke="#4a7030" stroke-width="0.5"/>
+  <rect x="780" y="180" width="22" height="20" fill="#8aaa6a" stroke="#4a7030" stroke-width="0.6"/>
+  <polygon points="780,180 791,167 802,180" fill="#6a8a4a" stroke="#4a7030" stroke-width="0.5"/>
+  <!-- Coaching to Behaviour Change -->
+  <ellipse cx="920" cy="215" rx="70" ry="45" fill="#a8c878" opacity="0.6" stroke="#5a8030" stroke-width="0.8"/>
+  <rect x="887" y="198" width="18" height="22" fill="#8aaa6a" stroke="#4a7030" stroke-width="0.6"/>
+  <polygon points="887,198 896,185 905,198" fill="#6a8a4a" stroke="#4a7030" stroke-width="0.5"/>
+  <rect x="911" y="195" width="22" height="25" fill="#9aba7a" stroke="#4a7030" stroke-width="0.6"/>
+  <polygon points="911,195 922,181 933,195" fill="#7a9a5a" stroke="#4a7030" stroke-width="0.5"/>
+
+  <!-- BRIDGE between the two settlements -->
+  <path d="M860 205 Q875 195 900 205" stroke="#7a5020" stroke-width="3" fill="none"/>
+  <path d="M860 210 Q875 200 900 210" stroke="#7a5020" stroke-width="3" fill="none"/>
+  <!-- Bridge pillars -->
+  <line x1="872" y1="202" x2="872" y2="215" stroke="#7a5020" stroke-width="2"/>
+  <line x1="888" y1="197" x2="888" y2="210" stroke="#7a5020" stroke-width="2"/>
+  <!-- Bridge deck -->
+  <line x1="858" y1="212" x2="902" y2="212" stroke="#9a7040" stroke-width="1.5"/>
+
+  <!-- ===== QUALITY CHECKPOINT (on road between Build Zone and rest) ===== -->
+  <!-- Gatehouse -->
+  <rect x="610" y="322" width="30" height="36" fill="#d4c090" stroke="#8b6914" stroke-width="1.2"/>
+  <polygon points="610,322 625,308 640,322" fill="#b8a060" stroke="#8b6914" stroke-width="0.8"/>
+  <!-- Open gate bars -->
+  <line x1="610" y1="348" x2="598" y2="348" stroke="#8b6914" stroke-width="2.5"/>
+  <line x1="640" y1="348" x2="652" y2="348" stroke="#8b6914" stroke-width="2.5"/>
+  <!-- Gate hinges open outward (showing unmanned open gate) -->
+  <path d="M610 348 Q604 340 598 348" stroke="#6a5010" stroke-width="1.2" fill="none"/>
+  <path d="M640 348 Q646 340 652 348" stroke="#6a5010" stroke-width="1.2" fill="none"/>
+  <!-- Sign on gatehouse -->
+  <rect x="615" y="328" width="20" height="10" fill="#f2e8d0" stroke="#8b6914" stroke-width="0.6"/>
+  <text x="625" y="336" font-family="'Cinzel', serif" font-size="4" fill="#5a3e1b" text-anchor="middle">QUALITY</text>
+  <!-- No figure — empty post -->
+  <line x1="646" y1="318" x2="646" y2="358" stroke="#8b6914" stroke-width="1.2" opacity="0.4"/>
+
+  <!-- ===== ROUTES & PATHS ===== -->
+  <!-- Main road: Foundations Bedrock → Build Zone → Checkpoint → Consultant's Path -->
+  <path d="M310 520 Q370 480 420 420 Q445 390 480 370"
+    stroke="#8b6914" stroke-width="2.5" fill="none" opacity="0.6"/>
+  <!-- Road from Build Zone through Checkpoint -->
+  <path d="M560 350 Q585 345 610 348"
+    stroke="#8b6914" stroke-width="2.5" fill="none" opacity="0.6"/>
+  <path d="M640 348 Q680 340 720 310 Q760 280 790 250"
+    stroke="#8b6914" stroke-width="2" fill="none" opacity="0.55"/>
+
+  <!-- Consultant's Path (winding NE, with direction arrow) -->
+  <path d="M560 350 Q610 310 670 270 Q720 238 790 210"
+    stroke="#5a3e1b" stroke-width="2" fill="none" stroke-dasharray="10,5" opacity="0.75"/>
+  <!-- Arrow toward settlements -->
+  <polygon points="790,210 775,218 780,202" fill="#5a3e1b" opacity="0.75"/>
+
+  <!-- Road between two settlements via bridge -->
+  <line x1="858" y1="207" x2="902" y2="207" stroke="#8b6914" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- ===== VIGNETTE ===== -->
+  <rect width="1100" height="740" fill="url(#vignette)"/>
+
+  <!-- ===== MAP TITLE ===== -->
+  <text x="550" y="52" font-family="'Cinzel', serif" font-size="26" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="2">The Ownership Gap</text>
+  <text x="550" y="72" font-family="'IM Fell English', serif" font-style="italic" font-size="13" fill="#6a4e20" text-anchor="middle">Table II · Eric Grant · Who are we if we're not deciding?</text>
+  <line x1="200" y1="80" x2="900" y2="80" stroke="#8b6914" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- ===== LANDMARK LABELS ===== -->
+  <text x="480" y="230" font-family="'Cinzel', serif" font-size="11" font-weight="700" fill="#2c1a06" text-anchor="middle">The Build Zone</text>
+
+  <text x="220" y="510" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#f2e8d0" text-anchor="middle">The Foundations</text>
+  <text x="220" y="523" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#f2e8d0" text-anchor="middle">Bedrock</text>
+
+  <text x="830" y="270" font-family="'Cinzel', serif" font-size="10" font-weight="700" fill="#8a7840" text-anchor="middle">The Metric Void</text>
+
+  <text x="625" y="316" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#5a3e1b" text-anchor="middle">Quality</text>
+  <text x="625" y="326" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#5a3e1b" text-anchor="middle">Checkpoint</text>
+
+  <text x="790" y="148" font-family="'Cinzel', serif" font-size="9.5" font-weight="700" fill="#2c1a06" text-anchor="middle">Communities</text>
+  <text x="790" y="159" font-family="'Cinzel', serif" font-size="9.5" font-weight="700" fill="#2c1a06" text-anchor="middle">for Sharing</text>
+
+  <text x="920" y="162" font-family="'Cinzel', serif" font-size="9.5" font-weight="700" fill="#2c1a06" text-anchor="middle">Coaching to</text>
+  <text x="920" y="173" font-family="'Cinzel', serif" font-size="9.5" font-weight="700" fill="#2c1a06" text-anchor="middle">Behaviour Change</text>
+
+  <!-- Consultant's Path label -->
+  <text x="670" y="288" font-family="'IM Fell English', serif" font-style="italic" font-size="10" fill="#5a3e1b" text-anchor="middle" transform="rotate(-28,670,288)">The Consultant's Path</text>
+
+  <!-- Sea label -->
+  <text x="130" y="670" font-family="'IM Fell English', serif" font-style="italic" font-size="12" fill="#6a5020" opacity="0.55" transform="rotate(-4,130,670)">Sea of Unmeasured Outcomes</text>
+
+  <!-- ===== COMPASS ROSE (bottom right) ===== -->
+  <g transform="translate(1000, 660)">
+    <circle r="32" fill="#f2e8d0" stroke="#8b6914" stroke-width="1.2"/>
+    <circle r="28" fill="none" stroke="#8b6914" stroke-width="0.5" stroke-dasharray="3,3"/>
+    <line x1="0" y1="-28" x2="0" y2="28" stroke="#8b6914" stroke-width="0.7"/>
+    <line x1="-28" y1="0" x2="28" y2="0" stroke="#8b6914" stroke-width="0.7"/>
+    <line x1="-20" y1="-20" x2="20" y2="20" stroke="#8b6914" stroke-width="0.4" opacity="0.5"/>
+    <line x1="20" y1="-20" x2="-20" y2="20" stroke="#8b6914" stroke-width="0.4" opacity="0.5"/>
+    <polygon points="0,-26 -5,-10 0,-14 5,-10" fill="#c0392b"/>
+    <polygon points="0,-14 -5,-10 0,26 5,-10" fill="#5a3e1b"/>
+    <circle r="3" fill="#8b6914"/>
+    <text y="-32" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">N</text>
+    <text y="42" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">S</text>
+    <text x="36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">E</text>
+    <text x="-36" y="3" font-family="'Cinzel', serif" font-size="8" font-weight="700" fill="#2c1a06" text-anchor="middle">W</text>
+  </g>
+
+  <!-- ===== LEGEND ===== -->
+  <g transform="translate(340, 678)">
+    <rect x="0" y="0" width="360" height="42" rx="3" fill="#f2e8d0" stroke="#8b6914" stroke-width="1"/>
+    <text x="180" y="13" font-family="'Cinzel', serif" font-size="8.5" font-weight="700" fill="#2c1a06" text-anchor="middle" letter-spacing="1">LEGEND</text>
+    <circle cx="18" cy="27" r="5" fill="#c0392b" stroke="white" stroke-width="1.2"/>
+    <text x="27" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Landmark Pin</text>
+    <line x1="110" y1="27" x2="138" y2="27" stroke="#5a3e1b" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <text x="142" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Consultant's Path</text>
+    <rect x="240" y="21" width="16" height="12" fill="#d4c090" stroke="#8b6914" stroke-width="0.8"/>
+    <text x="260" y="31" font-family="'IM Fell English', serif" font-size="9" fill="#2c1a06">Checkpoint (unmanned)</text>
+  </g>
+
+  <!-- ===== CLICKABLE PINS ===== -->
+
+  <!-- PIN 1: The Build Zone -->
+  <g class="pin-group" data-id="build-zone" transform="translate(480,248)" onclick="openSidebar('build-zone')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">1</text>
+  </g>
+
+  <!-- PIN 2: The Quality Checkpoint -->
+  <g class="pin-group" data-id="quality-checkpoint" transform="translate(625,295)" onclick="openSidebar('quality-checkpoint')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">2</text>
+  </g>
+
+  <!-- PIN 3: The Metric Void -->
+  <g class="pin-group" data-id="metric-void" transform="translate(830,380)" onclick="openSidebar('metric-void')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">3</text>
+  </g>
+
+  <!-- PIN 4: The Foundations Bedrock -->
+  <g class="pin-group" data-id="foundations-bedrock" transform="translate(220,500)" onclick="openSidebar('foundations-bedrock')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">4</text>
+  </g>
+
+  <!-- PIN 5: The Consultant's Path -->
+  <g class="pin-group" data-id="consultants-path" transform="translate(680,310)" onclick="openSidebar('consultants-path')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">5</text>
+  </g>
+
+  <!-- PIN 6: Communities + Coaching (linked settlements) -->
+  <g class="pin-group" data-id="communities-coaching" transform="translate(855,168)" onclick="openSidebar('communities-coaching')">
+    <line x1="0" y1="0" x2="0" y2="22" stroke="#8b0000" stroke-width="1.8"/>
+    <circle class="pin-circle" cx="0" cy="0" r="10" fill="#c0392b" stroke="white" stroke-width="2" filter="url(#pin-shadow)"/>
+    <text x="0" y="4" font-family="'Cinzel', serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">6</text>
+  </g>
+
+</svg>
+
+<!-- ===== SIDEBAR ===== -->
+<div id="sidebar">
+  <button id="sidebar-close" onclick="closeSidebar()">✕</button>
+  <div id="sidebar-inner">
+    <div class="s-tag" id="s-tag"></div>
+    <div class="s-title" id="s-title"></div>
+    <div class="s-desc" id="s-desc"></div>
+    <div class="s-quote" id="s-quote"></div>
+    <div class="s-tension-label">⚡ Tension</div>
+    <div class="s-tension" id="s-tension"></div>
+  </div>
+  <div id="sidebar-footer">Table II · Eric Grant · AI Exploration Café</div>
+</div>
+
+</div>
+
+<script>
+const data = {
+  'build-zone': {
+    tag: 'Landmark 1 · Industrial District',
+    title: 'The Build Zone',
+    desc: 'Where the business is already making learning. Fast, contextual, ungoverned. Team handovers, process changes, job aids, SME-led knowledge sharing. Useful — but structural questions don\'t get asked when L&D isn\'t in the room.',
+    quote: '"The business may see learning as sharing information. L&D may define it as enabling performance and behavior change."',
+    tension: 'The Build Zone keeps expanding without a map. Speed makes the basics easy to skip — what problem are we solving, what behavior needs to change, who owns quality, how will we know it worked?'
+  },
+  'quality-checkpoint': {
+    tag: 'Landmark 2 · Unmanned Gatehouse',
+    title: 'The Quality Checkpoint',
+    desc: 'The checkpoint exists on every map. Nobody is standing there. Who checks accuracy? Who ensures accessibility? Who maintains the content? Who decides whether it actually changed anything? The sign is there. The definition isn\'t.',
+    quote: '"When the business builds learning without L&D involved, ownership can get blurry: who checks accuracy, quality, accessibility, maintenance, and impact?"',
+    tension: 'An unmanned checkpoint is worse than no checkpoint. It creates the illusion of governance without the substance.'
+  },
+  'metric-void': {
+    tag: 'Landmark 3 · Uncharted Flatland',
+    title: 'The Metric Void',
+    desc: 'A vast empty space where success criteria should be. L&D is being asked to measure AI training effectiveness with no shared definition of success. Usage? Behaviour change? Business outcome? Nobody has agreed — and that makes it hard to push back.',
+    quote: '"L&D is being asked to measure AI training effectiveness with no shared definition of success. Usage? Behaviour change? Business outcome? Nobody has agreed and that makes it hard to push back."',
+    tension: 'Measuring the wrong thing with precision is still measuring the wrong thing. The Metric Void expands every time a new initiative launches without agreed success criteria.'
+  },
+  'foundations-bedrock': {
+    tag: 'Landmark 4 · Southwest Bedrock',
+    title: 'The Foundations Bedrock',
+    desc: 'Asking the right questions upfront. Understanding what stakeholders actually want. Getting the foundations right still matters — even in rapid change. This bedrock is always underneath. The question is whether anyone digs down to it before building.',
+    quote: '"Even in rapid change, getting the foundations right still matters: asking the right questions upfront and understanding what stakeholders actually want." — Eric Grant',
+    tension: 'The Foundations Bedrock doesn\'t move. Everything built without reaching it eventually cracks.'
+  },
+  'consultants-path': {
+    tag: 'Landmark 5 · Winding Road',
+    title: 'The Consultant\'s Path',
+    desc: 'The route from content creator to consultant and connector — accompanying people to build effective learning, connecting needs with expertise, creating communities for sharing, coaching on behaviour change. The road exists. Most haven\'t taken it yet.',
+    quote: '"Our role is shifting. From content creators to consultants and connectors: accompanying people to build effective learning, connecting needs with expertise, creating communities for sharing, coaching on behaviour change."',
+    tension: 'The Consultant\'s Path requires giving up the comfort of being the one who makes the thing. That is harder than it sounds.'
+  },
+  'communities-coaching': {
+    tag: 'Landmark 6 · Twin Settlements',
+    title: 'Communities for Sharing + Coaching to Behaviour Change',
+    desc: 'The two destinations at the end of the Consultant\'s Path. Not separate islands — connected. Communities for Sharing feed into Coaching to Behaviour Change. The bridge between them is the L&D role reimagined.',
+    quote: '"Connecting needs with expertise, creating communities for sharing, coaching on behaviour change."',
+    tension: 'These settlements are reachable. The path to them runs through the Build Zone — not around it.'
+  }
+};
+
+function openSidebar(id) {
+  const d = data[id];
+  if (!d) return;
+  document.getElementById('s-tag').textContent = d.tag;
+  document.getElementById('s-title').textContent = d.title;
+  document.getElementById('s-desc').textContent = d.desc;
+  document.getElementById('s-quote').textContent = d.quote;
+  document.getElementById('s-tension').textContent = d.tension;
+  document.getElementById('sidebar').classList.add('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+document.getElementById('map-svg').addEventListener('click', function(e) {
+  if (!e.target.closest('.pin-group')) closeSidebar();
+});
+</script>
+</body>
+</html>
