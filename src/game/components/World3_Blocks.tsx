@@ -215,7 +215,7 @@ const World3_Blocks: React.FC = () => {
               The territory is revealed. Now it's time to name it.
             </p>
             <button className="mario-btn mario-btn-red" onClick={handleFinish} disabled={loading}>
-              {loading ? 'SAVING...' : 'ENTER THE CASTLE ▶'}
+              {loading ? 'SAVING...' : 'FIELD REPORT ▶'}
             </button>
           </div>
         )}

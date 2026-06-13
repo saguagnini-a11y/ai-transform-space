@@ -6,6 +6,8 @@ import '../styles/mario.css';
 const WORLD_COLORS = ['#E52521', '#5C94FC', '#4CAF50', '#FBD000'];
 const DOT_PALETTE = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD'];
 
+const WORLD_LABELS = ['YOUR CONTEXT', 'THE DIG', 'HIDDEN BLOCKS', 'FIELD REPORT'];
+
 const WorldMap: React.FC = () => {
   const navigate = useNavigate();
   const playerId = localStorage.getItem('game_player_id');
@@ -109,7 +111,7 @@ const WorldMap: React.FC = () => {
             </button>
 
             <span className="mario-font" style={{ fontSize: '0.45rem', color: 'var(--white)', textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
-              {['YOUR TERRAIN', 'THE ENEMIES', 'HIDDEN BLOCKS', 'THE CASTLE'][worldNum - 1]}
+              {WORLD_LABELS[worldNum - 1]}
             </span>
 
             {/* Path connector */}

@@ -77,7 +77,7 @@ const World4_Castle: React.FC = () => {
       {/* HUD */}
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
         <span>WORLD 4-1</span>
-        <span>THE CASTLE</span>
+        <span>FIELD REPORT</span>
         <span>STEP {step + 1}/5</span>
       </div>
 
@@ -227,7 +227,7 @@ const World4_Castle: React.FC = () => {
               LEVEL COMPLETE!
             </h2>
             <p className="vt323-font" style={{ color: 'var(--white)', fontSize: '1.5rem' }}>
-              Your problem is in the castle.
+              Your problem is in the Field Report.
             </p>
             <p className="vt323-font" style={{ color: '#aaa', fontSize: '1.2rem' }}>
               Now let's see who else is here...

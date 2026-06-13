@@ -32,6 +32,9 @@ interface CoinPop {
   y: number;
 }
 
+// steps: 0=where do you work, 1=who design for, 2=one word, 3=never enough, 4=something isn't working, 5=summary
+const TOTAL_STEPS = 5;
+
 const World1_Terrain: React.FC = () => {
   const navigate = useNavigate();
   const playerId = localStorage.getItem('game_player_id');
@@ -40,6 +43,7 @@ const World1_Terrain: React.FC = () => {
   const [q2, setQ2] = useState('');
   const [q3, setQ3] = useState('');
   const [q4, setQ4] = useState('');
+  const [q5, setQ5] = useState(''); // "something isn't working"
   const [coins, setCoins] = useState<CoinPop[]>([]);
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
@@ -71,10 +75,16 @@ const World1_Terrain: React.FC = () => {
     setStep(3);
   };
 
+  const handleQ5Submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!q5.trim()) return;
+    setStep(5);
+  };
+
   const handleFinish = async (e: React.MouseEvent) => {
     popCoin(e);
     setLoading(true);
-    const tags = { workplace: q1, audience: q2, reality: q3, challenge: q4 };
+    const tags = { workplace: q1, audience: q2, reality: q3, challenge: q4, situation: q5 };
     try {
       await gameSupabase
         .from('players')
@@ -104,12 +114,13 @@ const World1_Terrain: React.FC = () => {
       {/* HUD */}
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
         <span>WORLD 1-1</span>
-        <span>YOUR TERRAIN</span>
-        <span>STEP {step + 1}/4</span>
+        <span>YOUR CONTEXT</span>
+        <span>STEP {step + 1}/{TOTAL_STEPS}</span>
       </div>
 
       <div style={{ maxWidth: 600, margin: '0 auto', padding: '32px 20px', position: 'relative', zIndex: 2 }}>
-        {/* Intro */}
+
+        {/* Step 0 — Where do you work */}
         {step === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <h2 className="mario-font" style={{ fontSize: '0.8rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', marginBottom: 4 }}>
@@ -132,6 +143,7 @@ const World1_Terrain: React.FC = () => {
           </div>
         )}
 
+        {/* Step 1 — Who do you design for */}
         {step === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <h2 className="mario-font" style={{ fontSize: '0.7rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
@@ -151,6 +163,7 @@ const World1_Terrain: React.FC = () => {
           </div>
         )}
 
+        {/* Step 2 — One word */}
         {step === 2 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <h2 className="mario-font" style={{ fontSize: '0.7rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
@@ -174,6 +187,7 @@ const World1_Terrain: React.FC = () => {
           </div>
         )}
 
+        {/* Step 3 — Never enough of */}
         {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <h2 className="mario-font" style={{ fontSize: '0.6rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
@@ -197,19 +211,46 @@ const World1_Terrain: React.FC = () => {
           </div>
         )}
 
+        {/* Step 4 — Something isn't working */}
         {step === 4 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.75rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
+              SOMETHING ISN'T WORKING
+            </h2>
+            <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.4rem', margin: 0 }}>
+              Don't fix it yet. Just look at it.
+            </p>
+            <form onSubmit={handleQ5Submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <textarea
+                className="mario-input"
+                style={{ minHeight: 120, resize: 'vertical', lineHeight: 1.8 }}
+                value={q5}
+                onChange={(e) => setQ5(e.target.value)}
+                placeholder="Describe what you keep running into..."
+                autoFocus
+              />
+              <button type="submit" className="mario-btn mario-btn-gold" disabled={!q5.trim()}>
+                I SEE IT ▶
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Step 5 — Summary */}
+        {step === 5 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', textAlign: 'center' }}>
             <h2 className="mario-font" style={{ fontSize: '0.8rem', color: 'var(--coin-gold)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
-              TERRAIN MAPPED!
+              CONTEXT MAPPED!
             </h2>
-            <div className="vt323-font" style={{ fontSize: '1.2rem', color: 'var(--white)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="vt323-font" style={{ fontSize: '1.2rem', color: 'var(--white)', display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left', width: '100%' }}>
               <p>🏢 {q1}</p>
               <p>👥 {q2}</p>
               <p>💬 "{q3}"</p>
               <p>⚡ {q4}</p>
+              <p>🔍 "{q5}"</p>
             </div>
             <button className="mario-btn mario-btn-red" onClick={handleFinish} disabled={loading}>
-              {loading ? 'SAVING...' : 'CONTINUE TO WORLD 2 ▶'}
+              {loading ? 'SAVING...' : 'CONTINUE TO THE DIG ▶'}
             </button>
           </div>
         )}
@@ -222,18 +263,14 @@ const World1_Terrain: React.FC = () => {
             WORLD 1<br />COMPLETE!
           </h2>
           <p className="vt323-font" style={{ color: 'var(--white)', fontSize: '1.5rem' }}>
-            Terrain mapped ✓
+            Context mapped ✓
           </p>
           <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
                 className="coin-shower-item"
-                style={{
-                  left: `${20 + i * 8}%`,
-                  animationDelay: `${i * 0.1}s`,
-                  position: 'relative',
-                }}
+                style={{ left: `${20 + i * 8}%`, animationDelay: `${i * 0.1}s`, position: 'relative' }}
               />
             ))}
           </div>
