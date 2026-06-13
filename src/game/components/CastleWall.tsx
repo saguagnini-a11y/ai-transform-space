@@ -84,14 +84,14 @@ const CastleWall: React.FC = () => {
     <div className="game-screen castle-wall-bg" style={{ minHeight: '100vh', paddingBottom: 80 }}>
       {/* HUD */}
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
-        <span>THE CASTLE WALL</span>
+        <span>THE WALL OF CHALLENGES</span>
         <span>{statements.length} problems</span>
         <span>21 players</span>
       </div>
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 20px' }}>
         <h1 className="mario-font" style={{ fontSize: '0.9rem', color: 'var(--coin-gold)', textAlign: 'center', marginBottom: 8, textShadow: '3px 3px 0 rgba(0,0,0,0.7)' }}>
-          THE CASTLE WALL
+          THE WALL OF CHALLENGES
         </h1>
         <p className="vt323-font" style={{ color: 'var(--white)', textAlign: 'center', fontSize: '1.4rem', marginBottom: 24 }}>
           21 problems. One cohort.

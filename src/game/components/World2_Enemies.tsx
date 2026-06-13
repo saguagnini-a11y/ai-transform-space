@@ -135,7 +135,7 @@ const World2_Enemies: React.FC = () => {
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
         <span>WORLD 2-1</span>
         <span>THE DIG</span>
-        <span>STEP {step + 1}/7</span>
+        <span>{['NAME CHALLENGES','COHORT','CHOOSE PROBLEM','WHY?','WHO?','TOMORROW?','ROOT CAUSE'][step]}</span>
       </div>
 
       <div style={{ maxWidth: 600, margin: '0 auto', padding: '32px 20px' }}>

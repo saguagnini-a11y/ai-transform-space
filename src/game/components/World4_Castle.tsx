@@ -235,7 +235,7 @@ const World4_Castle: React.FC = () => {
               LEVEL COMPLETE!
             </h2>
             <p className="vt323-font" style={{ color: 'var(--white)', fontSize: '1.5rem' }}>
-              Your problem is in the Field Report.
+              Your problem is on the Wall of Challenges.
             </p>
             <p className="vt323-font" style={{ color: '#aaa', fontSize: '1.2rem' }}>
               Now let's see who else is here...

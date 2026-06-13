@@ -205,14 +205,45 @@ const World3_Blocks: React.FC = () => {
           </div>
         )}
 
-        {/* All done */}
+        {/* All done — carry Block 3 answer into framing hint */}
         {blockStep === 4 && (
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
             <h2 className="mario-font" style={{ fontSize: '0.8rem', color: 'var(--coin-gold)' }}>
               ALL BLOCKS HIT!
             </h2>
+
+            {/* Contextual hint based on Block 3 answer */}
+            <div style={{
+              background: 'rgba(251,208,0,0.12)',
+              borderLeft: '4px solid var(--coin-gold)',
+              padding: '12px 16px',
+              textAlign: 'left',
+              width: '100%',
+            }}>
+              {b3 === 'gets_it' && (
+                <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', margin: 0 }}>
+                  💡 Your learner recognises this problem. That's a strong signal — name it in a way they'd say out loud.
+                </p>
+              )}
+              {b3 === 'not_quite' && (
+                <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', margin: 0 }}>
+                  💡 Your learner senses it but doesn't fully see it yet. Your problem statement might need to name what's underneath what they notice.
+                </p>
+              )}
+              {b3 === 'not_my' && (
+                <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', margin: 0 }}>
+                  💡 Your learner doesn't own this problem. That matters — make sure your statement names who does, and why it still affects them.
+                </p>
+              )}
+              {b3 === 'eye_opener' && (
+                <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', margin: 0 }}>
+                  💡 Your learner hadn't seen this before you named it. That means your framing has to do extra work — be precise, not just provocative.
+                </p>
+              )}
+            </div>
+
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: '#ccc' }}>
-              The territory is revealed. Now it's time to name it.
+              Now it's time to write it down.
             </p>
             <button className="mario-btn mario-btn-red" onClick={handleFinish} disabled={loading}>
               {loading ? 'SAVING...' : 'FIELD REPORT ▶'}
