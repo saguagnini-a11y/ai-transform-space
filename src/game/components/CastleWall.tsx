@@ -196,8 +196,14 @@ const CastleWall: React.FC = () => {
                   {s.sharpened_statement}
                 </p>
                 {s.raw_statement && s.raw_statement !== s.sharpened_statement && (
-                  <p style={{ fontFamily: 'VT323, monospace', fontSize: '0.95rem', color: '#555', margin: '0 0 12px', lineHeight: 1.4, fontStyle: 'italic' }}>
+                  <p style={{ fontFamily: 'VT323, monospace', fontSize: '0.95rem', color: '#555', margin: '0 0 6px', lineHeight: 1.4, fontStyle: 'italic' }}>
                     {s.raw_statement}
+                  </p>
+                )}
+                {(s.context_tags as Record<string, string>)?.first_experiment && (
+                  <p style={{ fontFamily: 'VT323, monospace', fontSize: '0.9rem', color: '#777', margin: '0 0 12px', lineHeight: 1.4 }}>
+                    <span style={{ fontFamily: 'Press Start 2P, monospace', fontSize: '0.35rem', color: '#999', marginRight: 6 }}>FIRST MOVE:</span>
+                    {(s.context_tags as Record<string, string>).first_experiment}
                   </p>
                 )}
 
