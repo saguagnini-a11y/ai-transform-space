@@ -192,7 +192,7 @@ const World2_Enemies: React.FC = () => {
               What's keeping you awake at night?
             </p>
             <p className="vt323-font" style={{ color: '#aaa', fontSize: '1rem', margin: 0 }}>
-              Your final problem statement will be shared on the Wall of Challenges — nothing before that is visible.
+              Only your final statement will be shared with others at the end of this experience — nothing before that is visible.
             </p>
             {[
               'The thing that comes back every time...',
