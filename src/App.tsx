@@ -16,7 +16,6 @@ import TitleScreen from "./game/components/TitleScreen";
 import WorldMap from "./game/components/WorldMap";
 import World1_Terrain from "./game/components/World1_Terrain";
 import World2_Enemies from "./game/components/World2_Enemies";
-import World3_Blocks from "./game/components/World3_Blocks";
 import World4_Castle from "./game/components/World4_Castle";
 import CastleWall from "./game/components/CastleWall";
 import PodView from "./game/components/PodView";
@@ -43,8 +42,7 @@ const App = () => (
           <Route path="/game/world-map" element={<WorldMap />} />
           <Route path="/game/world/1" element={<World1_Terrain />} />
           <Route path="/game/world/2" element={<World2_Enemies />} />
-          <Route path="/game/world/3" element={<World3_Blocks />} />
-          <Route path="/game/world/4" element={<World4_Castle />} />
+          <Route path="/game/world/3" element={<World4_Castle />} />
           <Route path="/game/castle-wall" element={<CastleWall />} />
           <Route path="/pod/:pod_id" element={<PodView />} />
           <Route path="*" element={<NotFound />} />

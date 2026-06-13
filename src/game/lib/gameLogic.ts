@@ -23,7 +23,7 @@ export function calculateVerdict(toolAnswer: string, rootCauseAnswer: string): V
     return {
       verdict: 'maybe',
       badge: '🟡 Maybe — pair with training',
-      reason: 'A tool could help, but the root cause is about skills or will — pair tech with human development.',
+      reason: 'A tool could help, but the underlying problem is about skills or will — pair tech with human development.',
     };
   }
   if (!isTool && !isBoth && isStructural) {
@@ -37,7 +37,7 @@ export function calculateVerdict(toolAnswer: string, rootCauseAnswer: string): V
     return {
       verdict: 'redirect',
       badge: '🔴 Redirect — start with people, not tools',
-      reason: 'This problem needs human judgment and is rooted in skills or will — start with people, not technology.',
+      reason: 'This problem needs human judgment and is grounded in skills or will — start with people, not technology.',
     };
   }
   // isBoth → default maybe

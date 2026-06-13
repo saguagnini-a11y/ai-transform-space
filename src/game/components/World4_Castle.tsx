@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gameSupabase } from '../lib/supabase';
-import { calculateVerdict } from '../lib/gameLogic';
 import VerdictBadge from './VerdictBadge';
 import '../styles/mario.css';
 
@@ -17,7 +16,6 @@ const hasSolutionTrigger = (text: string) => {
   const lower = text.toLowerCase();
   return SOLUTION_TRIGGERS.some((t) => lower.includes(t));
 };
-
 
 const buildPOV = (who: string, what: string, insight: string): string => {
   const parts: string[] = [];
@@ -127,28 +125,38 @@ const TIER_COLORS: Record<string, string> = {
   red: 'var(--mario-red)',
 };
 
+type VerdictResult = {
+  verdict: 'strong' | 'maybe' | 'redirect';
+  badge: string;
+  reason: string;
+};
+
+const verdictFromTier = (tier: 'gold' | 'silver' | 'red'): VerdictResult => {
+  if (tier === 'gold') return { verdict: 'strong', badge: '🟢 Strong AI candidate', reason: 'This is a structural problem — great fit for AI-assisted solutions.' };
+  if (tier === 'silver') return { verdict: 'maybe', badge: '🟡 Maybe — paired approach', reason: 'AI can help here with the right framing and a clear scope.' };
+  return { verdict: 'redirect', badge: '🔴 Redirect — start here before AI', reason: 'This problem needs a non-AI solution first. Naming it clearly is still the work.' };
+};
+
 const World4_Castle: React.FC = () => {
   const navigate = useNavigate();
   const playerId = localStorage.getItem('game_player_id');
   const playerName = localStorage.getItem('game_player_name') ?? 'Player';
 
-  // 0=Draft, 1=ToolTest, 2=RootCause, 3=Refine, 4=SwapTest, 5=POV, 6=OneSmallThing
+  // 0=Draft, 1=Voice, 2=The Problem, 3=Refine, 4=POV, 5=OneSmallThing
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState(localStorage.getItem('game_size_check') ?? '');
-  const [toolAnswer, setToolAnswer] = useState('');
+  const [voiceAnswer, setVoiceAnswer] = useState('');
   const [rootCauseCategory, setRootCauseCategory] = useState('');
   const [finalStatement, setFinalStatement] = useState('');
-  const [povSubjectChoice, setPovSubjectChoice] = useState('');
   const [povWho, setPovWho] = useState('');
   const [povWhat, setPovWhat] = useState('');
   const [povInsight, setPovInsight] = useState(localStorage.getItem('game_root_cause_why') ?? '');
   const [firstExperiment, setFirstExperiment] = useState('');
-  const [verdict, setVerdict] = useState<ReturnType<typeof calculateVerdict> | null>(null);
+  const [verdict, setVerdict] = useState<VerdictResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [flagRaised, setFlagRaised] = useState(false);
   const [fieldChecks, setFieldChecks] = useState([false, false, false]);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
-  const [swapNudgeVisible, setSwapNudgeVisible] = useState(false);
   const [redirectFork, setRedirectFork] = useState<'none' | 'fork' | 'understand'>('none');
   const [reframeMode, setReframeMode] = useState(false);
 
@@ -160,12 +168,10 @@ const World4_Castle: React.FC = () => {
     setStep(1);
   };
 
-  const handleTool = (v: string) => { setToolAnswer(v); setStep(2); };
-
   const handleRoot = (categoryId: string) => {
     const cat = ROOT_CAUSE_CATEGORIES.find((c) => c.id === categoryId)!;
     setRootCauseCategory(categoryId);
-    const result = calculateVerdict(toolAnswer, cat.verdict);
+    const result = verdictFromTier(cat.tier);
     setVerdict(result);
     setFinalStatement(draft);
     setStep(3);
@@ -192,19 +198,10 @@ const World4_Castle: React.FC = () => {
     setStep(0);
   };
 
-  const handleRedirectContinueToSwap = () => {
+  const handleRedirectContinueToPOV = () => {
     setRedirectFork('none');
     setStep(4);
   };
-
-  const handleAdvanceToPOV = () => { setStep(5); };
-
-  const handlePovSubjectPick = (choice: string, prefill: string) => {
-    setPovSubjectChoice(choice);
-    setPovWho(prefill);
-  };
-
-  const handleAdvanceToExperiment = () => { setStep(6); };
 
   const submitToWall = async () => {
     if (!verdict) return;
@@ -226,7 +223,7 @@ const World4_Castle: React.FC = () => {
         ai_fitness_reason: verdict.reason,
         reactions: [],
       });
-      await gameSupabase.from('players').update({ world: 4 }).eq('id', playerId);
+      await gameSupabase.from('players').update({ world: 3 }).eq('id', playerId);
       localStorage.setItem('game_verdict', JSON.stringify(verdict));
       localStorage.setItem('game_final_statement', statement);
       setFlagRaised(true);
@@ -245,15 +242,15 @@ const World4_Castle: React.FC = () => {
 
   const assembledPOV = buildPOV(povWho, povWhat, povInsight);
 
-  const stepLabels = ['DRAFT', 'TOOL TEST', 'ROOT CAUSE', 'REFINE', 'SWAP TEST', 'POV', 'FIRST MOVE'];
+  const stepLabels = ['DRAFT', 'VOICE', 'THE PROBLEM', 'REFINE', 'POV', 'FIRST MOVE'];
 
   return (
     <div className="game-screen castle-bg" style={{ minHeight: '100vh', paddingBottom: 80, color: 'var(--white)' }}>
       {/* HUD */}
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
-        <span>WORLD 4-1</span>
+        <span>WORLD 3-1</span>
         <span>FIELD REPORT</span>
-        <span>{stepLabels[Math.min(step, 6)]}</span>
+        <span>{stepLabels[Math.min(step, 5)]}</span>
       </div>
 
       {/* Castle turrets */}
@@ -333,25 +330,55 @@ const World4_Castle: React.FC = () => {
           </form>
         )}
 
-        {/* Step 1 — Tool Test */}
+        {/* Step 1 — Voice Question */}
         {step === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>THE TOOL TEST</h2>
-            <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', margin: 0 }}>
-              Could a tool realistically help with this — or does it need a human decision first?
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
+              WHAT WOULD THE PERSON<br />MOST AFFECTED SAY?
+            </h2>
+            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+              Not what they should say. What they'd actually say — in the corridor, in a message, after a meeting.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <button className="platform-option" onClick={() => handleTool('tool')}>🤖 A tool could genuinely help here</button>
-              <button className="platform-option" onClick={() => handleTool('human')}>🧑 This needs human judgment first</button>
-              <button className="platform-option" onClick={() => handleTool('both')}>🤝 Both — a tool that supports human judgment</button>
+
+            <div style={{ background: 'rgba(0,0,0,0.4)', borderLeft: '4px solid #555', padding: '12px 16px' }}>
+              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOUR PROBLEM:</p>
+              <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: 0, fontStyle: 'italic' }}>
+                "{draft}"
+              </p>
+            </div>
+
+            <textarea
+              className="mario-input"
+              style={{ minHeight: 120, resize: 'vertical', lineHeight: 1.8 }}
+              value={voiceAnswer}
+              onChange={(e) => setVoiceAnswer(e.target.value)}
+              placeholder='"I wish someone would just..."'
+              autoFocus
+            />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                className="mario-btn mario-btn-red"
+                disabled={!voiceAnswer.trim()}
+                onClick={() => setStep(2)}
+              >
+                THAT'S THE VOICE ▶
+              </button>
+              <button
+                className="mario-btn mario-btn-dark"
+                style={{ fontSize: '0.45rem' }}
+                onClick={() => setStep(2)}
+              >
+                SKIP
+              </button>
             </div>
           </div>
         )}
 
-        {/* Step 2 — Root Cause (9 L&D-native categories) */}
+        {/* Step 2 — The Problem (9 L&D-native categories) */}
         {step === 2 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>THE ROOT CAUSE TEST</h2>
+            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>THE PROBLEM TEST</h2>
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', margin: 0 }}>
               Which of these best describes why your problem keeps happening?
             </p>
@@ -422,7 +449,7 @@ const World4_Castle: React.FC = () => {
         {step === 3 && verdict && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-            {/* Redirect Fork — shown after they submit refine if verdict = redirect */}
+            {/* Redirect Fork */}
             {redirectFork === 'fork' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div style={{ background: 'rgba(233,69,96,0.1)', borderLeft: '4px solid var(--mario-red)', padding: '16px 20px' }}>
@@ -475,7 +502,7 @@ const World4_Castle: React.FC = () => {
                     </div>
                   );
                 })()}
-                <button className="mario-btn mario-btn-dark" onClick={handleRedirectContinueToSwap}>
+                <button className="mario-btn mario-btn-dark" onClick={handleRedirectContinueToPOV}>
                   TAKE IT TO THE WALL ▶
                 </button>
               </div>
@@ -499,114 +526,52 @@ const World4_Castle: React.FC = () => {
                   </div>
                 )}
                 <button type="submit" className="mario-btn mario-btn-red" disabled={!finalStatement.trim()}>
-                  {verdict.verdict === 'redirect' ? 'SEE WHAT THIS MEANS ▶' : 'ONE MORE CHECK ▶'}
+                  {verdict.verdict === 'redirect' ? 'SEE WHAT THIS MEANS ▶' : 'GIVE IT A WHO ▶'}
                 </button>
               </form>
             )}
           </div>
         )}
 
-        {/* Step 4 — Swap Test */}
+        {/* Step 4 — POV Builder */}
         {step === 4 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
-              COULD A CHECKLIST, A TEMPLATE, OR A BETTER PROCESS FIX THIS?
-            </h2>
-            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              Be honest. It's a faster question than it sounds.
-            </p>
-            {swapNudgeVisible ? (
-              <div style={{ background: 'rgba(0,0,0,0.5)', borderLeft: '4px solid var(--coin-gold)', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <p className="vt323-font" style={{ color: AMBER, fontSize: '1.2rem', margin: 0 }}>
-                  That's not a reason to stop. But the best AI projects start where process ends — not where it hasn't been tried yet.
-                </p>
-                <button className="mario-btn mario-btn-dark" style={{ fontSize: '0.45rem', alignSelf: 'flex-start' }}
-                  onClick={() => { setSwapNudgeVisible(false); handleAdvanceToPOV(); }}>
-                  NOTED — KEEP GOING
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <button className="platform-option" onClick={handleAdvanceToPOV}>🚀 Probably not — AI adds something here</button>
-                <button className="platform-option" onClick={() => setSwapNudgeVisible(true)}>🤔 Actually… maybe yes</button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Step 5 — POV Builder */}
-        {step === 5 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
-              WRITE YOUR POV.
+              GIVE IT A WHO.
             </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              A point of view statement makes your problem real. The 'who' might be a learner, a manager — or you. All three are valid.
+              A point of view makes the problem real. The who might be a learner, a manager — or you as L&D. All three are valid.
             </p>
 
-            {/* Subject picker — shown until a choice is made */}
-            {!povSubjectChoice && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <button className="platform-option" style={{ textAlign: 'left' }} onClick={() => handlePovSubjectPick('learner', 'A learner or participant')}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span>🧑‍💼 A learner or participant</span>
-                    <span className="vt323-font" style={{ fontSize: '1rem', color: '#888', fontFamily: 'VT323, monospace' }}>The person going through the experience</span>
-                  </div>
-                </button>
-                <button className="platform-option" style={{ textAlign: 'left' }} onClick={() => handlePovSubjectPick('stakeholder', 'A stakeholder or manager')}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span>👔 A stakeholder or manager</span>
-                    <span className="vt323-font" style={{ fontSize: '1rem', color: '#888', fontFamily: 'VT323, monospace' }}>The person who owns the context or budget</span>
-                  </div>
-                </button>
-                <button className="platform-option" style={{ textAlign: 'left' }} onClick={() => handlePovSubjectPick('me', 'Me, as L&D')}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span>🛠️ Me, as L&D</span>
-                    <span className="vt323-font" style={{ fontSize: '1rem', color: '#888', fontFamily: 'VT323, monospace' }}>I am the one blocked, under-resourced, or working around the problem</span>
-                  </div>
-                </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, boxShadow: `-2px 0 0 ${AMBER}, 2px 0 0 ${AMBER}, 0 -2px 0 ${AMBER}, 0 2px 0 ${AMBER}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid rgba(251,208,0,0.2)` }}>
+                <span className="mario-font" style={{ fontSize: '0.4rem', color: AMBER, padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>WHO</span>
+                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="the person or role" value={povWho} onChange={(e) => setPovWho(e.target.value)} autoFocus />
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid rgba(251,208,0,0.2)` }}>
+                <span className="mario-font" style={{ fontSize: '0.4rem', color: '#666', padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>NEEDS</span>
+                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what they actually need" value={povWhat} onChange={(e) => setPovWhat(e.target.value)} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <span className="mario-font" style={{ fontSize: '0.4rem', color: '#666', padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>BECAUSE</span>
+                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what's making it hard" value={povInsight} onChange={(e) => setPovInsight(e.target.value)} />
+              </div>
+            </div>
+
+            {assembledPOV && (
+              <p className="vt323-font" style={{ color: AMBER, fontSize: '1.4rem', margin: 0, lineHeight: 1.5, fontStyle: 'italic' }}>
+                {assembledPOV}
+              </p>
             )}
 
-            {/* POV builder — shown once subject is chosen */}
-            {povSubjectChoice && (
-              <>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 0, boxShadow: `-2px 0 0 ${AMBER}, 2px 0 0 ${AMBER}, 0 -2px 0 ${AMBER}, 0 2px 0 ${AMBER}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid rgba(251,208,0,0.2)` }}>
-                    <span className="mario-font" style={{ fontSize: '0.4rem', color: AMBER, padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>WHO</span>
-                    <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="the person or role" value={povWho} onChange={(e) => setPovWho(e.target.value)} autoFocus />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid rgba(251,208,0,0.2)` }}>
-                    <span className="mario-font" style={{ fontSize: '0.4rem', color: '#666', padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>NEEDS</span>
-                    <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what they actually need" value={povWhat} onChange={(e) => setPovWhat(e.target.value)} />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span className="mario-font" style={{ fontSize: '0.4rem', color: '#666', padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>BECAUSE</span>
-                    <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what's making it hard" value={povInsight} onChange={(e) => setPovInsight(e.target.value)} />
-                  </div>
-                </div>
-
-                {assembledPOV && (
-                  <p className="vt323-font" style={{ color: AMBER, fontSize: '1.4rem', margin: 0, lineHeight: 1.5, fontStyle: 'italic' }}>
-                    {assembledPOV}
-                  </p>
-                )}
-
-                <div style={{ display: 'flex', gap: 10, flexDirection: 'column' }}>
-                  <button className="mario-btn mario-btn-red" onClick={handleAdvanceToExperiment} disabled={!povWho.trim()}>
-                    THIS IS MY POV ▶
-                  </button>
-                  <button className="mario-btn mario-btn-dark" style={{ fontSize: '0.4rem' }} onClick={() => { setPovSubjectChoice(''); setPovWho(''); }}>
-                    ← CHANGE WHO
-                  </button>
-                </div>
-              </>
-            )}
+            <button className="mario-btn mario-btn-red" onClick={() => setStep(5)} disabled={!povWho.trim()}>
+              THIS IS MY POV ▶
+            </button>
           </div>
         )}
 
-        {/* Step 6 — One Small Thing */}
-        {step === 6 && (
+        {/* Step 5 — One Small Thing */}
+        {step === 5 && (
           <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               ONE SMALL THING.

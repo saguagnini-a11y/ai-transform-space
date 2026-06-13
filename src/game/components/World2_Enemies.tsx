@@ -14,27 +14,13 @@ interface ImportedChallenge {
 // 0 — Name your challenges (3 fields)
 // 1 — Cohort challenges (imported)
 // 2 — Choose your problem to dig
-// 3 — Why is this happening?
-// 4 — Who's in the room?
-// 5 — If you fixed it tomorrow...
-// 6 — Pick your root cause (category + free text; conditionally shows Size Check)
+// 3 — Size Check: is this one problem or three?
+// 4 — Why is this happening?
+// 5 — Who's in the room?
+// 6 — If you fixed it tomorrow...
+// 7 — Does this happen more than once a month?
 
 const AMBER = 'var(--coin-gold)';
-
-const ROOT_CAUSE_CATEGORIES = [
-  'Process Gap',
-  'Comms Breakdown',
-  'Tool Gap',
-  'Workflow Bottleneck',
-  'Dependency',
-  'Resource Constraint',
-  'Skill Gap',
-  'Product Issue',
-  'Will / Motivation',
-  'Other',
-];
-
-const SIZE_CHECK_TRIGGERS = new Set(['Process Gap', 'Comms Breakdown']);
 
 const InputScreen: React.FC<{
   header: string;
@@ -84,13 +70,10 @@ const World2_Enemies: React.FC = () => {
   const [challenges, setChallenges] = useState(['', '', '']);
   const [importedChallenges, setImportedChallenges] = useState<ImportedChallenge[]>([]);
   const [chosenChallenge, setChosenChallenge] = useState('');
+  const [sizeCheckAnswer, setSizeCheckAnswer] = useState('');
   const [whyHappening, setWhyHappening] = useState('');
   const [whoInRoom, setWhoInRoom] = useState('');
   const [stillBroken, setStillBroken] = useState('');
-  const [rootCauseCategory, setRootCauseCategory] = useState('');
-  const [rootCauseFreeText, setRootCauseFreeText] = useState('');
-  const [showSizeCheck, setShowSizeCheck] = useState(false);
-  const [sizeCheckAnswer, setSizeCheckAnswer] = useState('');
   const [repetitionNudgeVisible, setRepetitionNudgeVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
@@ -122,7 +105,7 @@ const World2_Enemies: React.FC = () => {
 
   const allDecided = importedChallenges.length === 0 || importedChallenges.every((e) => e.kept !== null);
 
-  const handleFinish = async (sizeCheck?: string) => {
+  const handleFinish = async () => {
     setLoading(true);
     try {
       const inserts = challenges
@@ -130,15 +113,12 @@ const World2_Enemies: React.FC = () => {
         .map((b) => ({ player_id: playerId!, blocker_text: b, world_origin: 2 }));
       await gameSupabase.from('enemies').insert(inserts);
       await gameSupabase.from('players').update({ world: 3 }).eq('id', playerId!);
-      localStorage.setItem('game_chosen_challenge', rootCauseFreeText || chosenChallenge);
+      const finalProblem = sizeCheckAnswer || chosenChallenge;
+      localStorage.setItem('game_chosen_challenge', finalProblem);
       localStorage.setItem('game_root_cause_why', whyHappening);
       localStorage.setItem('game_root_cause_who', whoInRoom);
       localStorage.setItem('game_still_broken', stillBroken);
-      if (sizeCheck) {
-        localStorage.setItem('game_size_check', sizeCheck);
-      } else {
-        localStorage.removeItem('game_size_check');
-      }
+      localStorage.setItem('game_size_check', finalProblem);
       setComplete(true);
       setTimeout(() => navigate('/game/world/3'), 2500);
     } catch (err) {
@@ -148,27 +128,10 @@ const World2_Enemies: React.FC = () => {
     }
   };
 
-  const handleRootCauseAdvance = () => {
-    if (!rootCauseCategory || !rootCauseFreeText.trim()) return;
-    if (SIZE_CHECK_TRIGGERS.has(rootCauseCategory)) {
-      setShowSizeCheck(true);
-    } else {
-      handleFinish();
-    }
-  };
-
-  const handleSizeCheckAdvance = () => {
-    if (!sizeCheckAnswer.trim()) return;
-    handleFinish(sizeCheckAnswer);
-  };
-
   const keptImported = importedChallenges.filter((e) => e.kept).map((e) => e.blocker_text);
   const digOptions = [...challenges.filter((c) => c.trim()), ...keptImported];
 
-  const stepLabel = (() => {
-    if (step === 7 && showSizeCheck) return 'SIZE CHECK';
-    return ['NAME CHALLENGES', 'COHORT', 'CHOOSE PROBLEM', 'WHY?', 'WHO?', 'TOMORROW?', 'RECURRING?', 'THE PROBLEM'][step];
-  })();
+  const stepLabel = ['NAME CHALLENGES', 'COHORT', 'CHOOSE PROBLEM', 'SIZE CHECK', 'WHY?', 'WHO?', 'TOMORROW?', 'RECURRING?'][step] ?? 'RECURRING?';
 
   return (
     <div
@@ -290,7 +253,7 @@ const World2_Enemies: React.FC = () => {
               {digOptions.map((opt, i) => (
                 <button
                   key={i}
-                  onClick={() => { setChosenChallenge(opt); setStep(3); }}
+                  onClick={() => { setChosenChallenge(opt); setSizeCheckAnswer(''); setStep(3); }}
                   style={{
                     fontFamily: 'VT323, monospace',
                     fontSize: '1.3rem',
@@ -312,8 +275,53 @@ const World2_Enemies: React.FC = () => {
           </div>
         )}
 
-        {/* Step 3 — Why is this happening? */}
+        {/* Step 3 — Size Check */}
         {step === 3 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
+              IS THIS ONE PROBLEM OR THREE?
+            </h2>
+            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+              Name the smallest version of this problem.
+            </p>
+
+            <div style={{ background: 'rgba(0,0,0,0.4)', borderLeft: '4px solid #555', padding: '12px 16px' }}>
+              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOU PICKED:</p>
+              <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: 0, fontStyle: 'italic' }}>
+                "{chosenChallenge}"
+              </p>
+            </div>
+
+            <textarea
+              className="mario-input"
+              style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
+              value={sizeCheckAnswer}
+              onChange={(e) => setSizeCheckAnswer(e.target.value)}
+              placeholder="The smallest version of this is..."
+              autoFocus
+            />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                className="mario-btn mario-btn-red"
+                disabled={!sizeCheckAnswer.trim()}
+                onClick={() => setStep(4)}
+              >
+                THAT'S THE ONE ▶
+              </button>
+              <button
+                className="mario-btn mario-btn-dark"
+                style={{ fontSize: '0.45rem' }}
+                onClick={() => setStep(4)}
+              >
+                SKIP — USE AS IS
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4 — Why is this happening? */}
+        {step === 4 && (
           <InputScreen
             header="WHY IS THIS HAPPENING?"
             subtitle="Don't explain. Describe."
@@ -322,12 +330,12 @@ const World2_Enemies: React.FC = () => {
             value={whyHappening}
             onChange={setWhyHappening}
             multiline
-            onSubmit={() => setStep(4)}
+            onSubmit={() => setStep(5)}
           />
         )}
 
-        {/* Step 4 — Who's in the room? */}
-        {step === 4 && (
+        {/* Step 5 — Who's in the room? */}
+        {step === 5 && (
           <InputScreen
             header="WHO'S IN THE ROOM?"
             subtitle="Name the last time this went wrong. Who was there? Who owned it?"
@@ -336,26 +344,26 @@ const World2_Enemies: React.FC = () => {
             value={whoInRoom}
             onChange={setWhoInRoom}
             multiline
-            onSubmit={() => setStep(5)}
-          />
-        )}
-
-        {/* Step 5 — If you fixed it tomorrow */}
-        {step === 5 && (
-          <InputScreen
-            header="IF YOU FIXED IT TOMORROW, WHAT WOULD STILL BE BROKEN?"
-            subtitle="This tells you whether you found the root — or just a symptom."
-            placeholder="Even if I fixed this, I'd still have..."
-            advanceLabel="THAT'S THE ROOT ▶"
-            value={stillBroken}
-            onChange={setStillBroken}
-            multiline
             onSubmit={() => setStep(6)}
           />
         )}
 
-        {/* Step 6 — Repetition Test (new) */}
+        {/* Step 6 — If you fixed it tomorrow */}
         {step === 6 && (
+          <InputScreen
+            header="IF YOU FIXED IT TOMORROW, WHAT WOULD STILL BE BROKEN?"
+            subtitle="This tells you whether you found the problem — or just a symptom."
+            placeholder="Even if I fixed this, I'd still have..."
+            advanceLabel="THAT'S THE PROBLEM ▶"
+            value={stillBroken}
+            onChange={setStillBroken}
+            multiline
+            onSubmit={() => setStep(7)}
+          />
+        )}
+
+        {/* Step 7 — Repetition Test */}
+        {step === 7 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               DOES THIS HAPPEN MORE THAN ONCE A MONTH?
@@ -369,130 +377,29 @@ const World2_Enemies: React.FC = () => {
                 <p className="vt323-font" style={{ color: AMBER, fontSize: '1.2rem', margin: 0 }}>
                   One-off problems rarely need AI. Is there a recurring version of this? If yes, that's your real problem.
                 </p>
-                <button className="mario-btn mario-btn-dark" style={{ fontSize: '0.45rem', alignSelf: 'flex-start' }}
-                  onClick={() => { setRepetitionNudgeVisible(false); setStep(7); }}>
-                  GOT IT — KEEP GOING
-                </button>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <button className="mario-btn mario-btn-gold" style={{ fontSize: '0.45rem' }}
+                    onClick={() => { setRepetitionNudgeVisible(false); handleFinish(); }}
+                    disabled={loading}
+                  >
+                    {loading ? 'SAVING...' : 'GOT IT — KEEP GOING'}
+                  </button>
+                  <button className="mario-btn mario-btn-dark" style={{ fontSize: '0.45rem' }}
+                    onClick={() => { setRepetitionNudgeVisible(false); setStep(2); }}
+                  >
+                    GOT IT — GO BACK
+                  </button>
+                </div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <button className="platform-option" onClick={() => setStep(7)}>
-                  ✅ Yes — it's recurring
+                <button className="platform-option" onClick={() => handleFinish()} disabled={loading}>
+                  {loading ? 'SAVING...' : '✅ Yes — it\'s recurring'}
                 </button>
                 <button className="platform-option" onClick={() => setRepetitionNudgeVisible(true)}>
                   🔁 Not really — it's more of a one-off
                 </button>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Step 7 — Name the problem: category + free text; or Size Check */}
-        {step === 7 && !showSizeCheck && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
-              NAME THE PROBLEM
-            </h2>
-
-            <div style={{ background: 'rgba(251,208,0,0.15)', borderLeft: '4px solid var(--coin-gold)', padding: '12px 16px' }}>
-              <p className="mario-font" style={{ fontSize: '0.4rem', color: AMBER, margin: '0 0 6px' }}>YOUR DIG FOUND:</p>
-              <p className="vt323-font" style={{ color: 'var(--white)', fontSize: '1.2rem', margin: 0, fontStyle: 'italic' }}>
-                "{stillBroken}"
-              </p>
-            </div>
-
-            {/* Category buttons */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-              {ROOT_CAUSE_CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setRootCauseCategory(cat)}
-                  style={{
-                    fontFamily: 'VT323, monospace',
-                    fontSize: '1rem',
-                    background: rootCauseCategory === cat ? 'var(--mario-red)' : 'rgba(0,0,0,0.45)',
-                    color: rootCauseCategory === cat ? 'var(--white)' : '#ccc',
-                    border: 'none',
-                    padding: '10px 8px',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    lineHeight: 1.3,
-                    boxShadow: rootCauseCategory === cat
-                      ? '-2px 0 0 var(--white), 2px 0 0 var(--white), 0 -2px 0 var(--white), 0 2px 0 var(--white)'
-                      : '-2px 0 0 #555, 2px 0 0 #555, 0 -2px 0 #555, 0 2px 0 #555',
-                    transition: 'background 0.12s',
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-            {/* Free-text elaboration */}
-            {rootCauseCategory && (
-              <>
-                <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-                  Name it in your own words.
-                </p>
-                <textarea
-                  className="mario-input"
-                  style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
-                  value={rootCauseFreeText}
-                  onChange={(e) => setRootCauseFreeText(e.target.value)}
-                  placeholder="The real problem is..."
-                  autoFocus
-                />
-                {rootCauseFreeText.trim() && (
-                  <button
-                    className="mario-btn mario-btn-red"
-                    onClick={handleRootCauseAdvance}
-                    disabled={loading}
-                  >
-                    {loading ? 'SAVING...' : "THAT'S THE PROBLEM ▶"}
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Step 7 — Size Check (conditional) */}
-        {step === 7 && showSizeCheck && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
-              IS THIS ONE PROBLEM OR THREE?
-            </h2>
-            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              {rootCauseCategory === 'Process Gap'
-                ? 'Process gaps are usually symptoms of something smaller.'
-                : 'Comms breakdowns are usually symptoms of something smaller.'}{' '}
-              Name the smallest version of this problem.
-            </p>
-
-            <div style={{ background: 'rgba(0,0,0,0.4)', borderLeft: '4px solid #555', padding: '12px 16px' }}>
-              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOUR DIG FOUND:</p>
-              <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: 0, fontStyle: 'italic' }}>
-                "{rootCauseFreeText}"
-              </p>
-            </div>
-
-            <textarea
-              className="mario-input"
-              style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
-              value={sizeCheckAnswer}
-              onChange={(e) => setSizeCheckAnswer(e.target.value)}
-              placeholder="The smallest version of this is..."
-              autoFocus
-            />
-
-            {sizeCheckAnswer.trim() && (
-              <button
-                className="mario-btn mario-btn-red"
-                onClick={handleSizeCheckAdvance}
-                disabled={loading}
-              >
-                {loading ? 'SAVING...' : 'THIS IS THE ONE ▶'}
-              </button>
             )}
           </div>
         )}
