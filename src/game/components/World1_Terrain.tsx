@@ -32,8 +32,8 @@ interface CoinPop {
   y: number;
 }
 
-// steps: 0=where do you work, 1=who design for, 2=one word, 3=never enough, 4=something isn't working, 5=summary
-const TOTAL_STEPS = 5;
+// steps: 0=where do you work, 1=who design for, 2=one word, 3=never enough, 4=summary
+const TOTAL_STEPS = 4;
 
 const World1_Terrain: React.FC = () => {
   const navigate = useNavigate();
@@ -43,7 +43,6 @@ const World1_Terrain: React.FC = () => {
   const [q2, setQ2] = useState('');
   const [q3, setQ3] = useState('');
   const [q4, setQ4] = useState('');
-  const [q5, setQ5] = useState(''); // "something isn't working"
   const [coins, setCoins] = useState<CoinPop[]>([]);
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
@@ -75,16 +74,10 @@ const World1_Terrain: React.FC = () => {
     setStep(3);
   };
 
-  const handleQ5Submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!q5.trim()) return;
-    setStep(5);
-  };
-
   const handleFinish = async (e: React.MouseEvent) => {
     popCoin(e);
     setLoading(true);
-    const tags = { workplace: q1, audience: q2, reality: q3, challenge: q4, situation: q5 };
+    const tags = { workplace: q1, audience: q2, reality: q3, challenge: q4 };
     try {
       await gameSupabase
         .from('players')
@@ -211,33 +204,8 @@ const World1_Terrain: React.FC = () => {
           </div>
         )}
 
-        {/* Step 4 — Something isn't working */}
+        {/* Step 4 — Summary */}
         {step === 4 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.75rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
-              SOMETHING ISN'T WORKING
-            </h2>
-            <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.4rem', margin: 0 }}>
-              Don't fix it yet. Just look at it.
-            </p>
-            <form onSubmit={handleQ5Submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <textarea
-                className="mario-input"
-                style={{ minHeight: 120, resize: 'vertical', lineHeight: 1.8 }}
-                value={q5}
-                onChange={(e) => setQ5(e.target.value)}
-                placeholder="Describe what you keep running into..."
-                autoFocus
-              />
-              <button type="submit" className="mario-btn mario-btn-gold" disabled={!q5.trim()}>
-                I SEE IT ▶
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Step 5 — Summary */}
-        {step === 5 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', textAlign: 'center' }}>
             <h2 className="mario-font" style={{ fontSize: '0.8rem', color: 'var(--coin-gold)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
               CONTEXT MAPPED!
@@ -247,7 +215,6 @@ const World1_Terrain: React.FC = () => {
               <p>👥 {q2}</p>
               <p>💬 "{q3}"</p>
               <p>⚡ {q4}</p>
-              <p>🔍 "{q5}"</p>
             </div>
             <button className="mario-btn mario-btn-red" onClick={handleFinish} disabled={loading}>
               {loading ? 'SAVING...' : 'CONTINUE TO THE DIG ▶'}
