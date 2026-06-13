@@ -40,6 +40,7 @@ const World4_Castle: React.FC = () => {
   const [flagRaised, setFlagRaised] = useState(false);
   const [fieldChecks, setFieldChecks] = useState([false, false, false]);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const [swapNudgeVisible, setSwapNudgeVisible] = useState(false);
 
   if (!playerId) { navigate('/game'); return null; }
 
@@ -102,7 +103,7 @@ const World4_Castle: React.FC = () => {
   const shrunkWordCount = countWords(shrunkStatement);
   const overLimit = shrunkWordCount > 10;
 
-  const stepLabels = ['DRAFT', 'TOOL TEST', 'LEARNER', 'ROOT CAUSE', 'REFINE', 'SHRINK'];
+  const stepLabels = ['DRAFT', 'TOOL TEST', 'LEARNER', 'ROOT CAUSE', 'REFINE', 'SWAP TEST', 'SHRINK'];
 
   return (
     <div className="game-screen castle-bg" style={{ minHeight: '100vh', paddingBottom: 80, color: 'var(--white)' }}>
@@ -306,12 +307,45 @@ const World4_Castle: React.FC = () => {
               </div>
             )}
             <button type="submit" className="mario-btn mario-btn-red" disabled={!finalStatement.trim()}>
-              NOW MAKE IT SMALLER ▶
+              ONE MORE CHECK ▶
             </button>
           </form>
         )}
 
+        {/* Step 5 — Swap Test (new) */}
         {step === 5 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--coin-gold)', textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
+              COULD A CHECKLIST, A TEMPLATE, OR A BETTER PROCESS FIX THIS?
+            </h2>
+            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+              Be honest. It's a faster question than it sounds.
+            </p>
+
+            {swapNudgeVisible ? (
+              <div style={{ background: 'rgba(0,0,0,0.5)', borderLeft: '4px solid var(--coin-gold)', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <p className="vt323-font" style={{ color: AMBER, fontSize: '1.2rem', margin: 0 }}>
+                  That's not a reason to stop. But the best AI projects start where process ends — not where it hasn't been tried yet.
+                </p>
+                <button className="mario-btn mario-btn-dark" style={{ fontSize: '0.45rem', alignSelf: 'flex-start' }}
+                  onClick={() => { setSwapNudgeVisible(false); setStep(6); }}>
+                  NOTED — KEEP GOING
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <button className="platform-option" onClick={() => setStep(6)}>
+                  🚀 Probably not — AI adds something here
+                </button>
+                <button className="platform-option" onClick={() => setSwapNudgeVisible(true)}>
+                  🤔 Actually… maybe yes
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {step === 6 && (
           <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               NOW MAKE IT SMALLER

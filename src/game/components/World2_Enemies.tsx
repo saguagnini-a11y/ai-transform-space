@@ -90,6 +90,7 @@ const World2_Enemies: React.FC = () => {
   const [rootCauseFreeText, setRootCauseFreeText] = useState('');
   const [showSizeCheck, setShowSizeCheck] = useState(false);
   const [sizeCheckAnswer, setSizeCheckAnswer] = useState('');
+  const [repetitionNudgeVisible, setRepetitionNudgeVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
 
@@ -163,8 +164,8 @@ const World2_Enemies: React.FC = () => {
   const digOptions = challenges.filter((c) => c.trim());
 
   const stepLabel = (() => {
-    if (step === 6 && showSizeCheck) return 'SIZE CHECK';
-    return ['NAME CHALLENGES', 'COHORT', 'CHOOSE PROBLEM', 'WHY?', 'WHO?', 'TOMORROW?', 'ROOT CAUSE'][step];
+    if (step === 7 && showSizeCheck) return 'SIZE CHECK';
+    return ['NAME CHALLENGES', 'COHORT', 'CHOOSE PROBLEM', 'WHY?', 'WHO?', 'TOMORROW?', 'RECURRING?', 'ROOT CAUSE'][step];
   })();
 
   return (
@@ -351,8 +352,41 @@ const World2_Enemies: React.FC = () => {
           />
         )}
 
-        {/* Step 6 — Root cause: category + free text; or Size Check */}
-        {step === 6 && !showSizeCheck && (
+        {/* Step 6 — Repetition Test (new) */}
+        {step === 6 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
+              DOES THIS HAPPEN MORE THAN ONCE A MONTH?
+            </h2>
+            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+              AI is only worth building for things that keep coming back.
+            </p>
+
+            {repetitionNudgeVisible ? (
+              <div style={{ background: 'rgba(0,0,0,0.5)', borderLeft: '4px solid var(--coin-gold)', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <p className="vt323-font" style={{ color: AMBER, fontSize: '1.2rem', margin: 0 }}>
+                  One-off problems rarely need AI. Is there a recurring version of this? If yes, that's your real problem.
+                </p>
+                <button className="mario-btn mario-btn-dark" style={{ fontSize: '0.45rem', alignSelf: 'flex-start' }}
+                  onClick={() => { setRepetitionNudgeVisible(false); setStep(7); }}>
+                  GOT IT — KEEP GOING
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <button className="platform-option" onClick={() => setStep(7)}>
+                  ✅ Yes — it's recurring
+                </button>
+                <button className="platform-option" onClick={() => setRepetitionNudgeVisible(true)}>
+                  🔁 Not really — it's more of a one-off
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Step 7 — Root cause: category + free text; or Size Check */}
+        {step === 7 && !showSizeCheck && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               PICK YOUR ROOT CAUSE
@@ -420,8 +454,8 @@ const World2_Enemies: React.FC = () => {
           </div>
         )}
 
-        {/* Step 6 — Size Check (conditional) */}
-        {step === 6 && showSizeCheck && (
+        {/* Step 7 — Size Check (conditional) */}
+        {step === 7 && showSizeCheck && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               IS THIS ONE PROBLEM OR THREE?
