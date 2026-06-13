@@ -37,7 +37,6 @@ const World4_Castle: React.FC = () => {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState(localStorage.getItem('game_size_check') ?? '');
   const [toolAnswer, setToolAnswer] = useState('');
-  const [learnerImpact, setLearnerImpact] = useState('');
   const [rootCause, setRootCause] = useState('');
   const [finalStatement, setFinalStatement] = useState('');
   const [povWho, setPovWho] = useState('');
@@ -61,35 +60,28 @@ const World4_Castle: React.FC = () => {
 
   const handleTool = (v: string) => { setToolAnswer(v); setStep(2); };
 
-  const handleLearnerSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!learnerImpact.trim()) return;
-    setStep(3);
-  };
-
   const handleRoot = (v: string) => {
     setRootCause(v);
     const result = calculateVerdict(toolAnswer, v);
     setVerdict(result);
     setFinalStatement(draft);
-    setStep(4);
+    setStep(3);
   };
 
   const handleAdvanceToSwap = (e: React.FormEvent) => {
     e.preventDefault();
     if (!finalStatement.trim()) return;
-    setStep(5);
+    setStep(4);
   };
 
   const handleAdvanceToPOV = () => {
-    setStep(6);
+    setStep(5);
   };
 
   const handleAdvanceToShrink = () => {
     const pov = buildPOV(povWho, povWhat, povInsight);
-    // Pre-fill shrink with POV if any field was filled, otherwise use finalStatement
     setShrunkStatement(pov || finalStatement);
-    setStep(7);
+    setStep(6);
   };
 
   const handleFinalSubmit = async (e: React.FormEvent) => {
@@ -125,7 +117,7 @@ const World4_Castle: React.FC = () => {
   const overLimit = shrunkWordCount > 10;
   const assembledPOV = buildPOV(povWho, povWhat, povInsight);
 
-  const stepLabels = ['DRAFT', 'TOOL TEST', 'LEARNER', 'ROOT CAUSE', 'REFINE', 'SWAP TEST', 'POV', 'SHRINK'];
+  const stepLabels = ['DRAFT', 'TOOL TEST', 'ROOT CAUSE', 'REFINE', 'SWAP TEST', 'POV', 'SHRINK'];
 
   return (
     <div className="game-screen castle-bg" style={{ minHeight: '100vh', paddingBottom: 80, color: 'var(--white)' }}>
@@ -220,20 +212,8 @@ const World4_Castle: React.FC = () => {
           </div>
         )}
 
-        {/* Step 2 — Learner Impact */}
+        {/* Step 2 — Root Cause Test */}
         {step === 2 && (
-          <form onSubmit={handleLearnerSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>THE LEARNER IMPACT TEST</h2>
-            <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', margin: 0 }}>
-              If this problem was solved, what would change for a learner?
-            </p>
-            <input className="mario-input" placeholder="Max 80 chars..." value={learnerImpact} onChange={(e) => setLearnerImpact(e.target.value.slice(0, 80))} autoFocus />
-            <button type="submit" className="mario-btn mario-btn-gold" disabled={!learnerImpact.trim()}>NEXT TEST ▶</button>
-          </form>
-        )}
-
-        {/* Step 3 — Root Cause Test */}
-        {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>THE ROOT CAUSE TEST</h2>
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', margin: 0 }}>
@@ -248,7 +228,7 @@ const World4_Castle: React.FC = () => {
         )}
 
         {/* Step 4 — Refine + Verdict */}
-        {step === 4 && verdict && (
+        {step === 3 && verdict && (
           <form onSubmit={handleAdvanceToSwap} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>REFINE YOUR STATEMENT</h2>
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: 16, fontFamily: 'VT323, monospace', fontSize: '1.2rem', color: '#ddd', boxShadow: '-2px 0 0 var(--white), 2px 0 0 var(--white), 0 -2px 0 var(--white), 0 2px 0 var(--white)' }}>
@@ -268,8 +248,8 @@ const World4_Castle: React.FC = () => {
           </form>
         )}
 
-        {/* Step 5 — Swap Test */}
-        {step === 5 && (
+        {/* Step 4 — Swap Test */}
+        {step === 4 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               COULD A CHECKLIST, A TEMPLATE, OR A BETTER PROCESS FIX THIS?
@@ -296,8 +276,8 @@ const World4_Castle: React.FC = () => {
           </div>
         )}
 
-        {/* Step 6 — POV Refinement */}
-        {step === 6 && (
+        {/* Step 5 — POV Refinement */}
+        {step === 5 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               NOW GIVE IT A WHO
@@ -365,8 +345,8 @@ const World4_Castle: React.FC = () => {
           </div>
         )}
 
-        {/* Step 7 — Shrink */}
-        {step === 7 && (
+        {/* Step 6 — Shrink */}
+        {step === 6 && (
           <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               NOW MAKE IT SMALLER

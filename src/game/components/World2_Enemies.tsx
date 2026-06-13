@@ -31,6 +31,7 @@ const ROOT_CAUSE_CATEGORIES = [
   'Skill Gap',
   'Product Issue',
   'Will / Motivation',
+  'Other',
 ];
 
 const SIZE_CHECK_TRIGGERS = new Set(['Process Gap', 'Comms Breakdown']);

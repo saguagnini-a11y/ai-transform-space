@@ -7,10 +7,9 @@ import '../styles/mario.css';
 const World3_Blocks: React.FC = () => {
   const navigate = useNavigate();
   const playerId = localStorage.getItem('game_player_id');
-  const [blockStep, setBlockStep] = useState(0); // 0 = intro, 1/2/3 = revealed
+  const [blockStep, setBlockStep] = useState(0); // 0=intro, 1=Block1, 2=Block2, 3=done
   const [b1, setB1] = useState('');
   const [b2, setB2] = useState('');
-  const [b3, setB3] = useState('');
   const [showWarning, setShowWarning] = useState(false);
   const [powerUpActive, setPowerUpActive] = useState(false);
   const [powerUpText, setPowerUpText] = useState('');
@@ -23,9 +22,8 @@ const World3_Blocks: React.FC = () => {
     if (!playerId) { navigate('/game'); return; }
   }, []);
 
-  // Power-up timer — fires after 30s on current block
   useEffect(() => {
-    if (blockStep < 1 || blockStep > 3 || powerUpFetched) return;
+    if (blockStep < 1 || blockStep > 2 || powerUpFetched) return;
     timerRef.current = setTimeout(async () => {
       const fragment = await getRandomFragment(playerId!);
       if (fragment) {
@@ -51,16 +49,10 @@ const World3_Blocks: React.FC = () => {
     setBlockStep(3);
   };
 
-  const handleB3Submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!b3.trim()) return;
-    setBlockStep(4);
-  };
-
   const handleFinish = async () => {
     setLoading(true);
     try {
-      const w3data = { block1: b1, block2: b2, block3: b3 };
+      const w3data = { block1: b1, block2: b2 };
       localStorage.setItem('game_w3', JSON.stringify(w3data));
       await gameSupabase.from('players').update({ world: 4 }).eq('id', playerId!);
       setComplete(true);
@@ -73,15 +65,12 @@ const World3_Blocks: React.FC = () => {
   };
 
   return (
-    <div
-      className="game-screen underground-bg"
-      style={{ minHeight: '100vh', paddingBottom: 80, color: 'var(--white)' }}
-    >
+    <div className="game-screen underground-bg" style={{ minHeight: '100vh', paddingBottom: 80, color: 'var(--white)' }}>
       {/* HUD */}
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
         <span>WORLD 3-1</span>
         <span>HIDDEN BLOCKS</span>
-        <span>BLOCK {Math.min(blockStep, 3)}/3</span>
+        <span>BLOCK {Math.min(blockStep, 2)}/2</span>
       </div>
 
       {/* Torches */}
@@ -90,7 +79,6 @@ const World3_Blocks: React.FC = () => {
         <div className="torch" />
       </div>
 
-      {/* Power-up */}
       {powerUpActive && (
         <div className="power-up-brick" style={{ margin: '12px 20px' }} onClick={() => setPowerUpActive(false)}>
           ⭐ Someone in your cohort said: "{powerUpText}"
@@ -98,7 +86,6 @@ const World3_Blocks: React.FC = () => {
         </div>
       )}
 
-      {/* Warning */}
       {showWarning && (
         <div className="warning-banner" style={{ margin: '12px 20px' }}>
           💡 People problems are harder for AI to solve alone — but naming them clearly is still the work. Keep going. The sharpest problem statements often start here.
@@ -106,6 +93,7 @@ const World3_Blocks: React.FC = () => {
       )}
 
       <div style={{ maxWidth: 600, margin: '0 auto', padding: '32px 20px', display: 'flex', flexDirection: 'column', gap: 32, alignItems: 'center' }}>
+
         {/* Intro */}
         {blockStep === 0 && (
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
@@ -116,7 +104,7 @@ const World3_Blocks: React.FC = () => {
               The real problem is hiding. Hit the blocks to reveal it.
             </p>
             <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginTop: 16 }}>
-              {[1, 2, 3].map((n) => (
+              {[1, 2].map((n) => (
                 <div key={n} className="question-block" style={{ cursor: 'default', opacity: n === 1 ? 1 : 0.5 }}>?</div>
               ))}
             </div>
@@ -126,7 +114,7 @@ const World3_Blocks: React.FC = () => {
           </div>
         )}
 
-        {/* Block 1 */}
+        {/* Block 1 — Costume Question */}
         {blockStep === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -149,7 +137,7 @@ const World3_Blocks: React.FC = () => {
           </div>
         )}
 
-        {/* Block 2 */}
+        {/* Block 2 — Voice Question */}
         {blockStep === 2 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
@@ -157,80 +145,42 @@ const World3_Blocks: React.FC = () => {
               <div className="question-block hit" style={{ width: 64, height: 64 }}>!</div>
             </div>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--coin-gold)', textAlign: 'center' }}>
-              THE BENEFICIARY QUESTION
-            </h2>
-            <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', textAlign: 'center', margin: 0 }}>
-              Who benefits from this problem staying unsolved?
-            </p>
-            <form onSubmit={handleB2Submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <input
-                className="mario-input"
-                placeholder="Be honest... (60 chars)"
-                value={b2}
-                onChange={(e) => setB2(e.target.value.slice(0, 60))}
-                autoFocus
-              />
-              <button type="submit" className="mario-btn mario-btn-gold" disabled={!b2.trim()}>
-                HIT BLOCK 3 ▶
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Block 3 */}
-        {blockStep === 3 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-              {[1, 2, 3].map((n) => (
-                <div key={n} className="question-block hit" style={{ width: 64, height: 64 }}>!</div>
-              ))}
-            </div>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--coin-gold)', textAlign: 'center' }}>
               THE VOICE QUESTION
             </h2>
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', textAlign: 'center', margin: 0 }}>
               What would the person most affected say if they heard your diagnosis?
             </p>
-            <form onSubmit={handleB3Submit} style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
+            <form onSubmit={handleB2Submit} style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
               <textarea
                 className="mario-input"
                 style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
-                value={b3}
-                onChange={(e) => setB3(e.target.value)}
+                value={b2}
+                onChange={(e) => setB2(e.target.value)}
                 placeholder={`"They'd say..."`}
                 autoFocus
               />
-              <button type="submit" className="mario-btn mario-btn-gold" disabled={!b3.trim()}>
-                HIT BLOCK 3 ▶
+              <button type="submit" className="mario-btn mario-btn-gold" disabled={!b2.trim()}>
+                HIT BLOCK 2 ▶
               </button>
             </form>
           </div>
         )}
 
-        {/* All done — carry Block 3 answer into framing hint */}
-        {blockStep === 4 && (
+        {/* Done */}
+        {blockStep === 3 && (
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
             <h2 className="mario-font" style={{ fontSize: '0.8rem', color: 'var(--coin-gold)' }}>
               ALL BLOCKS HIT!
             </h2>
-
-            {/* Mirror of what they wrote */}
-            <div style={{
-              background: 'rgba(251,208,0,0.12)',
-              borderLeft: '4px solid var(--coin-gold)',
-              padding: '12px 16px',
-              textAlign: 'left',
-              width: '100%',
-            }}>
+            <div style={{ background: 'rgba(251,208,0,0.12)', borderLeft: '4px solid var(--coin-gold)', padding: '12px 16px', textAlign: 'left', width: '100%' }}>
               <p className="mario-font" style={{ fontSize: '0.4rem', color: 'var(--coin-gold)', margin: '0 0 6px' }}>THEY'D SAY:</p>
               <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', margin: 0, fontStyle: 'italic' }}>
-                "{b3}"
+                "{b2}"
               </p>
               <p className="vt323-font" style={{ color: '#aaa', fontSize: '1rem', margin: '8px 0 0' }}>
                 Hold that voice when you write your problem statement.
               </p>
             </div>
-
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: '#ccc' }}>
               Now it's time to write it down.
             </p>
