@@ -167,7 +167,7 @@ const World2_Enemies: React.FC = () => {
 
   const stepLabel = (() => {
     if (step === 7 && showSizeCheck) return 'SIZE CHECK';
-    return ['NAME CHALLENGES', 'COHORT', 'CHOOSE PROBLEM', 'WHY?', 'WHO?', 'TOMORROW?', 'RECURRING?', 'ROOT CAUSE'][step];
+    return ['NAME CHALLENGES', 'COHORT', 'CHOOSE PROBLEM', 'WHY?', 'WHO?', 'TOMORROW?', 'RECURRING?', 'THE PROBLEM'][step];
   })();
 
   return (
@@ -284,7 +284,7 @@ const World2_Enemies: React.FC = () => {
               CHOOSE YOUR PROBLEM TO DIG
             </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              You can't dig everywhere. Pick one that's keeping you awake at night.
+              You can't dig everywhere. Pick one.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {digOptions.map((opt, i) => (
@@ -387,11 +387,11 @@ const World2_Enemies: React.FC = () => {
           </div>
         )}
 
-        {/* Step 7 — Root cause: category + free text; or Size Check */}
+        {/* Step 7 — Name the problem: category + free text; or Size Check */}
         {step === 7 && !showSizeCheck && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
-              PICK YOUR ROOT CAUSE
+              NAME THE PROBLEM
             </h2>
 
             <div style={{ background: 'rgba(251,208,0,0.15)', borderLeft: '4px solid var(--coin-gold)', padding: '12px 16px' }}>
@@ -439,7 +439,7 @@ const World2_Enemies: React.FC = () => {
                   style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
                   value={rootCauseFreeText}
                   onChange={(e) => setRootCauseFreeText(e.target.value)}
-                  placeholder="The real root cause is..."
+                  placeholder="The real problem is..."
                   autoFocus
                 />
                 {rootCauseFreeText.trim() && (
@@ -448,7 +448,7 @@ const World2_Enemies: React.FC = () => {
                     onClick={handleRootCauseAdvance}
                     disabled={loading}
                   >
-                    {loading ? 'SAVING...' : 'SOLVE THIS CHALLENGE ▶'}
+                    {loading ? 'SAVING...' : "THAT'S THE PROBLEM ▶"}
                   </button>
                 )}
               </>
@@ -504,7 +504,7 @@ const World2_Enemies: React.FC = () => {
             WORLD 2<br />COMPLETE!
           </h2>
           <p className="vt323-font" style={{ color: 'var(--white)', fontSize: '1.5rem' }}>
-            Root cause identified ✓
+            Problem named ✓
           </p>
         </div>
       )}

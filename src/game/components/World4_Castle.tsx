@@ -18,8 +18,6 @@ const hasSolutionTrigger = (text: string) => {
   return SOLUTION_TRIGGERS.some((t) => lower.includes(t));
 };
 
-const countWords = (text: string) =>
-  text.trim().split(/\s+/).filter(Boolean).length;
 
 const buildPOV = (who: string, what: string, insight: string): string => {
   const parts: string[] = [];
@@ -134,16 +132,16 @@ const World4_Castle: React.FC = () => {
   const playerId = localStorage.getItem('game_player_id');
   const playerName = localStorage.getItem('game_player_name') ?? 'Player';
 
-  // 0=Draft, 1=ToolTest, 2=RootCause, 3=Refine, 4=SwapTest, 5=POV, 6=Shrink, 7=OneSmallThing
+  // 0=Draft, 1=ToolTest, 2=RootCause, 3=Refine, 4=SwapTest, 5=POV, 6=OneSmallThing
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState(localStorage.getItem('game_size_check') ?? '');
   const [toolAnswer, setToolAnswer] = useState('');
   const [rootCauseCategory, setRootCauseCategory] = useState('');
   const [finalStatement, setFinalStatement] = useState('');
+  const [povSubjectChoice, setPovSubjectChoice] = useState('');
   const [povWho, setPovWho] = useState('');
   const [povWhat, setPovWhat] = useState('');
-  const [povInsight, setPovInsight] = useState('');
-  const [shrunkStatement, setShrunkStatement] = useState('');
+  const [povInsight, setPovInsight] = useState(localStorage.getItem('game_root_cause_why') ?? '');
   const [firstExperiment, setFirstExperiment] = useState('');
   const [verdict, setVerdict] = useState<ReturnType<typeof calculateVerdict> | null>(null);
   const [loading, setLoading] = useState(false);
@@ -201,17 +199,12 @@ const World4_Castle: React.FC = () => {
 
   const handleAdvanceToPOV = () => { setStep(5); };
 
-  const handleAdvanceToShrink = () => {
-    const pov = buildPOV(povWho, povWhat, povInsight);
-    setShrunkStatement(pov || finalStatement);
-    setStep(6);
+  const handlePovSubjectPick = (choice: string, prefill: string) => {
+    setPovSubjectChoice(choice);
+    setPovWho(prefill);
   };
 
-  const handleAdvanceToExperiment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!shrunkStatement.trim() || !verdict || countWords(shrunkStatement) > 10) return;
-    setStep(7);
-  };
+  const handleAdvanceToExperiment = () => { setStep(6); };
 
   const submitToWall = async () => {
     if (!verdict) return;
@@ -222,11 +215,12 @@ const World4_Castle: React.FC = () => {
         contextTags.first_experiment = firstExperiment.trim();
       }
       const pov = buildPOV(povWho, povWhat, povInsight);
+      const statement = pov || finalStatement;
       await gameSupabase.from('problem_statements').insert({
         player_id: playerId,
         player_name: playerName,
-        raw_statement: pov || finalStatement,
-        sharpened_statement: shrunkStatement,
+        raw_statement: statement,
+        sharpened_statement: statement,
         context_tags: contextTags,
         ai_fitness_verdict: verdict.verdict,
         ai_fitness_reason: verdict.reason,
@@ -234,7 +228,7 @@ const World4_Castle: React.FC = () => {
       });
       await gameSupabase.from('players').update({ world: 4 }).eq('id', playerId);
       localStorage.setItem('game_verdict', JSON.stringify(verdict));
-      localStorage.setItem('game_final_statement', shrunkStatement);
+      localStorage.setItem('game_final_statement', statement);
       setFlagRaised(true);
       setTimeout(() => navigate('/game/castle-wall'), 4000);
     } catch (err) {
@@ -246,15 +240,12 @@ const World4_Castle: React.FC = () => {
 
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!shrunkStatement.trim() || !verdict || countWords(shrunkStatement) > 10) return;
     await submitToWall();
   };
 
-  const shrunkWordCount = countWords(shrunkStatement);
-  const overLimit = shrunkWordCount > 10;
   const assembledPOV = buildPOV(povWho, povWhat, povInsight);
 
-  const stepLabels = ['DRAFT', 'TOOL TEST', 'ROOT CAUSE', 'REFINE', 'SWAP TEST', 'POV', 'SHRINK', 'FIRST MOVE'];
+  const stepLabels = ['DRAFT', 'TOOL TEST', 'ROOT CAUSE', 'REFINE', 'SWAP TEST', 'POV', 'FIRST MOVE'];
 
   return (
     <div className="game-screen castle-bg" style={{ minHeight: '100vh', paddingBottom: 80, color: 'var(--white)' }}>
@@ -262,7 +253,7 @@ const World4_Castle: React.FC = () => {
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
         <span>WORLD 4-1</span>
         <span>FIELD REPORT</span>
-        <span>{stepLabels[Math.min(step, 7)]}</span>
+        <span>{stepLabels[Math.min(step, 6)]}</span>
       </div>
 
       {/* Castle turrets */}
@@ -543,104 +534,88 @@ const World4_Castle: React.FC = () => {
           </div>
         )}
 
-        {/* Step 5 — POV Refinement */}
+        {/* Step 5 — POV Builder */}
         {step === 5 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
-              NOW GIVE IT A WHO
+              WRITE YOUR POV.
             </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              A problem without a person is just a situation.
+              A point of view statement makes your problem real. The 'who' might be a learner, a manager — or you. All three are valid.
             </p>
 
-            <div style={{ background: 'rgba(0,0,0,0.4)', padding: '12px 16px', boxShadow: '-2px 0 0 #555, 2px 0 0 #555, 0 -2px 0 #555, 0 2px 0 #555' }}>
-              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOU WROTE:</p>
-              <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: 0, fontStyle: 'italic', lineHeight: 1.5 }}>
-                "{finalStatement}"
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, boxShadow: `-2px 0 0 ${AMBER}, 2px 0 0 ${AMBER}, 0 -2px 0 ${AMBER}, 0 2px 0 ${AMBER}` }}>
-              <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid rgba(251,208,0,0.2)` }}>
-                <span className="mario-font" style={{ fontSize: '0.4rem', color: AMBER, padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>WHO</span>
-                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="the person or role this affects most" value={povWho} onChange={(e) => setPovWho(e.target.value)} autoFocus />
+            {/* Subject picker — shown until a choice is made */}
+            {!povSubjectChoice && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <button className="platform-option" style={{ textAlign: 'left' }} onClick={() => handlePovSubjectPick('learner', 'A learner or participant')}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span>🧑‍💼 A learner or participant</span>
+                    <span className="vt323-font" style={{ fontSize: '1rem', color: '#888', fontFamily: 'VT323, monospace' }}>The person going through the experience</span>
+                  </div>
+                </button>
+                <button className="platform-option" style={{ textAlign: 'left' }} onClick={() => handlePovSubjectPick('stakeholder', 'A stakeholder or manager')}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span>👔 A stakeholder or manager</span>
+                    <span className="vt323-font" style={{ fontSize: '1rem', color: '#888', fontFamily: 'VT323, monospace' }}>The person who owns the context or budget</span>
+                  </div>
+                </button>
+                <button className="platform-option" style={{ textAlign: 'left' }} onClick={() => handlePovSubjectPick('me', 'Me, as L&D')}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span>🛠️ Me, as L&D</span>
+                    <span className="vt323-font" style={{ fontSize: '1rem', color: '#888', fontFamily: 'VT323, monospace' }}>I am the one blocked, under-resourced, or working around the problem</span>
+                  </div>
+                </button>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid rgba(251,208,0,0.2)` }}>
-                <span className="mario-font" style={{ fontSize: '0.4rem', color: '#666', padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>NEEDS</span>
-                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what they actually need" value={povWhat} onChange={(e) => setPovWhat(e.target.value)} />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span className="mario-font" style={{ fontSize: '0.4rem', color: '#666', padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>BECAUSE</span>
-                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what's making it hard" value={povInsight} onChange={(e) => setPovInsight(e.target.value)} />
-              </div>
-            </div>
-
-            {assembledPOV && (
-              <p className="vt323-font" style={{ color: AMBER, fontSize: '1.4rem', margin: 0, lineHeight: 1.5, fontStyle: 'italic' }}>
-                {assembledPOV}
-              </p>
             )}
 
-            <button className="mario-btn mario-btn-red" onClick={handleAdvanceToShrink}>
-              THAT'S THE FRAME ▶
-            </button>
+            {/* POV builder — shown once subject is chosen */}
+            {povSubjectChoice && (
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0, boxShadow: `-2px 0 0 ${AMBER}, 2px 0 0 ${AMBER}, 0 -2px 0 ${AMBER}, 0 2px 0 ${AMBER}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid rgba(251,208,0,0.2)` }}>
+                    <span className="mario-font" style={{ fontSize: '0.4rem', color: AMBER, padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>WHO</span>
+                    <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="the person or role" value={povWho} onChange={(e) => setPovWho(e.target.value)} autoFocus />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid rgba(251,208,0,0.2)` }}>
+                    <span className="mario-font" style={{ fontSize: '0.4rem', color: '#666', padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>NEEDS</span>
+                    <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what they actually need" value={povWhat} onChange={(e) => setPovWhat(e.target.value)} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span className="mario-font" style={{ fontSize: '0.4rem', color: '#666', padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>BECAUSE</span>
+                    <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what's making it hard" value={povInsight} onChange={(e) => setPovInsight(e.target.value)} />
+                  </div>
+                </div>
+
+                {assembledPOV && (
+                  <p className="vt323-font" style={{ color: AMBER, fontSize: '1.4rem', margin: 0, lineHeight: 1.5, fontStyle: 'italic' }}>
+                    {assembledPOV}
+                  </p>
+                )}
+
+                <div style={{ display: 'flex', gap: 10, flexDirection: 'column' }}>
+                  <button className="mario-btn mario-btn-red" onClick={handleAdvanceToExperiment} disabled={!povWho.trim()}>
+                    THIS IS MY POV ▶
+                  </button>
+                  <button className="mario-btn mario-btn-dark" style={{ fontSize: '0.4rem' }} onClick={() => { setPovSubjectChoice(''); setPovWho(''); }}>
+                    ← CHANGE WHO
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
-        {/* Step 6 — Shrink */}
+        {/* Step 6 — One Small Thing */}
         {step === 6 && (
-          <form onSubmit={handleAdvanceToExperiment} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.75rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
-              NOW MAKE IT SMALLER
-            </h2>
-            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              Say it in 10 words or fewer. If you can't, you haven't found it yet.
-            </p>
-
-            <div style={{ background: 'rgba(0,0,0,0.4)', padding: '12px 16px', boxShadow: '-2px 0 0 #555, 2px 0 0 #555, 0 -2px 0 #555, 0 2px 0 #555' }}>
-              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOUR FRAME:</p>
-              <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: 0, fontStyle: 'italic', lineHeight: 1.5 }}>
-                {assembledPOV || `"${finalStatement}"`}
-              </p>
-            </div>
-
-            <div style={{ position: 'relative' }}>
-              <textarea
-                className="mario-input"
-                style={{ minHeight: 80, resize: 'none', lineHeight: 1.8, paddingRight: 72 }}
-                value={shrunkStatement}
-                onChange={(e) => setShrunkStatement(e.target.value)}
-                placeholder="10 words. Go."
-                autoFocus
-              />
-              <div style={{ position: 'absolute', top: 10, right: 10, fontFamily: 'Press Start 2P, monospace', fontSize: '0.7rem', color: overLimit ? 'var(--mario-red)' : AMBER, background: 'rgba(0,0,0,0.7)', padding: '4px 8px', pointerEvents: 'none', transition: 'color 0.15s' }}>
-                {shrunkStatement.trim() === '' ? 10 : Math.max(0, 10 - shrunkWordCount)}
-              </div>
-            </div>
-
-            {overLimit && (
-              <p className="vt323-font" style={{ color: 'var(--mario-red)', fontSize: '1.1rem', margin: 0 }}>
-                {shrunkWordCount} words — cut {shrunkWordCount - 10} more
-              </p>
-            )}
-
-            <button type="submit" className="mario-btn mario-btn-red" disabled={!shrunkStatement.trim() || overLimit}>
-              THAT'S MY PROBLEM ▶
-            </button>
-          </form>
-        )}
-
-        {/* Step 7 — One Small Thing */}
-        {step === 7 && (
           <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               ONE SMALL THING.
             </h2>
 
             <div style={{ background: 'rgba(0,0,0,0.4)', padding: '12px 16px', boxShadow: '-2px 0 0 #555, 2px 0 0 #555, 0 -2px 0 #555, 0 2px 0 #555' }}>
-              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOUR PROBLEM:</p>
+              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOUR POV:</p>
               <p className="vt323-font" style={{ color: AMBER, fontSize: '1.2rem', margin: 0, fontStyle: 'italic', lineHeight: 1.5 }}>
-                "{shrunkStatement}"
+                "{assembledPOV || finalStatement}"
               </p>
             </div>
 
