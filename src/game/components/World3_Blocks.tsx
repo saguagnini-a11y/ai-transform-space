@@ -51,8 +51,9 @@ const World3_Blocks: React.FC = () => {
     setBlockStep(3);
   };
 
-  const handleB3 = (value: string) => {
-    setB3(value);
+  const handleB3Submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!b3.trim()) return;
     setBlockStep(4);
   };
 
@@ -185,23 +186,24 @@ const World3_Blocks: React.FC = () => {
               ))}
             </div>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--coin-gold)', textAlign: 'center' }}>
-              THE LEARNER QUESTION
+              THE VOICE QUESTION
             </h2>
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', textAlign: 'center', margin: 0 }}>
               What would the person most affected say if they heard your diagnosis?
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {[
-                { v: 'gets_it', label: '😮 "Finally, someone gets it"' },
-                { v: 'not_quite', label: '🤔 "That\'s not quite it..."' },
-                { v: 'not_my', label: '😐 "That\'s not my problem at all"' },
-                { v: 'eye_opener', label: '😅 "I never thought about it that way"' },
-              ].map((opt) => (
-                <button key={opt.v} className="platform-option" onClick={() => handleB3(opt.v)}>
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            <form onSubmit={handleB3Submit} style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
+              <textarea
+                className="mario-input"
+                style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
+                value={b3}
+                onChange={(e) => setB3(e.target.value)}
+                placeholder={`"They'd say..."`}
+                autoFocus
+              />
+              <button type="submit" className="mario-btn mario-btn-gold" disabled={!b3.trim()}>
+                HIT BLOCK 3 ▶
+              </button>
+            </form>
           </div>
         )}
 
@@ -212,7 +214,7 @@ const World3_Blocks: React.FC = () => {
               ALL BLOCKS HIT!
             </h2>
 
-            {/* Contextual hint based on Block 3 answer */}
+            {/* Mirror of what they wrote */}
             <div style={{
               background: 'rgba(251,208,0,0.12)',
               borderLeft: '4px solid var(--coin-gold)',
@@ -220,26 +222,13 @@ const World3_Blocks: React.FC = () => {
               textAlign: 'left',
               width: '100%',
             }}>
-              {b3 === 'gets_it' && (
-                <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', margin: 0 }}>
-                  💡 Your learner recognises this problem. That's a strong signal — name it in a way they'd say out loud.
-                </p>
-              )}
-              {b3 === 'not_quite' && (
-                <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', margin: 0 }}>
-                  💡 Your learner senses it but doesn't fully see it yet. Your problem statement might need to name what's underneath what they notice.
-                </p>
-              )}
-              {b3 === 'not_my' && (
-                <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', margin: 0 }}>
-                  💡 Your learner doesn't own this problem. That matters — make sure your statement names who does, and why it still affects them.
-                </p>
-              )}
-              {b3 === 'eye_opener' && (
-                <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', margin: 0 }}>
-                  💡 Your learner hadn't seen this before you named it. That means your framing has to do extra work — be precise, not just provocative.
-                </p>
-              )}
+              <p className="mario-font" style={{ fontSize: '0.4rem', color: 'var(--coin-gold)', margin: '0 0 6px' }}>THEY'D SAY:</p>
+              <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', margin: 0, fontStyle: 'italic' }}>
+                "{b3}"
+              </p>
+              <p className="vt323-font" style={{ color: '#aaa', fontSize: '1rem', margin: '8px 0 0' }}>
+                Hold that voice when you write your problem statement.
+              </p>
             </div>
 
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: '#ccc' }}>
