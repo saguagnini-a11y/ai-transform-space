@@ -172,9 +172,8 @@ const World4_Castle: React.FC = () => {
         {step === 4 && verdict && (
           <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--coin-gold)', lineHeight: 2 }}>
-              YOUR VERDICT
+              REFINE YOUR STATEMENT
             </h2>
-            <VerdictBadge verdict={verdict.verdict} showReason={verdict.reason} />
             <div
               style={{
                 background: 'rgba(255,255,255,0.1)',
@@ -187,16 +186,25 @@ const World4_Castle: React.FC = () => {
             >
               Draft: "{draft}"
             </div>
-            <h3 className="mario-font" style={{ fontSize: '0.55rem', color: 'var(--white)', margin: 0 }}>
-              REFINE YOUR STATEMENT ONE LAST TIME
-            </h3>
+            <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+              Write your sharpest version. Then we'll tell you how it lands.
+            </p>
             <textarea
               className="mario-input"
               style={{ minHeight: 140, resize: 'vertical', lineHeight: 1.8 }}
               value={finalStatement}
               onChange={(e) => setFinalStatement(e.target.value)}
+              placeholder="The problem worth solving is..."
               autoFocus
             />
+            {finalStatement.trim() && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p className="mario-font" style={{ fontSize: '0.45rem', color: '#aaa', margin: 0 }}>
+                  YOUR AI FITNESS VERDICT
+                </p>
+                <VerdictBadge verdict={verdict.verdict} showReason={verdict.reason} />
+              </div>
+            )}
             <button type="submit" className="mario-btn mario-btn-red" disabled={!finalStatement.trim() || loading}>
               {loading ? 'SAVING...' : 'RAISE THE FLAG 🚩'}
             </button>

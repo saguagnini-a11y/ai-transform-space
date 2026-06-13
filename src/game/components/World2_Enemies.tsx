@@ -307,7 +307,7 @@ const World2_Enemies: React.FC = () => {
           />
         )}
 
-        {/* Step 6 — Pick your root cause */}
+        {/* Step 6 — Name your root cause (free text) */}
         {step === 6 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
@@ -330,37 +330,20 @@ const World2_Enemies: React.FC = () => {
               </p>
             </div>
 
-            <p className="vt323-font" style={{ color: 'var(--white)', fontSize: '1.3rem', margin: 0 }}>
-              Which one of your challenges is the real root cause — the one behind the others?
+            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+              Based on everything you just dug through — name the root cause in your own words.
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {digOptions.map((opt, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setChosenChallenge(opt);
-                  }}
-                  style={{
-                    fontFamily: 'VT323, monospace',
-                    fontSize: '1.3rem',
-                    background: chosenChallenge === opt ? 'var(--coin-gold)' : 'rgba(0,0,0,0.5)',
-                    color: chosenChallenge === opt ? 'var(--black)' : 'var(--white)',
-                    border: 'none',
-                    padding: '20px 24px',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    boxShadow: '-4px 0 0 0 var(--white), 4px 0 0 0 var(--white), 0 -4px 0 0 var(--white), 0 4px 0 0 var(--white)',
-                    transition: 'background 0.15s',
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {opt.length > 60 ? opt.slice(0, 60) + '...' : opt}
-                </button>
-              ))}
-            </div>
+            <textarea
+              className="mario-input"
+              style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
+              value={chosenChallenge}
+              onChange={(e) => setChosenChallenge(e.target.value)}
+              placeholder="The real root cause is..."
+              autoFocus
+            />
 
-            {chosenChallenge && (
+            {chosenChallenge.trim() && (
               <button
                 className="mario-btn mario-btn-red"
                 onClick={handleFinish}

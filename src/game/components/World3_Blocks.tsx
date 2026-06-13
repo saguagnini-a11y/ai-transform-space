@@ -100,7 +100,7 @@ const World3_Blocks: React.FC = () => {
       {/* Warning */}
       {showWarning && (
         <div className="warning-banner" style={{ margin: '12px 20px' }}>
-          ⚠️ Heads up: AI is better at process problems than people problems. Keep this in mind as you frame your solution.
+          💡 People problems are harder for AI to solve alone — but naming them clearly is still the work. Keep going. The sharpest problem statements often start here.
         </div>
       )}
 
