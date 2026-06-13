@@ -5,17 +5,25 @@ import { calculateVerdict } from '../lib/gameLogic';
 import VerdictBadge from './VerdictBadge';
 import '../styles/mario.css';
 
+const AMBER = 'var(--coin-gold)';
+
+const countWords = (text: string) =>
+  text.trim().split(/\s+/).filter(Boolean).length;
+
 const World4_Castle: React.FC = () => {
   const navigate = useNavigate();
   const playerId = localStorage.getItem('game_player_id');
   const playerName = localStorage.getItem('game_player_name') ?? 'Player';
 
   const [step, setStep] = useState(0);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState(
+    localStorage.getItem('game_size_check') ?? ''
+  );
   const [toolAnswer, setToolAnswer] = useState('');
   const [learnerImpact, setLearnerImpact] = useState('');
   const [rootCause, setRootCause] = useState('');
   const [finalStatement, setFinalStatement] = useState('');
+  const [shrunkStatement, setShrunkStatement] = useState('');
   const [verdict, setVerdict] = useState<ReturnType<typeof calculateVerdict> | null>(null);
   const [loading, setLoading] = useState(false);
   const [flagRaised, setFlagRaised] = useState(false);
@@ -44,17 +52,23 @@ const World4_Castle: React.FC = () => {
     setStep(4);
   };
 
+  const handleAdvanceToShrink = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!finalStatement.trim()) return;
+    setStep(5);
+  };
+
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!finalStatement.trim() || !verdict) return;
+    if (!shrunkStatement.trim() || !verdict || countWords(shrunkStatement) > 10) return;
     setLoading(true);
     try {
       const contextTags = JSON.parse(localStorage.getItem('game_context_tags') ?? '{}');
       await gameSupabase.from('problem_statements').insert({
         player_id: playerId,
         player_name: playerName,
-        raw_statement: draft,
-        sharpened_statement: finalStatement,
+        raw_statement: finalStatement,
+        sharpened_statement: shrunkStatement,
         context_tags: contextTags,
         ai_fitness_verdict: verdict.verdict,
         ai_fitness_reason: verdict.reason,
@@ -62,7 +76,7 @@ const World4_Castle: React.FC = () => {
       });
       await gameSupabase.from('players').update({ world: 4 }).eq('id', playerId);
       localStorage.setItem('game_verdict', JSON.stringify(verdict));
-      localStorage.setItem('game_final_statement', finalStatement);
+      localStorage.setItem('game_final_statement', shrunkStatement);
       setFlagRaised(true);
       setTimeout(() => navigate('/game/castle-wall'), 4000);
     } catch (err) {
@@ -72,13 +86,18 @@ const World4_Castle: React.FC = () => {
     }
   };
 
+  const shrunkWordCount = countWords(shrunkStatement);
+  const overLimit = shrunkWordCount > 10;
+
+  const stepLabels = ['DRAFT', 'TOOL TEST', 'LEARNER', 'ROOT CAUSE', 'REFINE', 'SHRINK'];
+
   return (
     <div className="game-screen castle-bg" style={{ minHeight: '100vh', paddingBottom: 80, color: 'var(--white)' }}>
       {/* HUD */}
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
         <span>WORLD 4-1</span>
         <span>FIELD REPORT</span>
-        <span>STEP {step + 1}/5</span>
+        <span>{stepLabels[step]}</span>
       </div>
 
       {/* Castle turrets decoration */}
@@ -99,7 +118,7 @@ const World4_Castle: React.FC = () => {
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 20px' }}>
         {step === 0 && (
           <form onSubmit={handleDraftSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.75rem', color: 'var(--coin-gold)', textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               YOUR L&D PROBLEM<br />WORTH SOLVING IS...
             </h2>
             <textarea
@@ -118,7 +137,7 @@ const World4_Castle: React.FC = () => {
 
         {step === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--coin-gold)', lineHeight: 2 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>
               THE TOOL TEST
             </h2>
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', margin: 0 }}>
@@ -134,7 +153,7 @@ const World4_Castle: React.FC = () => {
 
         {step === 2 && (
           <form onSubmit={handleLearnerSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--coin-gold)', lineHeight: 2 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>
               THE LEARNER IMPACT TEST
             </h2>
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', margin: 0 }}>
@@ -155,7 +174,7 @@ const World4_Castle: React.FC = () => {
 
         {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--coin-gold)', lineHeight: 2 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>
               THE ROOT CAUSE TEST
             </h2>
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', margin: 0 }}>
@@ -170,8 +189,8 @@ const World4_Castle: React.FC = () => {
         )}
 
         {step === 4 && verdict && (
-          <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--coin-gold)', lineHeight: 2 }}>
+          <form onSubmit={handleAdvanceToShrink} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>
               REFINE YOUR STATEMENT
             </h2>
             <div
@@ -186,7 +205,7 @@ const World4_Castle: React.FC = () => {
             >
               Draft: "{draft}"
             </div>
-            <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
               Write your sharpest version. Then we'll tell you how it lands.
             </p>
             <textarea
@@ -205,8 +224,78 @@ const World4_Castle: React.FC = () => {
                 <VerdictBadge verdict={verdict.verdict} showReason={verdict.reason} />
               </div>
             )}
-            <button type="submit" className="mario-btn mario-btn-red" disabled={!finalStatement.trim() || loading}>
-              {loading ? 'SAVING...' : 'RAISE THE FLAG 🚩'}
+            <button type="submit" className="mario-btn mario-btn-red" disabled={!finalStatement.trim()}>
+              NOW MAKE IT SMALLER ▶
+            </button>
+          </form>
+        )}
+
+        {step === 5 && (
+          <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.75rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
+              NOW MAKE IT SMALLER
+            </h2>
+            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+              Say it in 10 words or fewer. If you can't, you haven't found it yet.
+            </p>
+
+            {/* Show full statement above */}
+            <div
+              style={{
+                background: 'rgba(0,0,0,0.4)',
+                padding: '12px 16px',
+                boxShadow: '-2px 0 0 #555, 2px 0 0 #555, 0 -2px 0 #555, 0 2px 0 #555',
+              }}
+            >
+              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>
+                YOU WROTE:
+              </p>
+              <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: 0, fontStyle: 'italic', lineHeight: 1.5 }}>
+                "{finalStatement}"
+              </p>
+            </div>
+
+            {/* Input + word counter */}
+            <div style={{ position: 'relative' }}>
+              <textarea
+                className="mario-input"
+                style={{ minHeight: 80, resize: 'none', lineHeight: 1.8, paddingRight: 72 }}
+                value={shrunkStatement}
+                onChange={(e) => setShrunkStatement(e.target.value)}
+                placeholder="10 words. Go."
+                autoFocus
+              />
+              {/* Counter badge */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  right: 10,
+                  fontFamily: 'Press Start 2P, monospace',
+                  fontSize: '0.7rem',
+                  color: overLimit ? 'var(--mario-red)' : AMBER,
+                  background: 'rgba(0,0,0,0.7)',
+                  padding: '4px 8px',
+                  pointerEvents: 'none',
+                  transition: 'color 0.15s',
+                }}
+              >
+                {shrunkStatement.trim() === '' ? 10 : Math.max(0, 10 - shrunkWordCount)}
+              </div>
+            </div>
+
+            {overLimit && (
+              <p className="vt323-font" style={{ color: 'var(--mario-red)', fontSize: '1.1rem', margin: 0 }}>
+                {shrunkWordCount} words — cut {shrunkWordCount - 10} more
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="mario-btn mario-btn-red"
+              disabled={!shrunkStatement.trim() || overLimit || loading}
+            >
+              {loading ? 'SAVING...' : "THAT'S MY PROBLEM — RAISE THE FLAG 🚩"}
             </button>
           </form>
         )}
@@ -216,7 +305,6 @@ const World4_Castle: React.FC = () => {
       {flagRaised && (
         <div className="world-complete">
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            {/* Flag pole */}
             <div style={{ position: 'relative', width: 8, height: 160, background: '#888', margin: '0 auto' }}>
               <div
                 className="flag-raise"
@@ -231,7 +319,7 @@ const World4_Castle: React.FC = () => {
                 }}
               />
             </div>
-            <h2 className="mario-font" style={{ color: 'var(--coin-gold)', fontSize: '1.2rem', marginTop: 8 }}>
+            <h2 className="mario-font" style={{ color: AMBER, fontSize: '1.2rem', marginTop: 8 }}>
               LEVEL COMPLETE!
             </h2>
             <p className="vt323-font" style={{ color: 'var(--white)', fontSize: '1.5rem' }}>
@@ -240,17 +328,12 @@ const World4_Castle: React.FC = () => {
             <p className="vt323-font" style={{ color: '#aaa', fontSize: '1.2rem' }}>
               Now let's see who else is here...
             </p>
-            {/* Coin shower */}
             <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
               {Array.from({ length: 10 }).map((_, i) => (
                 <div
                   key={i}
                   className="coin-shower-item"
-                  style={{
-                    position: 'relative',
-                    animationDelay: `${i * 0.08}s`,
-                    animationDuration: '0.9s',
-                  }}
+                  style={{ position: 'relative', animationDelay: `${i * 0.08}s`, animationDuration: '0.9s' }}
                 />
               ))}
             </div>

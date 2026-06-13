@@ -17,9 +17,23 @@ interface ImportedChallenge {
 // 3 — Why is this happening?
 // 4 — Who's in the room?
 // 5 — If you fixed it tomorrow...
-// 6 — Pick your root cause
+// 6 — Pick your root cause (category + free text; conditionally shows Size Check)
 
 const AMBER = 'var(--coin-gold)';
+
+const ROOT_CAUSE_CATEGORIES = [
+  'Process Gap',
+  'Comms Breakdown',
+  'Tool Gap',
+  'Workflow Bottleneck',
+  'Dependency',
+  'Resource Constraint',
+  'Skill Gap',
+  'Product Issue',
+  'Will / Motivation',
+];
+
+const SIZE_CHECK_TRIGGERS = new Set(['Process Gap', 'Comms Breakdown']);
 
 const InputScreen: React.FC<{
   header: string;
@@ -72,6 +86,10 @@ const World2_Enemies: React.FC = () => {
   const [whyHappening, setWhyHappening] = useState('');
   const [whoInRoom, setWhoInRoom] = useState('');
   const [stillBroken, setStillBroken] = useState('');
+  const [rootCauseCategory, setRootCauseCategory] = useState('');
+  const [rootCauseFreeText, setRootCauseFreeText] = useState('');
+  const [showSizeCheck, setShowSizeCheck] = useState(false);
+  const [sizeCheckAnswer, setSizeCheckAnswer] = useState('');
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
 
@@ -102,7 +120,7 @@ const World2_Enemies: React.FC = () => {
 
   const allDecided = importedChallenges.length === 0 || importedChallenges.every((e) => e.kept !== null);
 
-  const handleFinish = async () => {
+  const handleFinish = async (sizeCheck?: string) => {
     setLoading(true);
     try {
       const inserts = challenges
@@ -110,10 +128,15 @@ const World2_Enemies: React.FC = () => {
         .map((b) => ({ player_id: playerId!, blocker_text: b, world_origin: 2 }));
       await gameSupabase.from('enemies').insert(inserts);
       await gameSupabase.from('players').update({ world: 3 }).eq('id', playerId!);
-      localStorage.setItem('game_chosen_challenge', chosenChallenge);
+      localStorage.setItem('game_chosen_challenge', rootCauseFreeText || chosenChallenge);
       localStorage.setItem('game_root_cause_why', whyHappening);
       localStorage.setItem('game_root_cause_who', whoInRoom);
       localStorage.setItem('game_still_broken', stillBroken);
+      if (sizeCheck) {
+        localStorage.setItem('game_size_check', sizeCheck);
+      } else {
+        localStorage.removeItem('game_size_check');
+      }
       setComplete(true);
       setTimeout(() => navigate('/game/world/3'), 2500);
     } catch (err) {
@@ -123,8 +146,26 @@ const World2_Enemies: React.FC = () => {
     }
   };
 
-  // Candidates for "Choose your problem to dig"
+  const handleRootCauseAdvance = () => {
+    if (!rootCauseCategory || !rootCauseFreeText.trim()) return;
+    if (SIZE_CHECK_TRIGGERS.has(rootCauseCategory)) {
+      setShowSizeCheck(true);
+    } else {
+      handleFinish();
+    }
+  };
+
+  const handleSizeCheckAdvance = () => {
+    if (!sizeCheckAnswer.trim()) return;
+    handleFinish(sizeCheckAnswer);
+  };
+
   const digOptions = challenges.filter((c) => c.trim());
+
+  const stepLabel = (() => {
+    if (step === 6 && showSizeCheck) return 'SIZE CHECK';
+    return ['NAME CHALLENGES', 'COHORT', 'CHOOSE PROBLEM', 'WHY?', 'WHO?', 'TOMORROW?', 'ROOT CAUSE'][step];
+  })();
 
   return (
     <div
@@ -135,7 +176,7 @@ const World2_Enemies: React.FC = () => {
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
         <span>WORLD 2-1</span>
         <span>THE DIG</span>
-        <span>{['NAME CHALLENGES','COHORT','CHOOSE PROBLEM','WHY?','WHO?','TOMORROW?','ROOT CAUSE'][step]}</span>
+        <span>{stepLabel}</span>
       </div>
 
       <div style={{ maxWidth: 600, margin: '0 auto', padding: '32px 20px' }}>
@@ -307,49 +348,111 @@ const World2_Enemies: React.FC = () => {
           />
         )}
 
-        {/* Step 6 — Name your root cause (free text) */}
-        {step === 6 && (
+        {/* Step 6 — Root cause: category + free text; or Size Check */}
+        {step === 6 && !showSizeCheck && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               PICK YOUR ROOT CAUSE
             </h2>
 
-            {/* Summary card from last answer */}
-            <div
-              style={{
-                background: 'rgba(251,208,0,0.15)',
-                borderLeft: '4px solid var(--coin-gold)',
-                padding: '12px 16px',
-              }}
-            >
-              <p className="mario-font" style={{ fontSize: '0.4rem', color: AMBER, margin: '0 0 6px' }}>
-                YOUR DIG FOUND:
-              </p>
+            <div style={{ background: 'rgba(251,208,0,0.15)', borderLeft: '4px solid var(--coin-gold)', padding: '12px 16px' }}>
+              <p className="mario-font" style={{ fontSize: '0.4rem', color: AMBER, margin: '0 0 6px' }}>YOUR DIG FOUND:</p>
               <p className="vt323-font" style={{ color: 'var(--white)', fontSize: '1.2rem', margin: 0, fontStyle: 'italic' }}>
                 "{stillBroken}"
               </p>
             </div>
 
+            {/* Category buttons */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+              {ROOT_CAUSE_CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setRootCauseCategory(cat)}
+                  style={{
+                    fontFamily: 'VT323, monospace',
+                    fontSize: '1rem',
+                    background: rootCauseCategory === cat ? 'var(--mario-red)' : 'rgba(0,0,0,0.45)',
+                    color: rootCauseCategory === cat ? 'var(--white)' : '#ccc',
+                    border: 'none',
+                    padding: '10px 8px',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    lineHeight: 1.3,
+                    boxShadow: rootCauseCategory === cat
+                      ? '-2px 0 0 var(--white), 2px 0 0 var(--white), 0 -2px 0 var(--white), 0 2px 0 var(--white)'
+                      : '-2px 0 0 #555, 2px 0 0 #555, 0 -2px 0 #555, 0 2px 0 #555',
+                    transition: 'background 0.12s',
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Free-text elaboration */}
+            {rootCauseCategory && (
+              <>
+                <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+                  Name it in your own words.
+                </p>
+                <textarea
+                  className="mario-input"
+                  style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
+                  value={rootCauseFreeText}
+                  onChange={(e) => setRootCauseFreeText(e.target.value)}
+                  placeholder="The real root cause is..."
+                  autoFocus
+                />
+                {rootCauseFreeText.trim() && (
+                  <button
+                    className="mario-btn mario-btn-red"
+                    onClick={handleRootCauseAdvance}
+                    disabled={loading}
+                  >
+                    {loading ? 'SAVING...' : 'SOLVE THIS CHALLENGE ▶'}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Step 6 — Size Check (conditional) */}
+        {step === 6 && showSizeCheck && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
+              IS THIS ONE PROBLEM OR THREE?
+            </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              Based on everything you just dug through — name the root cause in your own words.
+              {rootCauseCategory === 'Process Gap'
+                ? 'Process gaps are usually symptoms of something smaller.'
+                : 'Comms breakdowns are usually symptoms of something smaller.'}{' '}
+              Name the smallest version of this problem.
             </p>
+
+            <div style={{ background: 'rgba(0,0,0,0.4)', borderLeft: '4px solid #555', padding: '12px 16px' }}>
+              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOUR DIG FOUND:</p>
+              <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: 0, fontStyle: 'italic' }}>
+                "{rootCauseFreeText}"
+              </p>
+            </div>
 
             <textarea
               className="mario-input"
               style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
-              value={chosenChallenge}
-              onChange={(e) => setChosenChallenge(e.target.value)}
-              placeholder="The real root cause is..."
+              value={sizeCheckAnswer}
+              onChange={(e) => setSizeCheckAnswer(e.target.value)}
+              placeholder="The smallest version of this is..."
               autoFocus
             />
 
-            {chosenChallenge.trim() && (
+            {sizeCheckAnswer.trim() && (
               <button
                 className="mario-btn mario-btn-red"
-                onClick={handleFinish}
+                onClick={handleSizeCheckAdvance}
                 disabled={loading}
               >
-                {loading ? 'SAVING...' : 'SOLVE THIS CHALLENGE ▶'}
+                {loading ? 'SAVING...' : 'THIS IS THE ONE ▶'}
               </button>
             )}
           </div>
