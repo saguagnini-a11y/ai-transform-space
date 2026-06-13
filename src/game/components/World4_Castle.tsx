@@ -142,10 +142,9 @@ const World4_Castle: React.FC = () => {
   const playerId = localStorage.getItem('game_player_id');
   const playerName = localStorage.getItem('game_player_name') ?? 'Player';
 
-  // 0=Draft, 1=Voice, 2=The Problem, 3=Refine, 4=POV, 5=OneSmallThing
+  // 0=Draft, 1=The Problem, 2=Refine, 3=POV, 4=OneSmallThing
   const [step, setStep] = useState(0);
-  const [draft, setDraft] = useState(localStorage.getItem('game_size_check') ?? '');
-  const [voiceAnswer, setVoiceAnswer] = useState('');
+  const [draft, setDraft] = useState(localStorage.getItem('game_chosen_challenge') ?? '');
   const [rootCauseCategory, setRootCauseCategory] = useState('');
   const [finalStatement, setFinalStatement] = useState('');
   const [povWho, setPovWho] = useState('');
@@ -174,7 +173,7 @@ const World4_Castle: React.FC = () => {
     const result = verdictFromTier(cat.tier);
     setVerdict(result);
     setFinalStatement(draft);
-    setStep(3);
+    setStep(2);
   };
 
   const handleAdvanceFromRefine = (e: React.FormEvent) => {
@@ -184,7 +183,7 @@ const World4_Castle: React.FC = () => {
       setRedirectInfoVisible(true);
       return;
     }
-    setStep(4);
+    setStep(3);
   };
 
   const handleStartReframe = () => {
@@ -233,7 +232,7 @@ const World4_Castle: React.FC = () => {
 
   const assembledPOV = buildPOV(povWho, povWhat, povInsight);
 
-  const stepLabels = ['DRAFT', 'VOICE', 'THE PROBLEM', 'REFINE', 'POV', 'FIRST MOVE'];
+  const stepLabels = ['DRAFT', 'THE PROBLEM', 'REFINE', 'POV', 'FIRST MOVE'];
 
   return (
     <div className="game-screen castle-bg" style={{ minHeight: '100vh', paddingBottom: 80, color: 'var(--white)' }}>
@@ -241,7 +240,7 @@ const World4_Castle: React.FC = () => {
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
         <span>WORLD 3-1</span>
         <span>FIELD REPORT</span>
-        <span>{stepLabels[Math.min(step, 5)]}</span>
+        <span>{stepLabels[Math.min(step, 4)]}</span>
       </div>
 
       {/* Castle turrets */}
@@ -321,53 +320,8 @@ const World4_Castle: React.FC = () => {
           </form>
         )}
 
-        {/* Step 1 — Voice Question */}
+        {/* Step 1 — The Problem (9 L&D-native categories) */}
         {step === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
-              WHAT WOULD THE PERSON<br />MOST AFFECTED SAY?
-            </h2>
-            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              Not what they should say. What they'd actually say — in the corridor, in a message, after a meeting.
-            </p>
-
-            <div style={{ background: 'rgba(0,0,0,0.4)', borderLeft: '4px solid #555', padding: '12px 16px' }}>
-              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOUR PROBLEM:</p>
-              <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: 0, fontStyle: 'italic' }}>
-                "{draft}"
-              </p>
-            </div>
-
-            <textarea
-              className="mario-input"
-              style={{ minHeight: 120, resize: 'vertical', lineHeight: 1.8 }}
-              value={voiceAnswer}
-              onChange={(e) => setVoiceAnswer(e.target.value)}
-              placeholder='"I wish someone would just..."'
-              autoFocus
-            />
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button
-                className="mario-btn mario-btn-red"
-                disabled={!voiceAnswer.trim()}
-                onClick={() => setStep(2)}
-              >
-                THAT'S THE VOICE ▶
-              </button>
-              <button
-                className="mario-btn mario-btn-dark"
-                style={{ fontSize: '0.45rem' }}
-                onClick={() => setStep(2)}
-              >
-                SKIP
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2 — The Problem (9 L&D-native categories) */}
-        {step === 2 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>THE PROBLEM TEST</h2>
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', margin: 0 }}>
@@ -436,8 +390,8 @@ const World4_Castle: React.FC = () => {
           </div>
         )}
 
-        {/* Step 3 — Refine + Verdict (redirect auto-reframes, no fork) */}
-        {step === 3 && verdict && (
+        {/* Step 2 — Refine + Verdict (redirect auto-reframes, no fork) */}
+        {step === 2 && verdict && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
             {/* Redirect info — single path, no choice */}
@@ -487,8 +441,8 @@ const World4_Castle: React.FC = () => {
           </div>
         )}
 
-        {/* Step 4 — POV Builder */}
-        {step === 4 && (
+        {/* Step 3 — POV Builder */}
+        {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               GIVE IT A WHO.
@@ -518,14 +472,14 @@ const World4_Castle: React.FC = () => {
               </p>
             )}
 
-            <button className="mario-btn mario-btn-red" onClick={() => setStep(5)} disabled={!povWho.trim()}>
+            <button className="mario-btn mario-btn-red" onClick={() => setStep(4)} disabled={!povWho.trim()}>
               THIS IS MY POV ▶
             </button>
           </div>
         )}
 
-        {/* Step 5 — One Small Thing */}
-        {step === 5 && (
+        {/* Step 4 — One Small Thing */}
+        {step === 4 && (
           <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               ONE SMALL THING.

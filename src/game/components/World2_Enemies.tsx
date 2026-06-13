@@ -1,124 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gameSupabase } from '../lib/supabase';
-import { getRandomEnemies } from '../lib/enemyPool';
 import '../styles/mario.css';
 
-interface ImportedChallenge {
-  id: string;
-  blocker_text: string;
-  kept: boolean | null;
-}
-
 // steps:
-// 0 — Name your challenges (3 fields)
-// 1 — Cohort challenges (imported)
-// 2 — Choose your problem to dig
-// 3 — Size Check: is this one problem or three?
-// 4 — Why is this happening?
-// 5 — Who's in the room?
-// 6 — If you fixed it tomorrow...
-// 7 — Does this happen more than once a month?
+// 0 — Name your challenge
+// 1 — Choose your problem to dig
+// 2 — Why is this happening?
+// 3 — Does this happen more than once a month?
 
 const AMBER = 'var(--coin-gold)';
-
-const InputScreen: React.FC<{
-  header: string;
-  subtitle: string;
-  placeholder: string;
-  advanceLabel: string;
-  value: string;
-  onChange: (v: string) => void;
-  onSubmit: () => void;
-  multiline?: boolean;
-}> = ({ header, subtitle, placeholder, advanceLabel, value, onChange, onSubmit, multiline }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-    <h2 className="mario-font" style={{ fontSize: '0.7rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
-      {header}
-    </h2>
-    <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-      {subtitle}
-    </p>
-    {multiline ? (
-      <textarea
-        className="mario-input"
-        style={{ minHeight: 120, resize: 'vertical', lineHeight: 1.8 }}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        autoFocus
-      />
-    ) : (
-      <input
-        className="mario-input"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        autoFocus
-      />
-    )}
-    <button className="mario-btn mario-btn-gold" disabled={!value.trim()} onClick={onSubmit}>
-      {advanceLabel}
-    </button>
-  </div>
-);
 
 const World2_Enemies: React.FC = () => {
   const navigate = useNavigate();
   const playerId = localStorage.getItem('game_player_id');
   const [step, setStep] = useState(0);
-  const [challenges, setChallenges] = useState(['', '', '']);
-  const [importedChallenges, setImportedChallenges] = useState<ImportedChallenge[]>([]);
+  const [challenge, setChallenge] = useState('');
+  const [extraChallenges, setExtraChallenges] = useState(['', '']);
   const [chosenChallenge, setChosenChallenge] = useState('');
-  const [sizeCheckAnswer, setSizeCheckAnswer] = useState('');
   const [whyHappening, setWhyHappening] = useState('');
-  const [whoInRoom, setWhoInRoom] = useState('');
-  const [stillBroken, setStillBroken] = useState('');
   const [repetitionNudgeVisible, setRepetitionNudgeVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
 
   useEffect(() => {
-    if (!playerId) { navigate('/game'); return; }
+    if (!playerId) { navigate('/game'); }
   }, []);
 
-  const handleChallengesSubmit = async (e: React.FormEvent) => {
+  const handleChallengesSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const filled = challenges.filter((c) => c.trim());
-    if (filled.length === 0) return;
-    setLoading(true);
-    try {
-      const imported = await getRandomEnemies(playerId!, 2);
-      setImportedChallenges(imported.map((e) => ({ id: e.id, blocker_text: e.blocker_text, kept: null })));
-      setStep(1);
-    } catch {
-      setImportedChallenges([]);
-      setStep(1);
-    } finally {
-      setLoading(false);
-    }
+    if (!challenge.trim()) return;
+    setStep(1);
   };
-
-  const handleImportedDecision = (id: string, kept: boolean) => {
-    setImportedChallenges((prev) => prev.map((e) => (e.id === id ? { ...e, kept } : e)));
-  };
-
-  const allDecided = importedChallenges.length === 0 || importedChallenges.every((e) => e.kept !== null);
 
   const handleFinish = async () => {
     setLoading(true);
     try {
-      const inserts = challenges
-        .filter(Boolean)
-        .map((b) => ({ player_id: playerId!, blocker_text: b, world_origin: 2 }));
+      const allChallenges = [challenge, ...extraChallenges].filter(Boolean);
+      const inserts = allChallenges.map((b) => ({
+        player_id: playerId!,
+        blocker_text: b,
+        world_origin: 2,
+      }));
       await gameSupabase.from('enemies').insert(inserts);
       await gameSupabase.from('players').update({ world: 3 }).eq('id', playerId!);
-      const finalProblem = sizeCheckAnswer || chosenChallenge;
-      localStorage.setItem('game_chosen_challenge', finalProblem);
+      localStorage.setItem('game_chosen_challenge', chosenChallenge);
       localStorage.setItem('game_root_cause_why', whyHappening);
-      localStorage.setItem('game_root_cause_who', whoInRoom);
-      localStorage.setItem('game_still_broken', stillBroken);
-      localStorage.setItem('game_size_check', finalProblem);
       setComplete(true);
       setTimeout(() => navigate('/game/world/3'), 2500);
     } catch (err) {
@@ -128,16 +55,12 @@ const World2_Enemies: React.FC = () => {
     }
   };
 
-  const keptImported = importedChallenges.filter((e) => e.kept).map((e) => e.blocker_text);
-  const digOptions = [...challenges.filter((c) => c.trim()), ...keptImported];
+  const digOptions = [challenge, ...extraChallenges].filter((c) => c.trim());
 
-  const stepLabel = ['NAME CHALLENGES', 'COHORT', 'CHOOSE PROBLEM', 'SIZE CHECK', 'WHY?', 'WHO?', 'TOMORROW?', 'RECURRING?'][step] ?? 'RECURRING?';
+  const stepLabel = ['NAME IT', 'CHOOSE', 'WHY?', 'RECURRING?'][step] ?? 'RECURRING?';
 
   return (
-    <div
-      className="game-screen"
-      style={{ background: '#5C94FC', minHeight: '100vh', paddingBottom: 80 }}
-    >
+    <div className="game-screen" style={{ background: '#5C94FC', minHeight: '100vh', paddingBottom: 80 }}>
       {/* HUD */}
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
         <span>WORLD 2-1</span>
@@ -147,101 +70,53 @@ const World2_Enemies: React.FC = () => {
 
       <div style={{ maxWidth: 600, margin: '0 auto', padding: '32px 20px' }}>
 
-        {/* Step 0 — Name your challenges */}
+        {/* Step 0 — Name your challenge */}
         {step === 0 && (
           <form onSubmit={handleChallengesSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.7rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
-              NAME YOUR CHALLENGES
+              NAME YOUR CHALLENGE
             </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0 }}>
-              What's keeping you awake at night?
+              What's the problem that keeps coming back?
             </p>
             <p className="vt323-font" style={{ color: '#aaa', fontSize: '1rem', margin: 0 }}>
-              Only your final statement will be shared with others at the end of this experience — nothing before that is visible.
+              Only your final statement will be shared with others at the end — nothing before that is visible.
             </p>
-            {[
-              'The thing that comes back every time...',
-              'The thing that slows everything down...',
-              'The thing nobody talks about but everyone feels...',
-            ].map((placeholder, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label className="mario-font" style={{ fontSize: '0.45rem', color: '#ccc' }}>
-                  CHALLENGE {i + 1}
-                </label>
-                <input
-                  className="mario-input"
-                  placeholder={placeholder}
-                  value={challenges[i]}
-                  onChange={(e) => {
-                    const next = [...challenges];
-                    next[i] = e.target.value;
-                    setChallenges(next);
-                  }}
-                />
+            <input
+              className="mario-input"
+              placeholder="The thing that comes back every time..."
+              value={challenge}
+              onChange={(e) => setChallenge(e.target.value)}
+              autoFocus
+            />
+            {challenge.trim() && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: 0 }}>
+                  GOT MORE? (OPTIONAL)
+                </p>
+                {extraChallenges.map((val, i) => (
+                  <input
+                    key={i}
+                    className="mario-input"
+                    placeholder={i === 0 ? 'The thing that slows everything down...' : 'The thing nobody talks about but everyone feels...'}
+                    value={val}
+                    onChange={(e) => {
+                      const next = [...extraChallenges];
+                      next[i] = e.target.value;
+                      setExtraChallenges(next);
+                    }}
+                  />
+                ))}
               </div>
-            ))}
-            <button
-              type="submit"
-              className="mario-btn mario-btn-red"
-              disabled={!challenges.some((c) => c.trim()) || loading}
-            >
-              {loading ? 'LOADING...' : 'DIG DEEPER ▶'}
+            )}
+            <button type="submit" className="mario-btn mario-btn-red" disabled={!challenge.trim() || loading}>
+              DIG DEEPER ▶
             </button>
           </form>
         )}
 
-        {/* Step 1 — Cohort challenges */}
+        {/* Step 1 — Choose your problem to dig */}
         {step === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {importedChallenges.length > 0 && (
-              <>
-                <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
-                  FROM YOUR COHORT
-                </h2>
-                <p className="vt323-font" style={{ color: '#88AAFF', fontSize: '1.2rem', margin: 0 }}>
-                  Someone in your cohort faces these too.
-                </p>
-                {importedChallenges.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      background: 'rgba(0,0,100,0.4)',
-                      padding: 16,
-                      boxShadow: '-2px 0 0 var(--white), 2px 0 0 var(--white), 0 -2px 0 var(--white), 0 2px 0 var(--white)',
-                    }}
-                  >
-                    <p className="vt323-font" style={{ color: '#88AAFF', fontSize: '1.3rem', margin: '0 0 12px' }}>
-                      👤 "{item.blocker_text}"
-                    </p>
-                    {item.kept === null && (
-                      <div style={{ display: 'flex', gap: 12 }}>
-                        <button className="mario-btn mario-btn-green" style={{ fontSize: '0.6rem' }} onClick={() => handleImportedDecision(item.id, true)}>
-                          ✓ Keep
-                        </button>
-                        <button className="mario-btn mario-btn-dark" style={{ fontSize: '0.6rem' }} onClick={() => handleImportedDecision(item.id, false)}>
-                          ✕ Not relevant
-                        </button>
-                      </div>
-                    )}
-                    {item.kept !== null && (
-                      <span className="mario-font" style={{ fontSize: '0.45rem', color: item.kept ? 'var(--grass-green)' : '#888' }}>
-                        {item.kept ? '✓ KEPT' : '✕ DISMISSED'}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </>
-            )}
-            {(allDecided || importedChallenges.length === 0) && (
-              <button className="mario-btn mario-btn-gold" onClick={() => setStep(2)}>
-                DIG DEEPER ▶
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Step 2 — Choose your problem to dig */}
-        {step === 2 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               CHOOSE YOUR PROBLEM TO DIG
@@ -253,117 +128,62 @@ const World2_Enemies: React.FC = () => {
               {digOptions.map((opt, i) => (
                 <button
                   key={i}
-                  onClick={() => { setChosenChallenge(opt); setSizeCheckAnswer(''); setStep(3); }}
+                  onClick={() => { setChosenChallenge(opt); setStep(2); }}
                   style={{
                     fontFamily: 'VT323, monospace',
                     fontSize: '1.3rem',
-                    background: chosenChallenge === opt ? 'var(--coin-gold)' : 'rgba(0,0,0,0.5)',
-                    color: chosenChallenge === opt ? 'var(--black)' : 'var(--white)',
+                    background: 'rgba(0,0,0,0.5)',
+                    color: 'var(--white)',
                     border: 'none',
                     padding: '20px 24px',
                     textAlign: 'left',
                     cursor: 'pointer',
                     boxShadow: '-4px 0 0 0 var(--white), 4px 0 0 0 var(--white), 0 -4px 0 0 var(--white), 0 4px 0 0 var(--white)',
-                    transition: 'background 0.15s',
                     lineHeight: 1.4,
                   }}
                 >
-                  {opt.length > 60 ? opt.slice(0, 60) + '...' : opt}
+                  {opt.length > 80 ? opt.slice(0, 80) + '...' : opt}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Step 3 — Size Check */}
-        {step === 3 && (
+        {/* Step 2 — Why is this happening? */}
+        {step === 2 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
-              IS THIS ONE PROBLEM OR THREE?
+            <h2 className="mario-font" style={{ fontSize: '0.7rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
+              WHY IS THIS HAPPENING?
             </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              Name the smallest version of this problem.
+              Don't explain. Describe.
             </p>
-
             <div style={{ background: 'rgba(0,0,0,0.4)', borderLeft: '4px solid #555', padding: '12px 16px' }}>
               <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOU PICKED:</p>
               <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: 0, fontStyle: 'italic' }}>
                 "{chosenChallenge}"
               </p>
             </div>
-
             <textarea
               className="mario-input"
-              style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
-              value={sizeCheckAnswer}
-              onChange={(e) => setSizeCheckAnswer(e.target.value)}
-              placeholder="The smallest version of this is..."
+              style={{ minHeight: 120, resize: 'vertical', lineHeight: 1.8 }}
+              value={whyHappening}
+              onChange={(e) => setWhyHappening(e.target.value)}
+              placeholder="Because..."
               autoFocus
             />
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button
-                className="mario-btn mario-btn-red"
-                disabled={!sizeCheckAnswer.trim()}
-                onClick={() => setStep(4)}
-              >
-                THAT'S THE ONE ▶
-              </button>
-              <button
-                className="mario-btn mario-btn-dark"
-                style={{ fontSize: '0.45rem' }}
-                onClick={() => setStep(4)}
-              >
-                SKIP — USE AS IS
-              </button>
-            </div>
+            <button
+              className="mario-btn mario-btn-gold"
+              disabled={!whyHappening.trim()}
+              onClick={() => setStep(3)}
+            >
+              DIG DEEPER ▶
+            </button>
           </div>
         )}
 
-        {/* Step 4 — Why is this happening? */}
-        {step === 4 && (
-          <InputScreen
-            header="WHY IS THIS HAPPENING?"
-            subtitle="Don't explain. Describe."
-            placeholder="Because..."
-            advanceLabel="DIG DEEPER ▶"
-            value={whyHappening}
-            onChange={setWhyHappening}
-            multiline
-            onSubmit={() => setStep(5)}
-          />
-        )}
-
-        {/* Step 5 — Who's in the room? */}
-        {step === 5 && (
-          <InputScreen
-            header="WHO'S IN THE ROOM?"
-            subtitle="Name the last time this went wrong. Who was there? Who owned it?"
-            placeholder="The people involved are..."
-            advanceLabel="DIG DEEPER ▶"
-            value={whoInRoom}
-            onChange={setWhoInRoom}
-            multiline
-            onSubmit={() => setStep(6)}
-          />
-        )}
-
-        {/* Step 6 — If you fixed it tomorrow */}
-        {step === 6 && (
-          <InputScreen
-            header="IF YOU FIXED IT TOMORROW, WHAT WOULD STILL BE BROKEN?"
-            subtitle="This tells you whether you found the problem — or just a symptom."
-            placeholder="Even if I fixed this, I'd still have..."
-            advanceLabel="THAT'S THE PROBLEM ▶"
-            value={stillBroken}
-            onChange={setStillBroken}
-            multiline
-            onSubmit={() => setStep(7)}
-          />
-        )}
-
-        {/* Step 7 — Repetition Test */}
-        {step === 7 && (
+        {/* Step 3 — Recurring? */}
+        {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               DOES THIS HAPPEN MORE THAN ONCE A MONTH?
@@ -378,14 +198,18 @@ const World2_Enemies: React.FC = () => {
                   One-off problems rarely need AI. Is there a recurring version of this? If yes, that's your real problem.
                 </p>
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                  <button className="mario-btn mario-btn-gold" style={{ fontSize: '0.45rem' }}
+                  <button
+                    className="mario-btn mario-btn-gold"
+                    style={{ fontSize: '0.45rem' }}
                     onClick={() => { setRepetitionNudgeVisible(false); handleFinish(); }}
                     disabled={loading}
                   >
                     {loading ? 'SAVING...' : 'GOT IT — KEEP GOING'}
                   </button>
-                  <button className="mario-btn mario-btn-dark" style={{ fontSize: '0.45rem' }}
-                    onClick={() => { setRepetitionNudgeVisible(false); setStep(2); }}
+                  <button
+                    className="mario-btn mario-btn-dark"
+                    style={{ fontSize: '0.45rem' }}
+                    onClick={() => { setRepetitionNudgeVisible(false); setStep(1); }}
                   >
                     GOT IT — GO BACK
                   </button>
@@ -394,7 +218,7 @@ const World2_Enemies: React.FC = () => {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <button className="platform-option" onClick={() => handleFinish()} disabled={loading}>
-                  {loading ? 'SAVING...' : '✅ Yes — it\'s recurring'}
+                  {loading ? 'SAVING...' : "✅ Yes — it's recurring"}
                 </button>
                 <button className="platform-option" onClick={() => setRepetitionNudgeVisible(true)}>
                   🔁 Not really — it's more of a one-off
