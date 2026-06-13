@@ -161,7 +161,8 @@ const World2_Enemies: React.FC = () => {
     handleFinish(sizeCheckAnswer);
   };
 
-  const digOptions = challenges.filter((c) => c.trim());
+  const keptImported = importedChallenges.filter((e) => e.kept).map((e) => e.blocker_text);
+  const digOptions = [...challenges.filter((c) => c.trim()), ...keptImported];
 
   const stepLabel = (() => {
     if (step === 7 && showSizeCheck) return 'SIZE CHECK';
