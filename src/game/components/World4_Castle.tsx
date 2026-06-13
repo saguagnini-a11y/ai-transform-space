@@ -157,7 +157,7 @@ const World4_Castle: React.FC = () => {
   const [flagRaised, setFlagRaised] = useState(false);
   const [fieldChecks, setFieldChecks] = useState([false, false, false]);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
-  const [redirectFork, setRedirectFork] = useState<'none' | 'fork' | 'understand'>('none');
+  const [redirectInfoVisible, setRedirectInfoVisible] = useState(false);
   const [reframeMode, setReframeMode] = useState(false);
 
   if (!playerId) { navigate('/game'); return null; }
@@ -180,27 +180,18 @@ const World4_Castle: React.FC = () => {
   const handleAdvanceFromRefine = (e: React.FormEvent) => {
     e.preventDefault();
     if (!finalStatement.trim() || !verdict) return;
-    if (verdict.verdict === 'redirect' && redirectFork === 'none') {
-      setRedirectFork('fork');
+    if (verdict.verdict === 'redirect') {
+      setRedirectInfoVisible(true);
       return;
     }
     setStep(4);
   };
 
-  const handleRedirectChoiceUnderstand = () => {
-    setRedirectFork('understand');
-  };
-
-  const handleRedirectChoiceReframe = () => {
-    setRedirectFork('none');
+  const handleStartReframe = () => {
+    setRedirectInfoVisible(false);
     setReframeMode(true);
     setDraft('');
     setStep(0);
-  };
-
-  const handleRedirectContinueToPOV = () => {
-    setRedirectFork('none');
-    setStep(4);
   };
 
   const submitToWall = async () => {
@@ -445,71 +436,34 @@ const World4_Castle: React.FC = () => {
           </div>
         )}
 
-        {/* Step 3 — Refine + Verdict + Redirect Fork */}
+        {/* Step 3 — Refine + Verdict (redirect auto-reframes, no fork) */}
         {step === 3 && verdict && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-            {/* Redirect Fork */}
-            {redirectFork === 'fork' && (
+            {/* Redirect info — single path, no choice */}
+            {redirectInfoVisible && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div style={{ background: 'rgba(233,69,96,0.1)', borderLeft: '4px solid var(--mario-red)', padding: '16px 20px' }}>
                   <p className="mario-font" style={{ fontSize: '0.6rem', color: 'var(--mario-red)', margin: '0 0 8px' }}>
                     NOT AN AI PROBLEM. YET.
                   </p>
                   <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.2rem', margin: 0, lineHeight: 1.5 }}>
-                    That's not failure. That's clarity. Most L&D problems aren't AI problems — they're design problems, adoption problems, or political problems wearing a technology costume.
+                    {rootCauseCategory === 'wrong_tool'
+                      ? 'You found a tool mismatch. AI on top of a broken tool is still a broken tool. The fix is upstream — but there\'s a repeatable part of this worth finding.'
+                      : 'You found a behaviour and will problem. That needs incentives and culture change before technology. But somewhere in this, there\'s a repeatable step AI could eventually touch.'}
                   </p>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <button className="platform-option" style={{ textAlign: 'left', borderLeft: '4px solid #aaa' }} onClick={handleRedirectChoiceUnderstand}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <span>💡 Help me understand what kind of problem this is</span>
-                      <span className="vt323-font" style={{ fontSize: '1rem', color: '#888', fontFamily: 'VT323, monospace' }}>See what this problem actually needs — and what to do next</span>
-                    </div>
-                  </button>
-                  <button className="platform-option" style={{ textAlign: 'left', borderLeft: '4px solid var(--coin-gold)' }} onClick={handleRedirectChoiceReframe}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <span>🔍 I want to reframe it as an AI problem</span>
-                      <span className="vt323-font" style={{ fontSize: '1rem', color: '#888', fontFamily: 'VT323, monospace' }}>Find the part of this that AI could actually touch</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Redirect Explain — path A */}
-            {redirectFork === 'understand' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <h2 className="mario-font" style={{ fontSize: '0.6rem', color: AMBER, lineHeight: 2 }}>WHAT KIND OF PROBLEM IS THIS?</h2>
-                {(() => {
-                  const cat = ROOT_CAUSE_CATEGORIES.find((c) => c.id === rootCauseCategory);
-                  const problemType = cat?.id === 'wrong_tool'
-                    ? { type: 'Tool mismatch', next: 'Evaluate whether a different tool — not AI — would close this gap. Talk to procurement or IT first.', example: cat.example }
-                    : { type: 'Behaviour and will', next: 'This needs incentives, accountability, or culture change before technology. Start with the manager conversation, not the AI pilot.', example: cat?.example ?? '' };
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                      <div style={{ background: 'rgba(251,208,0,0.08)', borderLeft: `4px solid ${AMBER}`, padding: '12px 16px' }}>
-                        <p className="mario-font" style={{ fontSize: '0.4rem', color: AMBER, margin: '0 0 6px' }}>PROBLEM TYPE</p>
-                        <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0 }}>{problemType.type}</p>
-                      </div>
-                      <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px 16px', boxShadow: '-2px 0 0 #555, 2px 0 0 #555, 0 -2px 0 #555, 0 2px 0 #555' }}>
-                        <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>WHAT TO DO NEXT</p>
-                        <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: 0, lineHeight: 1.6 }}>{problemType.next}</p>
-                      </div>
-                      <p className="vt323-font" style={{ color: '#888', fontSize: '1rem', margin: 0, fontStyle: 'italic', lineHeight: 1.5 }}>
-                        Naming this clearly is still the work. Bring a sharp problem statement — even a non-AI one — to the Wall.
-                      </p>
-                    </div>
-                  );
-                })()}
-                <button className="mario-btn mario-btn-dark" onClick={handleRedirectContinueToPOV}>
-                  TAKE IT TO THE WALL ▶
+                <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+                  Let's find the repeatable thing.
+                </p>
+                <button className="mario-btn mario-btn-gold" onClick={handleStartReframe}>
+                  FIND THE REPEATABLE THING ▶
                 </button>
               </div>
             )}
 
-            {/* Normal refine — shown until fork is triggered */}
-            {redirectFork === 'none' && (
+            {/* Normal refine form */}
+            {!redirectInfoVisible && (
               <form onSubmit={handleAdvanceFromRefine} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>REFINE YOUR STATEMENT</h2>
                 <div style={{ background: 'rgba(255,255,255,0.1)', padding: 16, fontFamily: 'VT323, monospace', fontSize: '1.2rem', color: '#ddd', boxShadow: '-2px 0 0 var(--white), 2px 0 0 var(--white), 0 -2px 0 var(--white), 0 2px 0 var(--white)' }}>

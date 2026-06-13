@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCAMPER Audit — AI Learning Cluster</title>
+<style>
+  /* ============================================================
+     RESET & BASE
+  ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1a1a2e;
+    --coral: #e94560;
+    --warm-white: #f5f5f0;
+    --dark-blue: #16213e;
+    --midnight: #0f3460;
+    --purple: #533483;
+    --marit-color: #0f3460;
+    --yael-color: #533483;
+    --daan-color: #e94560;
+    --yes-color: #2a9d5c;
+    --no-color: #c0392b;
+    --cond-color: #e67e22;
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a6a;
+    --border: rgba(26,26,46,0.12);
+    --shadow: 0 2px 16px rgba(26,26,46,0.10);
+    --shadow-lg: 0 8px 40px rgba(26,26,46,0.16);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--warm-white);
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: 16px;
+  }
+
+  /* ============================================================
+     TYPOGRAPHY
+  ============================================================ */
+  h1 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+  h2 { font-size: clamp(1.3rem, 2.5vw, 1.9rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1.2rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 0.6rem; }
+  h4 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 0.4rem; }
+  p { margin-bottom: 0.9rem; color: var(--text-secondary); line-height: 1.65; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ============================================================
+     LAYOUT
+  ============================================================ */
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+  @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } .container { padding: 0 1rem; } }
+
+  section { padding: 4rem 0; }
+  section:nth-child(even) { background: #eeeeea; }
+
+  /* ============================================================
+     HEADER
+  ============================================================ */
+  header {
+    background: var(--navy);
+    color: white;
+    padding: 5rem 0 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(233,69,96,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-label {
+    display: inline-block;
+    background: var(--coral);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.3rem 0.8rem;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+  header h1 { color: white; margin-bottom: 1rem; }
+  header .subtitle {
+    color: rgba(255,255,255,0.65);
+    font-size: 1.05rem;
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+  }
+  .header-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .meta-item { display: flex; flex-direction: column; }
+  .meta-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.45); font-weight: 700; }
+  .meta-value { color: rgba(255,255,255,0.9); font-size: 0.9rem; font-weight: 600; margin-top: 0.15rem; }
+
+  /* ============================================================
+     NAV
+  ============================================================ */
+  nav {
+    background: var(--dark-blue);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-inner {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-link {
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 1rem 1.4rem;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+  .nav-link:hover { color: white; border-color: var(--coral); }
+
+  /* ============================================================
+     CARDS
+  ============================================================ */
+  .card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.8rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .card-sm {
+    background: white;
+    border-radius: 8px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 1px 8px rgba(26,26,46,0.07);
+    border: 1px solid var(--border);
+  }
+
+  /* ============================================================
+     VOTE BADGES
+  ============================================================ */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.65rem;
+    border-radius: 3px;
+  }
+  .badge-yes { background: rgba(42,157,92,0.12); color: var(--yes-color); border: 1px solid rgba(42,157,92,0.25); }
+  .badge-no { background: rgba(192,57,43,0.1); color: var(--no-color); border: 1px solid rgba(192,57,43,0.2); }
+  .badge-cond { background: rgba(230,126,34,0.1); color: var(--cond-color); border: 1px solid rgba(230,126,34,0.2); }
+  .badge-changed { background: rgba(83,52,131,0.12); color: var(--purple); border: 1px solid rgba(83,52,131,0.2); font-size: 0.65rem; }
+
+  /* ============================================================
+     PERSONA CARDS
+  ============================================================ */
+  .persona-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .persona-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: white;
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
+  .av-marit { background: var(--marit-color); }
+  .av-yael { background: var(--yael-color); }
+  .av-daan { background: var(--daan-color); }
+
+  .persona-name { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.1rem; }
+  .persona-role { font-size: 0.78rem; color: var(--text-secondary); font-weight: 500; line-height: 1.4; margin: 0; }
+
+  .persona-baseline {
+    background: var(--warm-white);
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+    margin: 1rem 0;
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+    border-left: 3px solid var(--border);
+  }
+  .baseline-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 0.2rem; }
+
+  .identity-arrow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin: 0.8rem 0;
+    flex-wrap: wrap;
+  }
+  .identity-arrow .from { font-weight: 600; color: var(--text-primary); }
+  .identity-arrow .arrow { color: var(--coral); font-weight: 900; }
+  .identity-arrow .to { font-weight: 700; color: var(--navy); }
+
+  .trigger-quote {
+    border-left: 3px solid var(--coral);
+    padding: 0.6rem 1rem;
+    margin: 1rem 0;
+    font-style: italic;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    background: rgba(233,69,96,0.04);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .vote-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .vote-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); }
+
+  /* ============================================================
+     COLLAPSIBLES
+  ============================================================ */
+  .collapsible-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 1rem 1.4rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .collapsible-trigger:hover { background: #fafaf8; }
+  .collapsible-trigger .chevron {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+  }
+  .collapsible-trigger.open .chevron { transform: rotate(180deg); }
+  .collapsible-trigger .trigger-label { font-weight: 700; font-size: 0.92rem; }
+  .collapsible-content {
+    display: none;
+    padding: 1.4rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    margin-bottom: 0.5rem;
+  }
+  .collapsible-content.open { display: block; }
+
+  /* ============================================================
+     SLIDERS (ASSUMPTION SLIDERS)
+  ============================================================ */
+  .slider-section { margin: 2rem 0; }
+  .slider-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.8rem;
+    margin-bottom: 1.2rem;
+    box-shadow: var(--shadow);
+  }
+  .slider-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .slider-desc { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.2rem; }
+  .slider-track {
+    position: relative;
+    height: 6px;
+    background: linear-gradient(to right, var(--marit-color), var(--yael-color), var(--daan-color));
+    border-radius: 3px;
+    margin: 1.5rem 0;
+  }
+  .slider-handle {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 18px;
+    background: white;
+    border: 3px solid var(--navy);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: box-shadow 0.15s;
+  }
+  .slider-handle:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+  .yael-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: var(--yael-color);
+    border-radius: 50%;
+    border: 2px solid white;
+    pointer-events: none;
+  }
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+  .slider-labels .end { display: flex; flex-direction: column; }
+  .slider-labels .end:last-child { text-align: right; }
+  .slider-persona { font-weight: 800; font-size: 0.75rem; }
+  .slider-tooltip {
+    background: var(--navy);
+    color: white;
+    font-size: 0.78rem;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    line-height: 1.5;
+    min-height: 2.5rem;
+    transition: opacity 0.2s;
+  }
+
+  /* ============================================================
+     IMPROVEMENTS CARDS
+  ============================================================ */
+  .improvement-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.6rem;
+    margin-bottom: 1.2rem;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--navy);
+  }
+  .improvement-card.marit-card { border-left-color: var(--marit-color); }
+  .improvement-card.yael-card { border-left-color: var(--yael-color); }
+  .improvement-card.daan-card { border-left-color: var(--daan-color); }
+
+  .improvement-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 0.6rem;
+  }
+  .source-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .improvement-title { font-size: 0.98rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem; }
+  .improvement-body { font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6; }
+  .improvement-votes { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  .voter-vote { display: flex; align-items: center; gap: 0.35rem; }
+  .voter-name { font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); }
+  .component-tag {
+    display: inline-block;
+    background: var(--warm-white);
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    margin-left: auto;
+  }
+
+  /* ============================================================
+     PRE-MORTEM TIMELINE
+  ============================================================ */
+  .timeline { position: relative; padding-left: 2.5rem; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.65rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -2.5rem;
+    top: 0.3rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--coral);
+    z-index: 1;
+  }
+  .timeline-dot.marit { border-color: var(--marit-color); }
+  .timeline-dot.yael { border-color: var(--yael-color); }
+  .timeline-dot.daan { border-color: var(--daan-color); }
+  .timeline-week {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    margin-bottom: 0.2rem;
+  }
+  .timeline-trigger { font-weight: 700; font-size: 0.9rem; color: var(--text-primary); margin-bottom: 0.3rem; }
+  .timeline-detail { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.55; }
+  .prevention-tag {
+    display: inline-block;
+    background: rgba(42,157,92,0.1);
+    color: var(--yes-color);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    margin-top: 0.4rem;
+    border: 1px solid rgba(42,157,92,0.2);
+  }
+
+  /* ============================================================
+     COMMITMENT TRACKER
+  ============================================================ */
+  .commitment-row {
+    display: grid;
+    grid-template-columns: 1fr 120px 120px 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 1.2rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .commitment-row:last-child { border-bottom: none; }
+  .commitment-header {
+    display: grid;
+    grid-template-columns: 1fr 120px 120px 1fr;
+    gap: 1rem;
+    padding: 0.6rem 1.4rem;
+    background: var(--warm-white);
+    border-radius: 6px 6px 0 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .commitment-header span { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); }
+  .commitment-persona { font-weight: 800; font-size: 0.92rem; }
+  .commitment-reason { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
+  .commitment-table {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  @media (max-width: 700px) {
+    .commitment-row, .commitment-header { grid-template-columns: 1fr 1fr; }
+    .commitment-reason { grid-column: 1 / -1; }
+  }
+
+  /* ============================================================
+     DEBATE CARDS
+  ============================================================ */
+  .debate-exchange {
+    margin-bottom: 2rem;
+  }
+  .debate-exchange-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .dialogue-line {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: flex-start;
+  }
+  .dialogue-line.right { flex-direction: row-reverse; }
+  .dialogue-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+  }
+  .dialogue-bubble {
+    max-width: 80%;
+    padding: 0.9rem 1.1rem;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+  }
+  .bubble-marit { background: rgba(15,52,96,0.08); border-top-left-radius: 3px; }
+  .bubble-yael { background: rgba(83,52,131,0.08); border-top-left-radius: 3px; }
+  .bubble-daan { background: rgba(233,69,96,0.08); border-top-right-radius: 3px; }
+  .dialogue-line.right .bubble-daan { border-top-left-radius: 10px; border-top-right-radius: 3px; }
+  .speaker-name { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem; color: var(--text-secondary); }
+
+  .tension-callout {
+    background: rgba(233,69,96,0.07);
+    border: 1px solid rgba(233,69,96,0.2);
+    border-radius: 8px;
+    padding: 1.2rem 1.4rem;
+    margin: 1.5rem 0;
+  }
+  .tension-callout h4 { color: var(--coral); margin-bottom: 0.5rem; }
+  .tension-callout p { font-size: 0.84rem; }
+
+  /* ============================================================
+     VOTE TABLE
+  ============================================================ */
+  .cross-vote-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  .cross-vote-table th {
+    background: var(--navy);
+    color: white;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .cross-vote-table td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .cross-vote-table tr:last-child td { border-bottom: none; }
+  .cross-vote-table tr:nth-child(even) td { background: rgba(245,245,240,0.6); }
+  .cross-vote-table .suggestion-col { font-weight: 600; color: var(--text-primary); max-width: 240px; }
+  .cross-vote-table .source-col { font-size: 0.75rem; color: var(--text-secondary); }
+  .table-wrapper { background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); overflow-x: auto; }
+
+  /* ============================================================
+     TENSIONS & CONSENSUS
+  ============================================================ */
+  .tension-item {
+    border-left: 4px solid var(--coral);
+    padding: 1rem 1.2rem;
+    background: white;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 6px rgba(26,26,46,0.06);
+  }
+  .tension-item h3 { font-size: 0.92rem; margin-bottom: 0.4rem; }
+  .tension-item p { font-size: 0.82rem; margin: 0; }
+
+  .consensus-item {
+    border-left: 4px solid var(--yes-color);
+    padding: 1rem 1.2rem;
+    background: white;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 6px rgba(26,26,46,0.06);
+  }
+  .consensus-item h3 { font-size: 0.92rem; margin-bottom: 0.4rem; }
+  .consensus-item p { font-size: 0.82rem; margin: 0; }
+
+  /* ============================================================
+     DECISION FRAMEWORK
+  ============================================================ */
+  .decision-item {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.6rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .decision-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--coral);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 800;
+    margin-bottom: 0.8rem;
+  }
+  .decision-question { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .decision-body { font-size: 0.84rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 0.8rem; }
+  .decision-row { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+  .decision-opt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.7rem;
+    border-radius: 4px;
+  }
+  .opt-yes { background: rgba(42,157,92,0.12); color: var(--yes-color); }
+  .opt-no { background: rgba(192,57,43,0.1); color: var(--no-color); }
+
+  /* ============================================================
+     SECTION HEADERS
+  ============================================================ */
+  .section-header { margin-bottom: 2.5rem; }
+  .section-label {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--coral);
+    margin-bottom: 0.5rem;
+  }
+  .section-header h2 { margin-bottom: 0.5rem; }
+  .section-header p { max-width: 620px; }
+
+  /* ============================================================
+     FOOTER
+  ============================================================ */
+  footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.5);
+    padding: 3rem 0;
+    font-size: 0.8rem;
+  }
+  footer .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; gap: 1rem; }
+  footer strong { color: rgba(255,255,255,0.8); }
+
+  /* ============================================================
+     PRINT
+  ============================================================ */
+  @media print {
+    nav { display: none; }
+    header { padding: 2rem 0; }
+    section { padding: 1.5rem 0; break-inside: avoid; }
+    .collapsible-content { display: block !important; }
+    .card, .card-sm, .improvement-card, .decision-item { box-shadow: none; border: 1px solid #ccc; }
+    body { font-size: 11pt; }
+    h1 { font-size: 22pt; }
+    h2 { font-size: 16pt; }
+    h3 { font-size: 12pt; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    a { color: inherit; text-decoration: none; }
+    .slider-card, .slider-track, .slider-handle { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="container">
+    <div class="header-label">SCAMPER Audit</div>
+    <h1>AI Learning Cluster<br>Prototype Review</h1>
+    <p class="subtitle">Three personas. Four components. Seven SCAMPER lenses. One design question: who does this program actually serve?</p>
+    <div class="header-meta">
+      <div class="meta-item">
+        <span class="meta-label">Date</span>
+        <span class="meta-value">25 March 2026</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Target</span>
+        <span class="meta-value">AI Learning Cluster — Bi-Weekly Cycle v1</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Method</span>
+        <span class="meta-value">SCAMPER × Council</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Personas</span>
+        <span class="meta-value">Marit · Yael · Daan</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <div class="container nav-inner">
+    <a class="nav-link" href="#personas">Personas</a>
+    <a class="nav-link" href="#commitment">Votes</a>
+    <a class="nav-link" href="#improvements">Improvements</a>
+    <a class="nav-link" href="#premortem">Pre-Mortems</a>
+    <a class="nav-link" href="#debate">Debate</a>
+    <a class="nav-link" href="#tensions">Tensions</a>
+    <a class="nav-link" href="#decisions">Decisions</a>
+  </div>
+</nav>
+
+<!-- PERSONA CARDS -->
+<section id="personas">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Round 1</span>
+      <h2>Personas &amp; Baseline Votes</h2>
+      <p>Three practitioners with different AI maturity levels, different professional stakes, and different definitions of what this program needs to do to earn their time.</p>
+    </div>
+
+    <div class="grid-3">
+
+      <!-- MARIT -->
+      <div class="card">
+        <div class="persona-header">
+          <div class="persona-avatar av-marit">M</div>
+          <div>
+            <div class="persona-name">Marit</div>
+            <p class="persona-role">Senior L&amp;D Advisor · Regulated Multinational (Financial / Pharma / Gov)</p>
+          </div>
+        </div>
+        <div class="persona-baseline">
+          <span class="baseline-label">Emotional Baseline</span>
+          Low-grade governance anxiety — continuous, not episodic. Every feature filtered through "can I defend this in a meeting?"
+        </div>
+        <div class="identity-arrow">
+          <span class="from">Compliant executor</span>
+          <span class="arrow">→</span>
+          <span class="to">Responsible innovator</span>
+        </div>
+        <p style="font-size:0.82rem;margin-bottom:0.8rem;">Daily AI user for surface tasks. Zero workflow redesign. Needs a defensible path that survives an audit committee.</p>
+        <div class="trigger-quote">"I'd probably read it carefully, save the link, and never come back."</div>
+        <div class="vote-row">
+          <span class="vote-label">R1 Vote</span>
+          <span class="badge badge-cond">CONDITIONAL</span>
+          <span class="badge badge-cond">R2: CONDITIONAL</span>
+        </div>
+        <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.5rem;">Condition: Governance scaffolding must be a design feature, not an accommodation.</p>
+      </div>
+
+      <!-- YAEL -->
+      <div class="card">
+        <div class="persona-header">
+          <div class="persona-avatar av-yael">Y</div>
+          <div>
+            <div class="persona-name">Yael</div>
+            <p class="persona-role">Independent Learning Designer · Boutique Consultancy · 12+ Years</p>
+          </div>
+        </div>
+        <div class="persona-baseline">
+          <span class="baseline-label">Emotional Baseline</span>
+          Deflation, not anger. When the program leads with speed or scale, she experiences not-being-seen.
+        </div>
+        <div class="identity-arrow">
+          <span class="from">Individual craftsperson</span>
+          <span class="arrow">→</span>
+          <span class="to">AI-augmented practitioner who can name what's distinctly hers</span>
+        </div>
+        <p style="font-size:0.82rem;margin-bottom:0.8rem;">Extensive AI use — ideation, research, first drafts. Hand-finishes everything. Optimises for quality, not throughput.</p>
+        <div class="trigger-quote">"I was already doing things people hadn't done before. That's what craft is."</div>
+        <div class="vote-row">
+          <span class="vote-label">R1 Vote</span>
+          <span class="badge badge-cond">CONDITIONAL</span>
+          <span class="badge badge-yes">R2: YES</span>
+          <span class="badge badge-changed">Changed</span>
+        </div>
+        <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.5rem;">Shifted: Daan's reframe of Override Log as craft legitimacy tool — not just governance — changed her read.</p>
+      </div>
+
+      <!-- DAAN -->
+      <div class="card">
+        <div class="persona-header">
+          <div class="persona-avatar av-daan">D</div>
+          <div>
+            <div class="persona-name">Daan</div>
+            <p class="persona-role">L&amp;D Manager · Mid-Large Org · 18 Months of Shadow AI Work</p>
+          </div>
+        </div>
+        <div class="persona-baseline">
+          <span class="baseline-label">Emotional Baseline</span>
+          Productive frustration layered with loneliness. Pride in what he's built; acute awareness none of it counts yet.
+        </div>
+        <div class="identity-arrow">
+          <span class="from">Content producer → workflow designer</span>
+          <span class="arrow">→</span>
+          <span class="to">Organisational change agent</span>
+        </div>
+        <p style="font-size:0.82rem;margin-bottom:0.8rem;">Far ahead of peers. Built chatbot assessments and automated pipelines on personal devices. Needs peers AND recognition.</p>
+        <div class="trigger-quote">"I've been doing this alone for a year and a half. The promise of a studio feels like it's for someone who hasn't started yet."</div>
+        <div class="vote-row">
+          <span class="vote-label">R1 Vote</span>
+          <span class="badge badge-cond">CONDITIONAL</span>
+          <span class="badge badge-cond">R2: CONDITIONAL</span>
+          <span class="badge badge-changed">Sharpened</span>
+        </div>
+        <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.5rem;">Condition sharpened: needs concrete pathway from individual practice to org-level adoption, not just peer recognition.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- COMMITMENT TRACKER -->
+<section id="commitment">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Vote Tracker</span>
+      <h2>Commitment Votes: Round 1 → Round 2</h2>
+      <p>One persona shifted to YES. Two held at CONDITIONAL but with sharpened conditions. No clean consensus — by design.</p>
+    </div>
+
+    <div class="commitment-table" style="margin-bottom:2.5rem;">
+      <div class="commitment-header">
+        <span>Persona</span>
+        <span>Round 1</span>
+        <span>Round 2</span>
+        <span>What Changed</span>
+      </div>
+      <div class="commitment-row">
+        <div><span class="commitment-persona" style="color:var(--marit-color)">Marit</span></div>
+        <div><span class="badge badge-cond">CONDITIONAL</span></div>
+        <div><span class="badge badge-cond">CONDITIONAL</span></div>
+        <div class="commitment-reason">Debate gave her new vocabulary (Override Log as institutional vocabulary) but didn't resolve governance gap. Vote unchanged, reasoning deepened.</div>
+      </div>
+      <div class="commitment-row">
+        <div><span class="commitment-persona" style="color:var(--yael-color)">Yael</span></div>
+        <div><span class="badge badge-cond">CONDITIONAL</span></div>
+        <div><span class="badge badge-yes">YES</span></div>
+        <div class="commitment-reason">Daan's argument reframed Override Log from retrospective compliance form to live craft legitimacy tool. Two-layer structure (private process / public artefact) resolved her core friction.</div>
+      </div>
+      <div class="commitment-row">
+        <div><span class="commitment-persona" style="color:var(--daan-color)">Daan</span></div>
+        <div><span class="badge badge-cond">CONDITIONAL</span></div>
+        <div><span class="badge badge-cond">CONDITIONAL</span></div>
+        <div class="commitment-reason">Condition sharpened after Marit's pre-mortem: needs org adoption pathway, not just an Advanced Track. "Meeting me where I am" isn't enough — the program must bridge to institutional recognition.</div>
+      </div>
+    </div>
+
+    <!-- Cross-Suggestion Votes -->
+    <h3 style="margin-bottom:1.2rem;">Cross-Suggestion Votes</h3>
+    <div class="table-wrapper">
+      <table class="cross-vote-table">
+        <thead>
+          <tr>
+            <th>Suggestion</th>
+            <th>From</th>
+            <th>Marit</th>
+            <th>Yael</th>
+            <th>Daan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="suggestion-col">Rename "Tiny Experiment" to "Defensible Practice Log"</td>
+            <td class="source-col">Marit</td>
+            <td>—</td>
+            <td><span class="badge badge-no">NO</span></td>
+            <td><span class="badge badge-cond">COND</span></td>
+          </tr>
+          <tr>
+            <td class="suggestion-col">Override Log as live creative capture (voice memo / micro-annotation)</td>
+            <td class="source-col">Yael</td>
+            <td><span class="badge badge-cond">COND</span></td>
+            <td>—</td>
+            <td><span class="badge badge-yes">YES</span></td>
+          </tr>
+          <tr>
+            <td class="suggestion-col">Advanced Track for participants with prior workflow redesign experience</td>
+            <td class="source-col">Daan</td>
+            <td><span class="badge badge-yes">YES</span></td>
+            <td><span class="badge badge-cond">COND</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="suggestion-col">Add explicit institutional defensibility briefing to Show &amp; Tell</td>
+            <td class="source-col">Marit</td>
+            <td>—</td>
+            <td><span class="badge badge-no">NO</span></td>
+            <td><span class="badge badge-yes">YES</span></td>
+          </tr>
+          <tr>
+            <td class="suggestion-col">Separate Override Log into public/private layers</td>
+            <td class="source-col">Yael</td>
+            <td><span class="badge badge-yes">YES</span></td>
+            <td>—</td>
+            <td><span class="badge badge-cond">COND</span></td>
+          </tr>
+          <tr>
+            <td class="suggestion-col">Deep Dive pairs advanced with early-stage participants</td>
+            <td class="source-col">Daan</td>
+            <td><span class="badge badge-cond">COND</span></td>
+            <td><span class="badge badge-yes">YES</span></td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ASSUMPTION SLIDERS -->
+<section id="sliders">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Key Assumptions</span>
+      <h2>Where Do the Personas Stand?</h2>
+      <p>Drag the slider to explore where each persona sits on the core design tensions. Yael's position is marked in purple.</p>
+    </div>
+
+    <div class="slider-section">
+
+      <div class="slider-card">
+        <div class="slider-title">Override Log structure: private journal ←→ auditable governance document</div>
+        <div class="slider-desc">How much structure should the Override Log have? Who is it for — the practitioner or the institution?</div>
+        <div class="slider-track" id="track1">
+          <div class="yael-marker" style="left:40%;" title="Yael"></div>
+          <div class="slider-handle" id="handle1" style="left:20%;" tabindex="0"></div>
+        </div>
+        <div class="slider-labels">
+          <div class="end">
+            <span class="slider-persona" style="color:var(--marit-color)">Marit</span>
+            <span>Structured fields, auditable, institutional</span>
+          </div>
+          <div class="end">
+            <span class="slider-persona" style="color:var(--daan-color)">Daan</span>
+            <span>Governance doc that bridges to org recognition</span>
+          </div>
+        </div>
+        <div class="slider-tooltip" id="tooltip1">Marit: "Three open questions is a diary. I need a structured decision record that survives review."</div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-title">Program pacing: deliberate quality ←→ shipping velocity</div>
+        <div class="slider-desc">What signal should the program optimise for? Speed of output or depth of judgment?</div>
+        <div class="slider-track" id="track2">
+          <div class="yael-marker" style="left:25%;" title="Yael"></div>
+          <div class="slider-handle" id="handle2" style="left:60%;" tabindex="0"></div>
+        </div>
+        <div class="slider-labels">
+          <div class="end">
+            <span class="slider-persona" style="color:var(--yael-color)">Yael</span>
+            <span>Deliberate quality, critique, craft visibility</span>
+          </div>
+          <div class="end">
+            <span class="slider-persona" style="color:var(--daan-color)">Daan</span>
+            <span>Process-level workflow redesign, ship often</span>
+          </div>
+        </div>
+        <div class="slider-tooltip" id="tooltip2">Yael: "I was going slower on purpose. Pausing. Interrogating the AI's word choices. That's not inefficiency — that's craft."</div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-title">Cohort design: mixed experience levels ←→ differentiated tracks</div>
+        <div class="slider-desc">Should participants all move through the same program, or should experience determine entry point?</div>
+        <div class="slider-track" id="track3">
+          <div class="yael-marker" style="left:65%;" title="Yael"></div>
+          <div class="slider-handle" id="handle3" style="left:30%;" tabindex="0"></div>
+        </div>
+        <div class="slider-labels">
+          <div class="end">
+            <span class="slider-persona" style="color:var(--marit-color)">Marit</span>
+            <span>Mixed cohort — but governance scaffolding for all</span>
+          </div>
+          <div class="end">
+            <span class="slider-persona" style="color:var(--daan-color)">Daan</span>
+            <span>Strict differentiation — Advanced Track is non-negotiable</span>
+          </div>
+        </div>
+        <div class="slider-tooltip" id="tooltip3">Daan: "The program is optimised for someone who hasn't started yet. I've been doing this for 18 months."</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- IMPROVEMENTS -->
+<section id="improvements">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Round 1 Output</span>
+      <h2>Key Improvements — All Personas</h2>
+      <p>Nine structural improvements, three per persona. Each is specific and grounded in the behavioral mechanism it addresses, not the surface symptom.</p>
+    </div>
+
+    <!-- MARIT -->
+    <h3 style="color:var(--marit-color);margin-bottom:1rem;">Marit's Improvements</h3>
+    <div class="improvement-card marit-card">
+      <div class="improvement-source"><span class="source-dot" style="background:var(--marit-color);"></span> Marit · Override Log</div>
+      <div class="improvement-title">Add a Governance Scaffolding Layer to the Override Log</div>
+      <div class="improvement-body">Additional field set: decision type (compliance / accuracy / ethical / aesthetic), context, downstream risk. Converts a reflective tool into a professional artefact that survives organisational scrutiny. Participants in regulated contexts need to submit this to a manager and have it read as rigorous, not experimental.</div>
+      <div class="improvement-votes">
+        <div class="voter-vote"><span class="voter-name">Yael</span><span class="badge badge-cond">COND</span></div>
+        <div class="voter-vote"><span class="voter-name">Daan</span><span class="badge badge-yes">YES</span></div>
+        <span class="component-tag">Override Log</span>
+      </div>
+    </div>
+    <div class="improvement-card marit-card">
+      <div class="improvement-source"><span class="source-dot" style="background:var(--marit-color);"></span> Marit · Sprint</div>
+      <div class="improvement-title">Reframe the Sprint with an Explicit Methodology Card</div>
+      <div class="improvement-body">Before hands-on work begins, participants receive a one-page card: hypothesis (what I'm testing), input (what I gave AI), output (what AI produced), decision (accepted / modified / rejected), rationale. Builds the habit of documenting decisions at the moment they're made. Without this, the Sprint produces stories, not evidence.</div>
+      <div class="improvement-votes">
+        <div class="voter-vote"><span class="voter-name">Yael</span><span class="badge badge-cond">COND</span></div>
+        <div class="voter-vote"><span class="voter-name">Daan</span><span class="badge badge-no">NO</span></div>
+        <span class="component-tag">Bi-Weekly Cycle</span>
+      </div>
+    </div>
+    <div class="improvement-card marit-card">
+      <div class="improvement-source"><span class="source-dot" style="background:var(--marit-color);"></span> Marit · Transformation Expo</div>
+      <div class="improvement-title">Add a "Defensibility Audit" Rotation to the Expo</div>
+      <div class="improvement-body">One of the six Expo tables dedicated to: how would you defend this workflow redesign to your compliance team / line manager / audit committee? Not just "what did you build" but "what would you say if challenged." Reframes the Expo from show-and-tell into re-entry preparation for regulated environments.</div>
+      <div class="improvement-votes">
+        <div class="voter-vote"><span class="voter-name">Yael</span><span class="badge badge-no">NO</span></div>
+        <div class="voter-vote"><span class="voter-name">Daan</span><span class="badge badge-yes">YES</span></div>
+        <span class="component-tag">Transformation Expo</span>
+      </div>
+    </div>
+
+    <!-- YAEL -->
+    <h3 style="color:var(--yael-color);margin:1.5rem 0 1rem;">Yael's Improvements</h3>
+    <div class="improvement-card yael-card">
+      <div class="improvement-source"><span class="source-dot" style="background:var(--yael-color);"></span> Yael · Override Log</div>
+      <div class="improvement-title">Redesign the Override Log as a Live Capture Tool</div>
+      <div class="improvement-body">Voice memo integration, margin annotation, or a lightweight mobile-first input allowing capture in the moment of override. The three questions remain but must be answerable in 30 seconds mid-sprint, not 10 minutes post-session. Retrospective capture is reconstruction, not documentation. The best creative overrides happen in the middle of working.</div>
+      <div class="improvement-votes">
+        <div class="voter-vote"><span class="voter-name">Marit</span><span class="badge badge-cond">COND</span></div>
+        <div class="voter-vote"><span class="voter-name">Daan</span><span class="badge badge-yes">YES</span></div>
+        <span class="component-tag">Override Log</span>
+      </div>
+    </div>
+    <div class="improvement-card yael-card">
+      <div class="improvement-source"><span class="source-dot" style="background:var(--yael-color);"></span> Yael · Sprint</div>
+      <div class="improvement-title">Add a Structured Craft Critique Layer to the Sprint</div>
+      <div class="improvement-body">After each micro-case is tested: 10 minutes of structured peer critique. What's the quality signal in this output? What did the AI miss that you had to correct? What does that correction tell you about your judgment? Builds vocabulary for the Override Log and makes quality visible as a collective practice, not just individual preference.</div>
+      <div class="improvement-votes">
+        <div class="voter-vote"><span class="voter-name">Marit</span><span class="badge badge-cond">COND</span></div>
+        <div class="voter-vote"><span class="voter-name">Daan</span><span class="badge badge-cond">COND</span></div>
+        <span class="component-tag">Bi-Weekly Cycle</span>
+      </div>
+    </div>
+    <div class="improvement-card yael-card">
+      <div class="improvement-source"><span class="source-dot" style="background:var(--yael-color);"></span> Yael · Override Log</div>
+      <div class="improvement-title">Separate the Override Log into Private Process and Public Artefact</div>
+      <div class="improvement-body">Live annotation layer is private — messy, in-progress, unpolished. A curatorial step allows participants to select 1-2 entries to make public within the cohort or as a client-facing transparency document. Respects the intimacy of creative process while creating a mechanism for craft to become visible and discussable at the group level.</div>
+      <div class="improvement-votes">
+        <div class="voter-vote"><span class="voter-name">Marit</span><span class="badge badge-yes">YES</span></div>
+        <div class="voter-vote"><span class="voter-name">Daan</span><span class="badge badge-cond">COND</span></div>
+        <span class="component-tag">Override Log</span>
+      </div>
+    </div>
+
+    <!-- DAAN -->
+    <h3 style="color:var(--daan-color);margin:1.5rem 0 1rem;">Daan's Improvements</h3>
+    <div class="improvement-card daan-card">
+      <div class="improvement-source"><span class="source-dot" style="background:var(--daan-color);"></span> Daan · Entry Design</div>
+      <div class="improvement-title">Create an Advanced Track with Differentiated Entry Point</div>
+      <div class="improvement-body">Not a separate program — a parallel track within the same sessions. Advanced participants start with the assumption of workflow redesign experience; their Show &amp; Tell, Sprint, and Deep Dive content addresses organisational integration and adoption problems, not AI tool use. Requires a three-question pre-session diagnostic and clear track communication. Without this, the most experienced participants leave by week three.</div>
+      <div class="improvement-votes">
+        <div class="voter-vote"><span class="voter-name">Marit</span><span class="badge badge-yes">YES</span></div>
+        <div class="voter-vote"><span class="voter-name">Yael</span><span class="badge badge-cond">COND</span></div>
+        <span class="component-tag">Program Design</span>
+      </div>
+    </div>
+    <div class="improvement-card daan-card">
+      <div class="improvement-source"><span class="source-dot" style="background:var(--daan-color);"></span> Daan · Override Log</div>
+      <div class="improvement-title">Add an Institutional Translation Field to the Override Log</div>
+      <div class="improvement-body">One additional field: "What would I need to write for my director to trust this decision?" Doesn't replace the reflective questions — adds a translation step. The Override Log becomes both a personal record and a stakeholder communication tool. For Daan, this is the difference between the program being useful and merely interesting. Interesting doesn't get him the recognition he needs.</div>
+      <div class="improvement-votes">
+        <div class="voter-vote"><span class="voter-name">Marit</span><span class="badge badge-yes">YES</span></div>
+        <div class="voter-vote"><span class="voter-name">Yael</span><span class="badge badge-cond">COND</span></div>
+        <span class="component-tag">Override Log</span>
+      </div>
+    </div>
+    <div class="improvement-card daan-card">
+      <div class="improvement-source"><span class="source-dot" style="background:var(--daan-color);"></span> Daan · Reflection Pods</div>
+      <div class="improvement-title">Add a "Shadow Work" Prompt to the Reflection Pods</div>
+      <div class="improvement-body">Current prompts cover what participants shipped in-program. Add: what are you working on that you can't show officially? What would it take to make it visible? Opens the conversation that advanced practitioners need — not about what's being built in the program, but about the gap between private capability and organisational recognition. Fewer but deeper pod sessions: 30 minutes every two cycles.</div>
+      <div class="improvement-votes">
+        <div class="voter-vote"><span class="voter-name">Marit</span><span class="badge badge-no">NO</span></div>
+        <div class="voter-vote"><span class="voter-name">Yael</span><span class="badge badge-yes">YES</span></div>
+        <span class="component-tag">Reflection Pods</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PRE-MORTEM TIMELINE -->
+<section id="premortem">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Pre-Mortems</span>
+      <h2>When They'd Leave — and Why</h2>
+      <p>Written in first person. Each persona describes the moment of dropout — the specific trigger, not the abstract concern.</p>
+    </div>
+
+    <div class="grid-3">
+
+      <div class="card">
+        <div class="persona-header" style="margin-bottom:1rem;">
+          <div class="persona-avatar av-marit">M</div>
+          <div>
+            <div class="persona-name">Marit</div>
+            <div style="font-size:0.78rem;color:var(--text-secondary);">Drops at Week 6</div>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot marit"></div>
+            <div class="timeline-week">Weeks 1–2 — Surface compliance</div>
+            <div class="timeline-trigger">Engaging, but already filtering</div>
+            <div class="timeline-detail">Guests are credible, Tiny Experiments are useful. Override Log looks promising. Governance radar running but nothing triggering it yet.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot marit"></div>
+            <div class="timeline-week">Week 5 — The "messy middle" moment</div>
+            <div class="timeline-trigger">Asked to share work that wasn't approved</div>
+            <div class="timeline-detail">Deep Dive asks to share the moment where AI surprised her or she didn't know what to do. She has examples — but every one involves content tested outside formally approved AI-production processes. Sharing means putting work on record in a semi-public space. She freezes.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot marit"></div>
+            <div class="timeline-week">Week 6 — Quiet exit</div>
+            <div class="timeline-trigger">Told herself she was "too busy"</div>
+            <div class="timeline-detail">The program offered experimentation. It didn't offer institutional frame for the experiments. Those two things are not the same. She needed the second before she could use the first.</div>
+            <div><span class="prevention-tag">Prevention: Governance scaffolding as design feature, not accommodation</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="persona-header" style="margin-bottom:1rem;">
+          <div class="persona-avatar av-yael">Y</div>
+          <div>
+            <div class="persona-name">Yael</div>
+            <div style="font-size:0.78rem;color:var(--text-secondary);">Drops at Week 7</div>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot yael"></div>
+            <div class="timeline-week">Weeks 1–3 — Cautious optimism</div>
+            <div class="timeline-trigger">Show &amp; Tell guest does something new</div>
+            <div class="timeline-detail">A guest demonstrates research synthesis she hadn't seen before. Override Log gives her language for something she'd been doing intuitively. Thinks: maybe the craft conversation exists here.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot yael"></div>
+            <div class="timeline-week">Week 4 — The speed moment</div>
+            <div class="timeline-trigger">"Look how fast we can produce this"</div>
+            <div class="timeline-detail">Sprint debrief: room celebrates speed. "8 minutes." "Three iterations in 12 minutes." She's been going deliberately slower — pausing, interrogating word choices. She raised it. Her comment landed as "Yael has different needs." The edge-case framing is the problem.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot yael"></div>
+            <div class="timeline-week">Week 7 — Polite exit</div>
+            <div class="timeline-trigger">"The timing didn't work"</div>
+            <div class="timeline-detail">She stopped bringing the work that mattered to her because she didn't believe the space could see it. Physically present, creatively absent — then not present at all.</div>
+            <div><span class="prevention-tag">Prevention: Craft critique layer + live Override Log capture</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="persona-header" style="margin-bottom:1rem;">
+          <div class="persona-avatar av-daan">D</div>
+          <div>
+            <div class="persona-name">Daan</div>
+            <div style="font-size:0.78rem;color:var(--text-secondary);">Drops at Week 6</div>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot daan"></div>
+            <div class="timeline-week">Session 1 — One good guest</div>
+            <div class="timeline-trigger">Automated pipeline design framing</div>
+            <div class="timeline-detail">One Show &amp; Tell guest frames something at workflow level, not task level. Buys Daan three more sessions.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot daan"></div>
+            <div class="timeline-week">Week 4 — Level mismatch confirmed</div>
+            <div class="timeline-trigger">Sprint aimed at people learning to prompt for the first time</div>
+            <div class="timeline-detail">While others write their first structured prompt, he's sitting with a multi-step workflow he can't bring because it involves unsanctioned systems. Raises it in a Reflection Pod. Pod partner (Marit-type) looks alarmed — not at what he built, but that he built it without approval.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot daan"></div>
+            <div class="timeline-week">Week 6 — Heavier loneliness</div>
+            <div class="timeline-trigger">Not angry — specifically disappointed</div>
+            <div class="timeline-detail">The loneliness he'd been carrying didn't get lighter. It got heavier, because he'd allowed himself to think this time might be different. "Tiny Experiment" asks him to commit to one small experiment. He's running 12. None of them are small.</div>
+            <div><span class="prevention-tag">Prevention: Advanced Track + shadow work prompt + org adoption pathway</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DEBATE -->
+<section id="debate" style="background:#eeeeea;">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Round 2</span>
+      <h2>The Debate — Fight Highlights</h2>
+      <p>Three sharpest exchanges. Each persona defends from their behavioral position. At least one tension has no resolution.</p>
+    </div>
+
+    <!-- Exchange 1 -->
+    <div class="card debate-exchange">
+      <div class="debate-exchange-title">Exchange 1 — Override Log: compliance document vs craft tool vs governance artefact</div>
+
+      <div class="dialogue-line">
+        <div class="dialogue-avatar av-daan">D</div>
+        <div>
+          <div class="speaker-name" style="color:var(--daan-color)">Daan → Marit</div>
+          <div class="dialogue-bubble bubble-daan">You want the Override Log to be a compliance document. I get it. But the moment you standardise the fields and make it auditable, you kill the thing that makes it valuable. The point is that it captures the moment where your judgment diverged from AI's. Sometimes I can't explain in two sentences why I overrode something. I just knew it was wrong. If the log requires structured fields every time, I'll stop using it honestly and start using it performatively.</div>
+        </div>
+      </div>
+
+      <div class="dialogue-line right">
+        <div class="dialogue-avatar av-marit">M</div>
+        <div>
+          <div class="speaker-name" style="color:var(--marit-color);text-align:right">Marit → Daan</div>
+          <div class="dialogue-bubble bubble-marit">"I just knew it was wrong" is fine for you — you're working outside sanctioned channels anyway. I'm not. I'm in a regulated environment where that is not a defensible position. If I put something in a log that reads like a diary and it gets reviewed in an audit — and it will — I haven't protected myself. I've created a liability. You need the Override Log to prove craft. I need it to prove competence. Those are different standards.</div>
+        </div>
+      </div>
+
+      <div class="dialogue-line">
+        <div class="dialogue-avatar av-yael">Y</div>
+        <div>
+          <div class="speaker-name" style="color:var(--yael-color)">Yael → Both</div>
+          <div class="dialogue-bubble bubble-yael">You're both treating the Override Log as if its primary purpose is institutional. Mine is entirely different. I want to capture the moment a creative decision happens because those moments are how I understand what I actually believe about quality. If you turn it into a compliance document, you'll get compliance. You won't get thinking.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Exchange 2 -->
+    <div class="card debate-exchange">
+      <div class="debate-exchange-title">Exchange 2 — The institutional visibility argument (Daan shifts Yael's vote)</div>
+
+      <div class="dialogue-line right">
+        <div class="dialogue-avatar av-daan">D</div>
+        <div>
+          <div class="speaker-name" style="color:var(--daan-color);text-align:right">Daan → Yael</div>
+          <div class="dialogue-bubble bubble-daan">Your version of the Override Log is for you alone. Marit's version — even though I find it stifling — is the one that gets AI-assisted work recognised at the organisational level. If we only build the craft version, the institutional case never gets made. The work stays invisible. I've been doing deliberate, thoughtful work for 18 months and it counts for nothing because there's no document a director can read. I need Marit's version to exist even if I don't use it the way she does.</div>
+        </div>
+      </div>
+
+      <div class="dialogue-line">
+        <div class="dialogue-avatar av-yael">Y</div>
+        <div>
+          <div class="speaker-name" style="color:var(--yael-color)">Yael [internal, to audience]</div>
+          <div class="dialogue-bubble bubble-yael" style="background:rgba(83,52,131,0.05);font-style:italic;">That reframe landed. Not because I've changed my mind about what I need — but because I'd been reading the governance argument as a threat to craft. Daan reframed it as a precondition for visibility. If the Override Log can serve both institutional legitimacy AND craft visibility, my work gets a recognition channel it currently doesn't have. The two-layer structure I proposed might actually serve both of us.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Exchange 3: Unresolvable -->
+    <div class="card debate-exchange">
+      <div class="debate-exchange-title">Exchange 3 — The tension that doesn't resolve</div>
+
+      <div class="dialogue-line right">
+        <div class="dialogue-avatar av-yael">Y</div>
+        <div>
+          <div class="speaker-name" style="color:var(--yael-color);text-align:right">Yael → Marit</div>
+          <div class="dialogue-bubble bubble-yael">So you need a different version of the Override Log to get to the point where you can use the version I need. I understand that. But I'm not willing to wait while the program optimises for the permission-slip version. They need to be separate tools. Not a spectrum. Separate.</div>
+        </div>
+      </div>
+
+      <div class="dialogue-line">
+        <div class="dialogue-avatar av-marit">M</div>
+        <div>
+          <div class="speaker-name" style="color:var(--marit-color)">Marit → Yael</div>
+          <div class="dialogue-bubble bubble-marit">I agree they should be separate. I'm just worried that if the program offers two versions, mine will be treated as the boring compliance option and yours the interesting craft option, and every facilitator will implicitly push people toward yours. And then I'll be back where I started — doing something that feels experimental when I need something that feels rigorous.</div>
+        </div>
+      </div>
+
+      <div class="tension-callout">
+        <h4>Unresolvable Tension</h4>
+        <p>Yael's Override Log must be live, intimate, unpolished. Marit's must be structured, documentable, defensible. These can coexist in a two-layer design but the program must actively maintain both. Facilitators will drift toward whichever version produces the most visible artefacts. This is a facilitation and culture problem, not a design problem — and it has no clean solution.</p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- TENSIONS & CONSENSUS -->
+<section id="tensions">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Synthesis</span>
+      <h2>Key Tensions &amp; Consensus Points</h2>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <h3 style="margin-bottom:1rem;">Tensions — No Clean Resolution</h3>
+        <div class="tension-item">
+          <h3>Override Log is structurally bifurcated</h3>
+          <p>Yael needs live, intimate, minimally structured. Marit needs auditable, standardised, institutional. A two-layer design can coexist but the facilitation culture will collapse it toward one or the other over time.</p>
+        </div>
+        <div class="tension-item">
+          <h3>Differentiated entry vs cohort cohesion</h3>
+          <p>An Advanced Track serves Daan and protects Yael. But splitting the cohort by experience risks eliminating the cross-pollination that makes the Transformation Expo valuable. 80 experiments from a mixed cohort are richer than 80 from a homogeneous one.</p>
+        </div>
+        <div class="tension-item">
+          <h3>Speed as signal, quality as undercurrent</h3>
+          <p>"Minimum viable experiment," "what did you ship" — the program's energy orientation signals throughput. Motivating for early-stage participants; alienating for practitioners whose value proposition is quality. The framing cannot be neutral.</p>
+        </div>
+        <div class="tension-item">
+          <h3>Institutional recognition vs individual learning</h3>
+          <p>Daan and Marit both need the program to produce organisationally legible outcomes. Yael needs personally legible craft development. The program is currently designed for individual learning. Whether it can also produce institutional recognition mechanisms is an open question.</p>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:1rem;">Consensus — All Three Agree</h3>
+        <div class="consensus-item">
+          <h3>The Override Log is the most valuable component</h3>
+          <p>All three personas engage with it most deeply and all three have substantive ideas for improving it. It's also the component with the most design risk — it needs to serve too many purposes.</p>
+        </div>
+        <div class="consensus-item">
+          <h3>Tiny Experiment needs a documentation layer</h3>
+          <p>All three want the Tiny Experiment to produce something more durable than a commitment — a record, a governance brief, an institutional artefact. "Minimum viable" undersells what the component could do.</p>
+        </div>
+        <div class="consensus-item">
+          <h3>Deep Dive framing is too generic</h3>
+          <p>"Greatest workflow challenge" is too broad. All three want to reframe it for their context: workflow challenge / creative problem / adoption problem. The invitation language needs to offer multiple frames.</p>
+        </div>
+        <div class="consensus-item">
+          <h3>Transformation Expo has the most untapped potential</h3>
+          <p>All three see different repurposing opportunities. The current "scale showcase" (80 experiments) is the least interesting version. Stakeholder communication rehearsal, quality breakthrough showcase, and shadow work visibility all fit within the existing structure.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DECISION FRAMEWORK -->
+<section id="decisions">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Decision Framework</span>
+      <h2>Three Design Decisions That Determine the Program's Range</h2>
+      <p>The program works well for the early-to-middle range of AI adoption. It loses participants at both ends. These three decisions determine how far the range extends.</p>
+    </div>
+
+    <div class="decision-item">
+      <div class="decision-number">1</div>
+      <div class="decision-question">Does the Override Log support live capture?</div>
+      <div class="decision-body">If yes: expands accessibility for advanced practitioners and craft-focused participants. Signals that integration is the mode, not retrospective reflection. Requires a lightweight mobile-first capture interface or voice memo integration.</div>
+      <div class="decision-row">
+        <span class="decision-opt opt-yes">YES → Serves Yael + Daan, doesn't hurt Marit</span>
+        <span class="decision-opt opt-no">NO → Program signals reflection over integration; Yael and Daan both disengage</span>
+      </div>
+    </div>
+
+    <div class="decision-item">
+      <div class="decision-number">2</div>
+      <div class="decision-question">Is there a differentiated entry track?</div>
+      <div class="decision-body">If yes: the program can serve a wider experience range without alienating advanced participants. Requires a three-question pre-session diagnostic and clear communication of which track is which — not a separate program, a parallel track within the same sessions.</div>
+      <div class="decision-row">
+        <span class="decision-opt opt-yes">YES → Daan stays, Yael gets peers at her level, Marit benefits from pressure release</span>
+        <span class="decision-opt opt-no">NO → Program optimises for the median; loses both ends of the experience spectrum by week four</span>
+      </div>
+    </div>
+
+    <div class="decision-item">
+      <div class="decision-number">3</div>
+      <div class="decision-question">Does the program produce institutionally legible outputs?</div>
+      <div class="decision-body">If yes: the program operates as both a learning experience and a professional development portfolio. The Override Log (with governance layer), the Tiny Experiment (with documentation brief), and the Transformation Expo (with defensibility rotation) all produce artefacts that participants can bring back to their organisations.</div>
+      <div class="decision-row">
+        <span class="decision-opt opt-yes">YES → Marit and Daan can justify continued participation; Yael's craft also becomes legible to clients</span>
+        <span class="decision-opt opt-no">NO → Program remains a personal learning initiative; valuable but insufficient for Marit and Daan</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:2rem;background:var(--navy);color:white;border:none;">
+      <h3 style="color:white;margin-bottom:0.8rem;">Recommended Decision</h3>
+      <p style="color:rgba(255,255,255,0.75);margin-bottom:0.8rem;">Implement the two-layer Override Log (private process / public document), build a three-question entry diagnostic that routes participants to differentiated tracks, and redesign the Transformation Expo to include an explicit "organisational adoption" conversation alongside the standard workflow showcase.</p>
+      <p style="color:rgba(255,255,255,0.6);font-size:0.84rem;margin:0;">These three changes extend the program's range without requiring fundamental redesign. They are the changes that all three personas can agree on — even if they can't agree on much else.</p>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <strong>SCAMPER Audit</strong> · AI Learning Cluster Prototype<br>
+        <span>25 March 2026 · Council Method</span>
+      </div>
+      <div style="text-align:right;">
+        Personas: <strong>Marit · Yael · Daan</strong><br>
+        <span>Round 1 → Round 2 complete</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ============================================================
+  // COLLAPSIBLES
+  // ============================================================
+  document.querySelectorAll('.collapsible-trigger').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+      const content = trigger.nextElementSibling;
+      const isOpen = trigger.classList.contains('open');
+      trigger.classList.toggle('open', !isOpen);
+      content.classList.toggle('open', !isOpen);
+    });
+  });
+
+  // ============================================================
+  // SLIDERS
+  // ============================================================
+  const sliderConfigs = [
+    {
+      handleId: 'handle1',
+      trackId: 'track1',
+      tooltipId: 'tooltip1',
+      initialPct: 20,
+      tooltips: [
+        { pct: 0, text: 'Marit: "Three open questions is a diary. I need a structured decision record — date, decision type, rationale, outcome. This is a QA document, not a journal."' },
+        { pct: 33, text: 'Balanced: Override Log with structured fields AND open reflective space. Most participants land here by default.' },
+        { pct: 50, text: 'Yael: "Live annotation, margin notes, voice memo. The moment of override is when craft happens. Capture it then, not ten minutes later."' },
+        { pct: 75, text: 'Daan approaching: Override Log with governance layer — decision context, organisational implication, documentation trail. Personal record AND stakeholder communication.' },
+        { pct: 100, text: 'Daan: "The Override Log is the document I bring to my director when I\'m trying to explain why what I built should be adopted. Right now I have capability but no vocabulary."' },
+      ]
+    },
+    {
+      handleId: 'handle2',
+      trackId: 'track2',
+      tooltipId: 'tooltip2',
+      initialPct: 60,
+      tooltips: [
+        { pct: 0, text: 'Yael: "I was going slower on purpose. Pausing. Interrogating the AI\'s word choices. Rewriting structure that was technically correct and creatively inert. That\'s not inefficiency — that\'s craft."' },
+        { pct: 30, text: 'Craft-first with iteration: quality signals are explicit, peer critique is built in, but output is expected.' },
+        { pct: 55, text: 'Balanced: Sprint produces output AND reflection. Methodology card captures the decision logic without slowing the session.' },
+        { pct: 75, text: 'Daan leaning: Workflow-level redesign as the goal, not task-level output. "I\'ve redesigned processes, not tasks. Works alone."' },
+        { pct: 100, text: 'Daan (advanced mode): "Minimum viable experiment" is the wrong frame for where I am. I\'m running 12 experiments. None of them are small.' },
+      ]
+    },
+    {
+      handleId: 'handle3',
+      trackId: 'track3',
+      tooltipId: 'tooltip3',
+      initialPct: 30,
+      tooltips: [
+        { pct: 0, text: 'Marit: Mixed cohort is fine IF governance scaffolding is universal. Don\'t split the group — add the institutional layer for everyone.' },
+        { pct: 30, text: 'Marit-leaning: Some differentiation by experience, but shared cohort for Show & Tell and Expo. Cross-pollination is valuable.' },
+        { pct: 55, text: 'Yael: CONDITIONAL on Advanced Track — she needs peers at her level but doesn\'t want total segregation. At least a third of the cohort should have prior workflow redesign experience.' },
+        { pct: 80, text: 'Daan-leaning: Strict differentiated entry. The diagnostic should determine track, not be optional.' },
+        { pct: 100, text: 'Daan: "Advanced Track must be a design feature, not an accommodation. Show & Tell guests for advanced track must operate at organisational system level, not task level."' },
+      ]
+    }
+  ];
+
+  sliderConfigs.forEach(config => {
+    const handle = document.getElementById(config.handleId);
+    const track = document.getElementById(config.trackId);
+    const tooltip = document.getElementById(config.tooltipId);
+    let isDragging = false;
+    let currentPct = config.initialPct;
+
+    function getPct(clientX) {
+      const rect = track.getBoundingClientRect();
+      let pct = ((clientX - rect.left) / rect.width) * 100;
+      return Math.max(0, Math.min(100, pct));
+    }
+
+    function updateTooltip(pct) {
+      const sorted = [...config.tooltips].sort((a, b) => Math.abs(a.pct - pct) - Math.abs(b.pct - pct));
+      tooltip.textContent = sorted[0].text;
+    }
+
+    function setHandle(pct) {
+      handle.style.left = pct + '%';
+      updateTooltip(pct);
+      currentPct = pct;
+    }
+
+    setHandle(currentPct);
+
+    handle.addEventListener('mousedown', e => {
+      isDragging = true;
+      e.preventDefault();
+    });
+
+    handle.addEventListener('touchstart', e => {
+      isDragging = true;
+    }, { passive: true });
+
+    document.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      setHandle(getPct(e.clientX));
+    });
+
+    document.addEventListener('touchmove', e => {
+      if (!isDragging) return;
+      setHandle(getPct(e.touches[0].clientX));
+    }, { passive: true });
+
+    document.addEventListener('mouseup', () => { isDragging = false; });
+    document.addEventListener('touchend', () => { isDragging = false; });
+
+    track.addEventListener('click', e => {
+      setHandle(getPct(e.clientX));
+    });
+
+    handle.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') setHandle(Math.max(0, currentPct - 5));
+      if (e.key === 'ArrowRight') setHandle(Math.min(100, currentPct + 5));
+    });
+  });
+
+  // ============================================================
+  // SMOOTH SCROLL OFFSET (for sticky nav)
+  // ============================================================
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        const navHeight = document.querySelector('nav').offsetHeight;
+        const top = target.getBoundingClientRect().top + window.scrollY - navHeight - 16;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  });
+</script>
+</body>
+</html>

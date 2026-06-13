@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miro Mockup — Session 0 Kick-off</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0a1a;
+    color: #e0e0ff;
+    font-family: 'Space Grotesk', sans-serif;
+    padding: 32px;
+    min-width: 1600px;
+  }
+
+  /* ─── TOP HEADER ─── */
+  .board-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+  .board-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    color: #00ffcc;
+    text-shadow: 0 0 20px #00ffcc88;
+    line-height: 1.6;
+  }
+  .board-subtitle {
+    font-size: 13px;
+    color: #aaaacc;
+    margin-top: 8px;
+    letter-spacing: 0.05em;
+  }
+  .legend {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    color: #888aaa;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+
+  /* ─── TIMELINE BAR ─── */
+  .timeline {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 36px;
+    align-items: center;
+  }
+  .tl-step {
+    flex: 1;
+    background: #12122a;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: #9999cc;
+    text-align: center;
+    position: relative;
+  }
+  .tl-step .tl-time { font-weight: 700; color: #ccccff; font-size: 11px; }
+  .tl-step .tl-name { margin-top: 4px; }
+  .tl-arrow {
+    color: #3a3a6a;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .tl-step.s0 { border-color: #ff6b6b44; }
+  .tl-step.s1 { border-color: #ffd93d44; }
+  .tl-step.s2 { border-color: #a8edea44; }
+  .tl-step.s3 { border-color: #c77dff44; }
+  .tl-step.s4 { border-color: #00ffcc44; }
+  .tl-step.s5 { border-color: #ff9f4344; }
+  .tl-step.s6 { border-color: #74b9ff44; }
+  .tl-step.s7 { border-color: #fd79a844; }
+
+  /* ─── MAIN GRID ─── */
+  .board-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto;
+    gap: 20px;
+  }
+
+  /* ─── ZONE CARD ─── */
+  .zone {
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+  }
+  .zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    opacity: 0.07;
+    background: var(--zone-color);
+    z-index: 0;
+  }
+  .zone > * { position: relative; z-index: 1; }
+
+  .zone-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .zone-number {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    background: var(--zone-color);
+    color: #0a0a1a;
+    padding: 4px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    line-height: 1.4;
+  }
+  .zone-title-block {}
+  .zone-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--zone-color);
+    line-height: 1.3;
+  }
+  .zone-time {
+    font-size: 11px;
+    color: #7777aa;
+    margin-top: 2px;
+  }
+
+  .zone-desc {
+    font-size: 12px;
+    color: #c0c0e0;
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .zone-elements {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ─── MIRO ELEMENT PREVIEWS ─── */
+  .miro-el {
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 11px;
+    line-height: 1.5;
+    border: 1px dashed;
+    position: relative;
+  }
+  .miro-el .el-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 3px;
+  }
+  .miro-el .el-content { color: #ddd; }
+
+  .el-sticky {
+    background: #ffd93d18;
+    border-color: #ffd93d55;
+  }
+  .el-sticky .el-label { color: #ffd93d; }
+
+  .el-frame {
+    background: #00ffcc08;
+    border-color: #00ffcc33;
+  }
+  .el-frame .el-label { color: #00ffcc; }
+
+  .el-text {
+    background: #c77dff0d;
+    border-color: #c77dff44;
+  }
+  .el-text .el-label { color: #c77dff; }
+
+  .el-shape {
+    background: #74b9ff0d;
+    border-color: #74b9ff44;
+  }
+  .el-shape .el-label { color: #74b9ff; }
+
+  .el-button {
+    background: #00ffcc22;
+    border-color: #00ffcc;
+    color: #00ffcc;
+    text-align: center;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .el-button .el-label { color: #00ffcc; }
+
+  /* Color schemes per zone */
+  .z0 { --zone-color: #ff6b6b; border-color: #ff6b6b33; }
+  .z1 { --zone-color: #ffd93d; border-color: #ffd93d33; }
+  .z2 { --zone-color: #a8edea; border-color: #a8edea33; }
+  .z3 { --zone-color: #c77dff; border-color: #c77dff33; }
+  .z4 { --zone-color: #00ffcc; border-color: #00ffcc55; grid-column: span 2; min-height: 320px; }
+  .z5 { --zone-color: #ff9f43; border-color: #ff9f4333; }
+  .z6 { --zone-color: #74b9ff; border-color: #74b9ff33; }
+  .z7 { --zone-color: #fd79a8; border-color: #fd79a833; }
+
+  /* ─── PASSPORT SECTION ─── */
+  .passport-strip {
+    margin-top: 30px;
+    border: 2px dashed #3a3a6a;
+    border-radius: 12px;
+    padding: 20px 24px;
+    background: #10102688;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .passport-strip-header {
+    grid-column: span 3;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #9999ff;
+    margin-bottom: 4px;
+    letter-spacing: 0.1em;
+  }
+  .passport-page {
+    background: #f5f0e8;
+    border-radius: 8px;
+    padding: 16px;
+    color: #333;
+    font-size: 11px;
+    min-height: 160px;
+    position: relative;
+    box-shadow: 0 4px 20px #00000066;
+  }
+  .passport-page::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 6px;
+    background: repeating-linear-gradient(
+      to bottom,
+      #ccc 0px, #ccc 6px,
+      transparent 6px, transparent 12px
+    );
+    border-radius: 0 8px 8px 0;
+  }
+  .pp-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: #888;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .pp-field {
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    font-size: 10px;
+    color: #555;
+    min-height: 18px;
+  }
+  .pp-field .pp-label {
+    font-size: 8px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pp-stamp {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #cc9966;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7px;
+    color: #cc9966;
+    text-align: center;
+    opacity: 0.5;
+    font-family: 'Press Start 2P', monospace;
+    line-height: 1.2;
+  }
+
+  /* ─── FUTURE GAME ZONE ─── */
+  .game-rounds {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .game-round {
+    background: #0a0a1a;
+    border: 1px solid #00ffcc44;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+  .game-round .round-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    color: #00ffcc;
+    text-shadow: 0 0 10px #00ffcc;
+  }
+  .game-round .round-q {
+    font-size: 10px;
+    color: #99ffdd;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .game-link {
+    margin-top: 12px;
+    background: #00ffcc22;
+    border: 1px solid #00ffcc;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #00ffcc;
+    text-align: center;
+    font-weight: 700;
+  }
+  .game-link a { color: #00ffcc; text-decoration: none; }
+
+  /* ─── IDENTITY AXIS ─── */
+  .id-axis {
+    margin-top: 10px;
+    position: relative;
+    height: 60px;
+    display: flex;
+    align-items: center;
+  }
+  .id-axis-line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(to right, #74b9ff, #c77dff);
+    position: relative;
+  }
+  .id-axis-line::before, .id-axis-line::after {
+    content: '◆';
+    position: absolute;
+    top: -8px;
+    font-size: 10px;
+  }
+  .id-axis-line::before { left: 0; color: #74b9ff; }
+  .id-axis-line::after { right: 0; color: #c77dff; }
+  .axis-label-left, .axis-label-right {
+    font-size: 9px;
+    font-weight: 700;
+    white-space: nowrap;
+    padding: 0 8px;
+  }
+  .axis-label-left { color: #74b9ff; }
+  .axis-label-right { color: #c77dff; }
+
+  .sticky-cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .mini-sticky {
+    width: 44px;
+    height: 44px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 2px 2px 4px #00000055;
+    flex-shrink: 0;
+  }
+  .ms-y { background: #ffd93d; }
+  .ms-g { background: #a8edea; }
+  .ms-p { background: #c77dff; }
+  .ms-o { background: #ff9f43; }
+  .ms-pk { background: #fd79a8; }
+
+  /* ─── SHARE CARE DARE ─── */
+  .scd {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .scd-pill {
+    flex: 1;
+    border-radius: 20px;
+    padding: 6px 8px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .scd-s { background: #a8edea33; color: #a8edea; border: 1px solid #a8edea55; }
+  .scd-c { background: #74b9ff33; color: #74b9ff; border: 1px solid #74b9ff55; }
+  .scd-d { background: #c77dff33; color: #c77dff; border: 1px solid #c77dff55; }
+
+  /* ─── POD GRID ─── */
+  .pod-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .pod-box {
+    background: #1a1a3a;
+    border: 1px solid #3a3a6a;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 10px;
+    color: #9999cc;
+    text-align: center;
+  }
+  .pod-box .pod-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: #ffd93d;
+  }
+
+  /* ─── NOTES STRIP ─── */
+  .facilitator-notes {
+    margin-top: 30px;
+    background: #1a1a2a;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 12px;
+    color: #8888aa;
+  }
+  .facilitator-notes strong { color: #aaaacc; }
+
+  .scanline {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      #00000008 3px,
+      #00000008 4px
+    );
+    z-index: 9999;
+  }
+
+  /* ─── DEBRIEF ─── */
+  .debrief-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .debrief-card {
+    background: #1a1a2a;
+    border: 1px dashed #ff9f4344;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 10px;
+    color: #ddbb88;
+  }
+  .debrief-card .dc-q { font-size: 9px; color: #ff9f43; font-weight: 700; margin-bottom: 3px; }
+
+  .checkout-area {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .co-row {
+    background: #1a1020;
+    border: 1px dashed #fd79a855;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: #ffbbdd;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .co-emoji { font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<!-- HEADER -->
+<div class="board-header">
+  <div>
+    <div class="board-title">SESSION 0 — KICK-OFF<br><span style="color:#ffd93d">L&D FUTURES ARCADE</span></div>
+    <div class="board-subtitle">8 June 2026 · 5:00–6:30 pm · 90 min · 21 participants · Facilitators: Sara &amp; Nina</div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#ffd93d"></div> Sticky note</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#00ffcc"></div> Frame / zone</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c77dff"></div> Text block</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#74b9ff"></div> Shape</div>
+  </div>
+</div>
+
+<!-- TIMELINE BAR -->
+<div class="timeline">
+  <div class="tl-step s0"><div class="tl-time">5 min</div><div class="tl-name">Land in</div></div>
+  <div class="tl-arrow">▶</div>
+  <div class="tl-step s1"><div class="tl-time">10 min</div><div class="tl-name">Welcome</div></div>
+  <div class="tl-arrow">▶</div>
+  <div class="tl-step s2"><div class="tl-time">15–20 min</div><div class="tl-name">Who am I now</div></div>
+  <div class="tl-arrow">▶</div>
+  <div class="tl-step s3"><div class="tl-time">5 min</div><div class="tl-name">Report back</div></div>
+  <div class="tl-arrow">▶</div>
+  <div class="tl-step s4"><div class="tl-time">35 min</div><div class="tl-name">Future Arcade</div></div>
+  <div class="tl-arrow">▶</div>
+  <div class="tl-step s5"><div class="tl-time">10 min</div><div class="tl-name">Debrief</div></div>
+  <div class="tl-arrow">▶</div>
+  <div class="tl-step s6"><div class="tl-time">5 min</div><div class="tl-name">Identity shift</div></div>
+  <div class="tl-arrow">▶</div>
+  <div class="tl-step s7"><div class="tl-time">5 min</div><div class="tl-name">Check out</div></div>
+</div>
+
+<!-- MAIN BOARD GRID -->
+<div class="board-grid">
+
+  <!-- ZONE 0: LAND IN -->
+  <div class="zone z0">
+    <div class="zone-header">
+      <div class="zone-number">00</div>
+      <div class="zone-title-block">
+        <div class="zone-title">LAND IN SPACE</div>
+        <div class="zone-time">⏱ 5 min · music playing</div>
+      </div>
+    </div>
+    <div class="zone-desc">Drop your artifact on the board while soft music plays. No instructions needed — just show up.</div>
+    <div class="zone-elements">
+      <div class="miro-el el-text">
+        <div class="el-label">Prompt text block</div>
+        <div class="el-content">Drop your <strong>name</strong> · <strong>homebase</strong> · <strong>job title</strong> + a <strong>screenshot</strong> from your work this week</div>
+      </div>
+      <div class="miro-el el-frame">
+        <div class="el-label">Image drop zone (large frame)</div>
+        <div class="el-content">21 empty placeholder boxes — one per participant, labelled "P1" → "P21"</div>
+      </div>
+      <div class="miro-el el-sticky">
+        <div class="el-label">Example sticky (prefilled)</div>
+        <div class="el-content">🏠 Sara · Amsterdam · L&D Designer<br>📸 [screenshot]</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 1: WELCOME -->
+  <div class="zone z1">
+    <div class="zone-header">
+      <div class="zone-number">01</div>
+      <div class="zone-title-block">
+        <div class="zone-title">WELCOME & ETIQUETTE</div>
+        <div class="zone-time">⏱ 10 min · facilitator-led</div>
+      </div>
+    </div>
+    <div class="zone-desc">Debrief the artifact wall. Set the stage: purpose, cohort overview, pods, ways of working.</div>
+    <div class="zone-elements">
+      <div class="miro-el el-text">
+        <div class="el-label">Cohort purpose block</div>
+        <div class="el-content">Feel connected · Get curious about L&D + AI futures · Feel safe to experiment</div>
+      </div>
+      <div class="scd">
+        <div class="scd-pill scd-s">SHARE</div>
+        <div class="scd-pill scd-c">CARE</div>
+        <div class="scd-pill scd-d">DARE</div>
+      </div>
+      <div class="miro-el el-sticky">
+        <div class="el-label">+ sticky: anything to add?</div>
+        <div class="el-content">Participants add their own norms with sticky notes</div>
+      </div>
+      <div class="miro-el el-text">
+        <div class="el-label">Pods overview</div>
+        <div class="el-content">7 pods × 3 people. Your pod is your home base for the whole session.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 2: WHO AM I NOW -->
+  <div class="zone z2">
+    <div class="zone-header">
+      <div class="zone-number">02</div>
+      <div class="zone-title-block">
+        <div class="zone-title">WHO AM I NOW?</div>
+        <div class="zone-time">⏱ 15–20 min · pods of 3</div>
+      </div>
+    </div>
+    <div class="zone-desc">Introduce yourself in pods. Share where you are in your L&D identity today: a word, an image, a sentence.</div>
+    <div class="zone-elements">
+      <div class="miro-el el-text">
+        <div class="el-label">Prompt</div>
+        <div class="el-content">Where are you right now in your L&D identity?<br>A word · an image · a sentence</div>
+      </div>
+      <div class="sticky-cluster">
+        <div class="mini-sticky ms-y">💬</div>
+        <div class="mini-sticky ms-g">🖼</div>
+        <div class="mini-sticky ms-p">✏️</div>
+        <div class="mini-sticky ms-o">💬</div>
+        <div class="mini-sticky ms-pk">🖼</div>
+        <div class="mini-sticky ms-y">✏️</div>
+        <div style="font-size:10px;color:#9999cc;align-self:center;padding-left:4px;">← participants add here</div>
+      </div>
+      <div class="pod-grid">
+        <div class="pod-box"><div class="pod-num">POD 1</div><br>3 names</div>
+        <div class="pod-box"><div class="pod-num">POD 2</div><br>3 names</div>
+        <div class="pod-box"><div class="pod-num">POD 3</div><br>3 names</div>
+        <div class="pod-box"><div class="pod-num">POD 4</div><br>3 names</div>
+        <div class="pod-box"><div class="pod-num">POD 5</div><br>3 names</div>
+        <div class="pod-box"><div class="pod-num">POD 6</div><br>3 names</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 3: REPORT BACK -->
+  <div class="zone z3">
+    <div class="zone-header">
+      <div class="zone-number">03</div>
+      <div class="zone-title-block">
+        <div class="zone-title">PLENARY REPORT BACK</div>
+        <div class="zone-time">⏱ 5 min · plenary</div>
+      </div>
+    </div>
+    <div class="zone-desc">Pods share what's coming up. Facilitator bridges to the Future Arcade — sets up the game.</div>
+    <div class="zone-elements">
+      <div class="miro-el el-text">
+        <div class="el-label">Prompt text</div>
+        <div class="el-content">What's stirring in your pod? One word or image from the group.</div>
+      </div>
+      <div class="miro-el el-sticky">
+        <div class="el-label">Pod share-outs</div>
+        <div class="el-content">7 empty stickies — one per pod to drop their word/image</div>
+      </div>
+      <div class="miro-el el-text">
+        <div class="el-label">Bridge text (facilitator)</div>
+        <div class="el-content">Now — let's travel to the future. 🕹️ Three rounds. Three possible worlds. Ready to play?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 4: FUTURE ARCADE (WIDE) -->
+  <div class="zone z4">
+    <div class="zone-header">
+      <div class="zone-number" style="font-size:14px;">🕹 04</div>
+      <div class="zone-title-block">
+        <div class="zone-title" style="font-size:18px;">FUTURE THINKING ARCADE</div>
+        <div class="zone-time">⏱ 35 min · pods of 3 · 3 rounds</div>
+      </div>
+    </div>
+    <div class="zone-desc">Play 3 rounds of the Future Tinkering game in your pods. Reflect on each scenario using the two questions below.</div>
+    <div class="game-rounds">
+      <div class="game-round">
+        <div class="round-num">►1</div>
+        <div class="round-q">Draw a scenario card.<br><em>Imagine the world it describes.</em></div>
+      </div>
+      <div class="game-round">
+        <div class="round-num">►2</div>
+        <div class="round-q">Who's involved? What changes day-to-day? What becomes possible or impossible?</div>
+      </div>
+      <div class="game-round">
+        <div class="round-num">►3</div>
+        <div class="round-q">What would <em>you</em> need to become to keep doing meaningful L&D work in this scenario?</div>
+      </div>
+    </div>
+    <div class="game-link">🎮 <a href="https://future-tinkering-arcade.lovable.app/" target="_blank">future-tinkering-arcade.lovable.app</a> — open in your browser</div>
+    <div style="margin-top: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+      <div class="miro-el el-frame" style="grid-column: span 3;">
+        <div class="el-label">Pod reflection spaces (7 frames, one per pod)</div>
+        <div class="el-content">Each pod gets a labelled space: drop scenario name + 2–3 sticky notes per round about what surfaced</div>
+      </div>
+      <div class="miro-el el-sticky">
+        <div class="el-label">Pod 1 — Round 1</div>
+        <div class="el-content">Scenario: ___<br>Stickies: what came up</div>
+      </div>
+      <div class="miro-el el-sticky">
+        <div class="el-label">Pod 1 — Round 2</div>
+        <div class="el-content">Scenario: ___<br>Stickies: what came up</div>
+      </div>
+      <div class="miro-el el-sticky">
+        <div class="el-label">Pod 1 — Round 3</div>
+        <div class="el-content">Scenario: ___<br>Stickies: what came up</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 5: DEBRIEF -->
+  <div class="zone z5">
+    <div class="zone-header">
+      <div class="zone-number">05</div>
+      <div class="zone-title-block">
+        <div class="zone-title">FUTURES DEBRIEF</div>
+        <div class="zone-time">⏱ 10 min · plenary</div>
+      </div>
+    </div>
+    <div class="zone-desc">Quick round — which futures felt most provocative? What patterns emerged across pods?</div>
+    <div class="debrief-cards">
+      <div class="debrief-card">
+        <div class="dc-q">Which future felt most real?</div>
+        Dot-vote on the scenario cards
+      </div>
+      <div class="debrief-card">
+        <div class="dc-q">What surprised you?</div>
+        1 sticky per pod
+      </div>
+      <div class="debrief-card">
+        <div class="dc-q">What skills emerged?</div>
+        Cluster stickies live
+      </div>
+      <div class="debrief-card">
+        <div class="dc-q">What tensions?</div>
+        Anything left unanswered?
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 6: IDENTITY SHIFT -->
+  <div class="zone z6">
+    <div class="zone-header">
+      <div class="zone-number">06</div>
+      <div class="zone-title-block">
+        <div class="zone-title">IDENTITY SHIFT</div>
+        <div class="zone-time">⏱ 5 min · individual</div>
+      </div>
+    </div>
+    <div class="zone-desc">Look back at what you shared in Zone 02. Has anything shifted? Place yourself on the axis.</div>
+    <div class="id-axis">
+      <div class="axis-label-left">This still<br>represents me</div>
+      <div class="id-axis-line"></div>
+      <div class="axis-label-right">Something<br>has shifted</div>
+    </div>
+    <div class="miro-el el-sticky" style="margin-top: 10px;">
+      <div class="el-label">2036 vision sticky (per person)</div>
+      <div class="el-content">It's 2036...<br>I am ___<br>My work is ___</div>
+    </div>
+    <div style="font-size: 10px; color: #6666aa; margin-top: 8px;">💡 Tip: ask people to look at the word/image/sentence from Zone 02 before writing</div>
+  </div>
+
+  <!-- ZONE 7: CHECK OUT -->
+  <div class="zone z7">
+    <div class="zone-header">
+      <div class="zone-number">07</div>
+      <div class="zone-title-block">
+        <div class="zone-title">CHECK OUT</div>
+        <div class="zone-time">⏱ 5 min · plenary</div>
+      </div>
+    </div>
+    <div class="zone-desc">Close with energy. Share what's coming up. What do you look forward to in the coming weeks?</div>
+    <div class="checkout-area">
+      <div class="co-row"><span class="co-emoji">📅</span> Next session date + preview (text block)</div>
+      <div class="co-row"><span class="co-emoji">💌</span> What to expect: pods, experiments, slack channel</div>
+      <div class="co-row"><span class="co-emoji">✨</span> Check-out: "What do you look forward to?" — stickies or round-robin in chat</div>
+    </div>
+    <div class="miro-el el-sticky" style="margin-top: 10px; background: #fd79a811; border-color: #fd79a844;">
+      <div class="el-label" style="color:#fd79a8;">Check-out stickies (21 spots)</div>
+      <div class="el-content">One sticky per person. Drop your answer!</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PASSPORT STRIP -->
+<div class="passport-strip">
+  <div class="passport-strip-header">📖 LEARNING PASSPORT — 3 pages, one per key moment</div>
+
+  <div class="passport-page">
+    <div class="pp-title">Page 1 — Who I am now</div>
+    <div class="pp-field"><div class="pp-label">A word that describes my L&D identity today</div></div>
+    <div class="pp-field"><div class="pp-label">An image or sentence</div></div>
+    <div class="pp-field"><div class="pp-label">What I'm curious about</div></div>
+    <div class="pp-stamp">NOW</div>
+  </div>
+
+  <div class="passport-page">
+    <div class="pp-title">Page 2 — How I want to collaborate</div>
+    <div class="pp-field"><div class="pp-label">My go's — what helps me do great work</div></div>
+    <div class="pp-field"><div class="pp-label">My no-go's — my boundaries / redlines</div></div>
+    <div class="pp-stamp">POD<br>PACT</div>
+  </div>
+
+  <div class="passport-page">
+    <div class="pp-title">Page 3 — My future self</div>
+    <div class="pp-field"><div class="pp-label">It's 2036. I am…</div></div>
+    <div class="pp-field"><div class="pp-label">My work is…</div></div>
+    <div class="pp-field"><div class="pp-label">What I had to let go of…</div></div>
+    <div class="pp-stamp">2036</div>
+  </div>
+</div>
+
+<!-- FACILITATOR NOTES -->
+<div class="facilitator-notes">
+  <strong>Facilitator notes for Miro setup:</strong>
+  Use a <strong>dark background (#0D0D1A or similar)</strong> for the full board — it sells the arcade vibe immediately. Arrange zones <strong>left to right</strong> in sequence. Use a neon <strong>accent color per zone</strong> (see legend above). Lock the instructional frames so participants can only interact with their own sticky areas. Pre-fill one example sticky per zone so people know what's expected. The passport can be a <strong>Canva embed</strong> or a Miro template frame repeated 21× — one per person.
+</div>
+
+</body>
+</html>

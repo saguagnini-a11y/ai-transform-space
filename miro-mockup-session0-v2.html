@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miro Board — Session 0 Kick-off v2 (Branded)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ─── BRAND TOKENS ─── */
+  :root {
+    --blue-deep:   #1A2ED4;
+    --blue-mid:    #2E47E8;
+    --blue-light:  #E8ECFF;
+    --teal:        #00C9C0;
+    --teal-light:  #E0FAF9;
+    --pink:        #E040C0;
+    --pink-light:  #FCE8F8;
+    --white:       #FFFFFF;
+    --canvas:      #F7F7F8;
+    --grid:        #E5E5E8;
+    --text-dark:   #1A1A2E;
+    --text-mid:    #3D3D5C;
+    --text-soft:   #7B7B9B;
+    --shadow:      rgba(26,46,212,0.10);
+  }
+
+  body {
+    background: var(--canvas);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-dark);
+    /* Miro-style dot grid */
+    background-image: radial-gradient(circle, #c8c8d8 1px, transparent 1px);
+    background-size: 24px 24px;
+    padding: 40px 48px 60px;
+    min-width: 1700px;
+  }
+
+  /* ─── TOP HEADER (Miro title frame) ─── */
+  .board-header {
+    background: var(--blue-deep);
+    border-radius: 16px;
+    padding: 28px 36px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  /* wave decoration */
+  .board-header::after {
+    content: '';
+    position: absolute;
+    right: -40px; bottom: -60px;
+    width: 360px; height: 220px;
+    background: conic-gradient(from 200deg, var(--teal), var(--pink), var(--blue-mid), var(--teal));
+    border-radius: 50%;
+    opacity: 0.25;
+    filter: blur(40px);
+  }
+  .brand-badge {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 6px;
+  }
+  .board-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+  }
+  .board-title span { color: var(--teal); }
+  .board-meta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+  .board-right {
+    text-align: right;
+    z-index: 1;
+  }
+  .facilitators {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+  }
+  .fac-chip {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: #fff;
+    font-weight: 500;
+  }
+  .session-chip {
+    background: var(--teal);
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dark);
+    display: inline-block;
+  }
+
+  /* ─── TIMELINE ─── */
+  .timeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 28px;
+    background: var(--white);
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 12px var(--shadow);
+    border: 1.5px solid var(--grid);
+  }
+  .tl-step {
+    flex: 1;
+    padding: 12px 14px;
+    border-right: 1.5px solid var(--grid);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    position: relative;
+  }
+  .tl-step:last-child { border-right: none; }
+  .tl-step.active { background: var(--blue-light); }
+  .tl-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+  }
+  .tl-time { font-size: 10px; font-weight: 700; color: var(--text-mid); }
+  .tl-name { font-size: 11px; font-weight: 500; color: var(--text-dark); line-height: 1.3; }
+
+  /* ─── MAIN GRID ─── */
+  .board-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  /* ─── MIRO FRAME CARD ─── */
+  .mframe {
+    background: var(--white);
+    border-radius: 14px;
+    border: 2px solid var(--grid);
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 16px var(--shadow);
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+    position: relative;
+  }
+  .mframe.wide { grid-column: span 2; }
+  .mframe.tall { min-height: 360px; }
+
+  .mframe-header {
+    padding: 14px 18px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1.5px solid var(--grid);
+  }
+  .zone-badge {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .zone-title { font-size: 13px; font-weight: 700; color: var(--text-dark); line-height: 1.2; }
+  .zone-time { font-size: 10px; color: var(--text-soft); margin-top: 1px; }
+
+  .mframe-body {
+    padding: 14px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ─── MIRO ELEMENTS ─── */
+  /* Sticky notes */
+  .stickies { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sticky {
+    width: 70px; height: 70px;
+    border-radius: 2px;
+    padding: 6px;
+    font-size: 9px;
+    line-height: 1.4;
+    color: #333;
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.13), inset 0 -3px 0 rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: relative;
+  }
+  .sticky.lg { width: 90px; height: 90px; font-size: 10px; }
+  .sticky.xl { width: 110px; height: 110px; font-size: 10px; padding: 10px; }
+  .sticky::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 2px 2px 0 0;
+  }
+  .s-yellow { background: #FEF08A; }
+  .s-blue   { background: #BAE6FD; }
+  .s-green  { background: #BBF7D0; }
+  .s-pink   { background: #F9A8D4; }
+  .s-orange { background: #FED7AA; }
+  .s-teal   { background: #99F6E4; }
+  .s-purple { background: #DDD6FE; }
+  .s-white  { background: #F1F5F9; border: 1px solid #e2e8f0; }
+
+  /* Text block */
+  .text-block {
+    background: #FAFAFA;
+    border: 1.5px solid var(--grid);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-mid);
+  }
+  .text-block strong { color: var(--text-dark); }
+  .text-block .label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-soft);
+    margin-bottom: 4px;
+  }
+
+  /* Frame inside frame */
+  .inner-frame {
+    border: 2px dashed var(--grid);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 10px;
+    color: var(--text-soft);
+  }
+  .inner-frame .if-title {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  /* Connector arrow */
+  .connector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--text-soft);
+    padding: 4px 0;
+  }
+  .conn-line { flex: 1; height: 1px; background: var(--grid); }
+  .conn-arrow { color: var(--blue-deep); font-size: 12px; }
+
+  /* Shape (ellipse/circle) */
+  .miro-shape {
+    border-radius: 50%;
+    padding: 10px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* Pod box */
+  .pod-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .pod {
+    border: 1.5px solid var(--grid);
+    border-radius: 8px;
+    padding: 8px 6px;
+    text-align: center;
+    background: #FAFAFA;
+  }
+  .pod .pod-num {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--blue-deep);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .pod .pod-names {
+    font-size: 8px;
+    color: var(--text-soft);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  /* Share / Care / Dare */
+  .scd-row { display: flex; gap: 6px; }
+  .scd-pill {
+    flex: 1;
+    border-radius: 6px;
+    padding: 8px 6px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .scd-share { background: var(--teal-light); color: #007A75; border: 1.5px solid var(--teal); }
+  .scd-care  { background: var(--blue-light);  color: var(--blue-deep); border: 1.5px solid var(--blue-mid); }
+  .scd-dare  { background: var(--pink-light);  color: #9B0079; border: 1.5px solid var(--pink); }
+
+  /* Game rounds */
+  .rounds-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .round-card {
+    border: 1.5px solid var(--grid);
+    border-radius: 10px;
+    padding: 12px;
+    background: var(--blue-light);
+    text-align: center;
+  }
+  .round-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--blue-deep);
+  }
+  .round-q { font-size: 10px; color: var(--text-mid); margin-top: 6px; line-height: 1.5; }
+
+  /* Axis */
+  .axis-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+  }
+  .axis-label { font-size: 10px; font-weight: 700; white-space: nowrap; }
+  .axis-line {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--blue-mid), var(--pink));
+    position: relative;
+  }
+  .axis-line::before, .axis-line::after {
+    content: '●';
+    position: absolute; top: -7px; font-size: 10px;
+  }
+  .axis-line::before { left: -4px; color: var(--blue-mid); }
+  .axis-line::after  { right: -4px; color: var(--pink); }
+
+  /* CTA link */
+  .cta-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--blue-deep);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .cta-link .cta-icon { font-size: 16px; }
+
+  /* Debrief cards */
+  .debrief-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .deb-card {
+    background: #FFF8F6;
+    border: 1.5px solid #FCDDD8;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: var(--text-mid);
+  }
+  .deb-q { font-size: 9px; font-weight: 700; color: #C04000; margin-bottom: 3px; }
+
+  /* Checkout stickies row */
+  .checkout-stickies { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* ─── PASSPORT SECTION ─── */
+  .passport-section {
+    margin-top: 24px;
+    background: var(--white);
+    border: 2px solid var(--grid);
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 16px var(--shadow);
+  }
+  .passport-section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--blue-deep);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .passport-pages {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .passport-page {
+    background: #FFFEF7;
+    border: 1.5px solid #E8E0C0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .passport-page::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    background: repeating-linear-gradient(to bottom,
+      #D4C88A 0, #D4C88A 6px,
+      transparent 6px, transparent 12px);
+  }
+  .pp-num {
+    background: var(--blue-deep);
+    color: white;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 9px;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .pp-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+  }
+  .pp-field {
+    border-bottom: 1px solid #E8E0C0;
+    padding: 6px 0;
+    min-height: 28px;
+  }
+  .pp-field-label { font-size: 8px; color: #A08040; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .pp-field-hint  { font-size: 10px; color: #C8B870; font-style: italic; margin-top: 2px; }
+
+  /* ─── FACILITATOR BAR ─── */
+  .fac-bar {
+    margin-top: 20px;
+    background: var(--blue-light);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 12px;
+    color: var(--blue-deep);
+    border: 1.5px solid #C8D0FF;
+  }
+  .fac-bar strong { font-weight: 700; }
+
+  /* Color map */
+  .c0 { background: var(--blue-deep); }
+  .c1 { background: #2E8BB5; }
+  .c2 { background: var(--teal); color: var(--text-dark) !important; }
+  .c3 { background: #7B5BDB; }
+  .c4 { background: var(--blue-deep); }
+  .c5 { background: #D4600A; }
+  .c6 { background: var(--pink); }
+  .c7 { background: #0A8A6E; }
+</style>
+</head>
+<body>
+
+<!-- HEADER FRAME -->
+<div class="board-header">
+  <div>
+    <div class="brand-badge">L&D Shakers AI Fieldwork · Cohort Session</div>
+    <div class="board-title">Session 0 — <span>Kick-off</span></div>
+    <div class="board-meta">
+      8 June 2026 · 5:00–6:30 pm · 90 minutes<br>
+      Sara & Nina · 21 participants · 7 pods of 3
+    </div>
+  </div>
+  <div class="board-right">
+    <div class="facilitators">
+      <div class="fac-chip">Sara</div>
+      <div class="fac-chip">Nina</div>
+    </div>
+    <div class="session-chip">Session 1 of 4</div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div class="timeline">
+  <div class="tl-step">
+    <div class="tl-dot" style="background:var(--blue-deep)"></div>
+    <div class="tl-time">5 min</div>
+    <div class="tl-name">Land in space</div>
+  </div>
+  <div class="tl-step">
+    <div class="tl-dot" style="background:#2E8BB5"></div>
+    <div class="tl-time">10 min</div>
+    <div class="tl-name">Welcome &amp; etiquette</div>
+  </div>
+  <div class="tl-step">
+    <div class="tl-dot" style="background:var(--teal)"></div>
+    <div class="tl-time">15–20 min</div>
+    <div class="tl-name">Who am I now?</div>
+  </div>
+  <div class="tl-step">
+    <div class="tl-dot" style="background:#7B5BDB"></div>
+    <div class="tl-time">5 min</div>
+    <div class="tl-name">Report back</div>
+  </div>
+  <div class="tl-step active">
+    <div class="tl-dot" style="background:var(--blue-deep)"></div>
+    <div class="tl-time">35 min ★</div>
+    <div class="tl-name">Future Arcade</div>
+  </div>
+  <div class="tl-step">
+    <div class="tl-dot" style="background:#D4600A"></div>
+    <div class="tl-time">10 min</div>
+    <div class="tl-name">Debrief</div>
+  </div>
+  <div class="tl-step">
+    <div class="tl-dot" style="background:var(--pink)"></div>
+    <div class="tl-time">5 min</div>
+    <div class="tl-name">Identity shift</div>
+  </div>
+  <div class="tl-step">
+    <div class="tl-dot" style="background:#0A8A6E"></div>
+    <div class="tl-time">5 min</div>
+    <div class="tl-name">Check out</div>
+  </div>
+</div>
+
+<!-- BOARD GRID -->
+<div class="board-grid">
+
+  <!-- ZONE 0: LAND IN -->
+  <div class="mframe">
+    <div class="mframe-header">
+      <div class="zone-badge c0">00</div>
+      <div>
+        <div class="zone-title">Land in Space</div>
+        <div class="zone-time">⏱ 5 min · soft music playing</div>
+      </div>
+    </div>
+    <div class="mframe-body">
+      <div class="text-block">
+        <div class="label">Prompt (text block on board)</div>
+        Drop your <strong>name</strong> · <strong>homebase</strong> · <strong>job title</strong> + a <strong>screenshot from your work this week</strong>
+      </div>
+      <div class="inner-frame">
+        <div class="if-title" style="color:var(--blue-deep)">Artifact wall — 21 slots</div>
+        <div class="stickies">
+          <div class="sticky s-white">📸<br>Sara<br>Amsterdam</div>
+          <div class="sticky s-white">📸<br>P2<br>_____</div>
+          <div class="sticky s-white">📸<br>P3<br>_____</div>
+          <div class="sticky s-white" style="opacity:.35">+18 more</div>
+        </div>
+      </div>
+      <div class="text-block" style="font-style:italic;color:var(--text-soft)">No instructions needed — just show up and drop your card</div>
+    </div>
+  </div>
+
+  <!-- ZONE 1: WELCOME -->
+  <div class="mframe">
+    <div class="mframe-header">
+      <div class="zone-badge c1">01</div>
+      <div>
+        <div class="zone-title">Welcome &amp; Etiquette</div>
+        <div class="zone-time">⏱ 10 min · facilitator-led</div>
+      </div>
+    </div>
+    <div class="mframe-body">
+      <div class="text-block">
+        <div class="label">Cohort purpose</div>
+        Feel connected · Curious about L&amp;D + AI futures · Safe to experiment
+      </div>
+      <div class="scd-row">
+        <div class="scd-pill scd-share">SHARE</div>
+        <div class="scd-pill scd-care">CARE</div>
+        <div class="scd-pill scd-dare">DARE</div>
+      </div>
+      <div class="text-block">
+        <div class="label">+ sticky: anything to add?</div>
+        Participants write their own norms on yellow stickies
+      </div>
+      <div class="inner-frame">
+        <div class="if-title" style="color:#2E8BB5">Pods overview</div>
+        7 pods × 3 people · Your pod is your home base for the whole session
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 2: WHO AM I NOW -->
+  <div class="mframe">
+    <div class="mframe-header">
+      <div class="zone-badge c2" style="color:#333">02</div>
+      <div>
+        <div class="zone-title">Who Am I Now?</div>
+        <div class="zone-time">⏱ 15–20 min · pods of 3</div>
+      </div>
+    </div>
+    <div class="mframe-body">
+      <div class="text-block">
+        <div class="label">Prompt</div>
+        Where are you right now in your L&amp;D identity?<br>
+        → A <strong>word</strong> · an <strong>image</strong> · a <strong>sentence</strong>
+      </div>
+      <div class="inner-frame">
+        <div class="if-title" style="color:var(--teal)">Identity wall (participants add here)</div>
+        <div class="stickies">
+          <div class="sticky s-teal">💬<br>word</div>
+          <div class="sticky s-blue">🖼<br>image</div>
+          <div class="sticky s-purple">✏️<br>sentence</div>
+          <div class="sticky s-yellow">💬</div>
+          <div class="sticky s-pink">🖼</div>
+          <div class="sticky s-green">✏️</div>
+        </div>
+      </div>
+      <div class="pod-row">
+        <div class="pod"><div class="pod-num">POD 1</div><div class="pod-names">3 names</div></div>
+        <div class="pod"><div class="pod-num">POD 2</div><div class="pod-names">3 names</div></div>
+        <div class="pod"><div class="pod-num">POD 3</div><div class="pod-names">3 names</div></div>
+        <div class="pod"><div class="pod-num">POD 4</div><div class="pod-names">3 names</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 3: REPORT BACK -->
+  <div class="mframe">
+    <div class="mframe-header">
+      <div class="zone-badge c3">03</div>
+      <div>
+        <div class="zone-title">Plenary Report Back</div>
+        <div class="zone-time">⏱ 5 min · plenary</div>
+      </div>
+    </div>
+    <div class="mframe-body">
+      <div class="text-block">
+        <div class="label">Prompt</div>
+        What's stirring in your pod? One word or image from the group.
+      </div>
+      <div class="stickies">
+        <div class="sticky s-purple lg">Pod 1</div>
+        <div class="sticky s-blue lg">Pod 2</div>
+        <div class="sticky s-teal lg">Pod 3</div>
+        <div class="sticky s-yellow lg">Pod 4</div>
+        <div class="sticky s-pink lg">Pod 5</div>
+        <div class="sticky s-green lg">Pod 6</div>
+        <div class="sticky s-orange lg">Pod 7</div>
+      </div>
+      <div class="text-block" style="background:var(--blue-light);border-color:#C8D0FF">
+        <strong>Bridge →</strong> Now let's travel to the future. 🕹️ Three rounds. Three possible worlds. Ready?
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 4: FUTURE ARCADE (WIDE) -->
+  <div class="mframe wide tall">
+    <div class="mframe-header" style="background:var(--blue-deep);border-bottom:none">
+      <div class="zone-badge" style="background:var(--teal);color:#111">🕹</div>
+      <div>
+        <div class="zone-title" style="color:white;font-size:16px">Future Thinking Arcade</div>
+        <div class="zone-time" style="color:rgba(255,255,255,0.6)">⏱ 35 min · pods of 3 · 3 rounds each</div>
+      </div>
+      <div style="margin-left:auto">
+        <a class="cta-link" href="https://future-tinkering-arcade.lovable.app/" target="_blank">
+          <span class="cta-icon">🎮</span> Open game
+        </a>
+      </div>
+    </div>
+    <div class="mframe-body" style="background: linear-gradient(160deg, var(--blue-light) 0%, white 60%)">
+      <div class="rounds-row">
+        <div class="round-card">
+          <div class="round-num">► 1</div>
+          <div class="round-q">Draw a scenario card.<br><em>Imagine the world it describes.</em></div>
+        </div>
+        <div class="round-card">
+          <div class="round-num">► 2</div>
+          <div class="round-q">Who's involved? What changes day-to-day? What becomes possible or impossible?</div>
+        </div>
+        <div class="round-card">
+          <div class="round-num">► 3</div>
+          <div class="round-q">What would <em>you</em> need to become to keep doing meaningful L&amp;D in this world?</div>
+        </div>
+      </div>
+      <div class="inner-frame" style="border-color:#C8D0FF">
+        <div class="if-title" style="color:var(--blue-deep)">7 pod workspaces — one frame per pod (replicate ×7)</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">
+          <div class="text-block" style="background:var(--blue-light)">
+            <div class="label">Round 1</div>
+            Scenario name<br>
+            <div class="stickies" style="margin-top:6px">
+              <div class="sticky s-yellow">what came up</div>
+              <div class="sticky s-blue">+</div>
+            </div>
+          </div>
+          <div class="text-block" style="background:var(--blue-light)">
+            <div class="label">Round 2</div>
+            Scenario name<br>
+            <div class="stickies" style="margin-top:6px">
+              <div class="sticky s-teal">what came up</div>
+              <div class="sticky s-purple">+</div>
+            </div>
+          </div>
+          <div class="text-block" style="background:var(--blue-light)">
+            <div class="label">Round 3</div>
+            Scenario name<br>
+            <div class="stickies" style="margin-top:6px">
+              <div class="sticky s-pink">what came up</div>
+              <div class="sticky s-orange">+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 5: DEBRIEF -->
+  <div class="mframe">
+    <div class="mframe-header">
+      <div class="zone-badge c5">05</div>
+      <div>
+        <div class="zone-title">Futures Debrief</div>
+        <div class="zone-time">⏱ 10 min · plenary</div>
+      </div>
+    </div>
+    <div class="mframe-body">
+      <div class="text-block">
+        <div class="label">Facilitation guide</div>
+        Quick round — which futures felt most real? What patterns emerged?
+      </div>
+      <div class="debrief-grid">
+        <div class="deb-card"><div class="deb-q">Which future felt most real?</div>Dot-vote on scenario cards</div>
+        <div class="deb-card"><div class="deb-q">What surprised you?</div>1 sticky per pod</div>
+        <div class="deb-card"><div class="deb-q">Which skills emerged?</div>Cluster stickies live</div>
+        <div class="deb-card"><div class="deb-q">What's still open?</div>Tensions / unanswered q's</div>
+      </div>
+      <div class="stickies">
+        <div class="sticky s-orange">Pod 1 surprise</div>
+        <div class="sticky s-orange">Pod 2 surprise</div>
+        <div class="sticky s-orange">Pod 3 surprise</div>
+        <div class="sticky s-orange">…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 6: IDENTITY SHIFT -->
+  <div class="mframe">
+    <div class="mframe-header">
+      <div class="zone-badge c6">06</div>
+      <div>
+        <div class="zone-title">Identity Shift</div>
+        <div class="zone-time">⏱ 5 min · individual</div>
+      </div>
+    </div>
+    <div class="mframe-body">
+      <div class="text-block">
+        <div class="label">Prompt</div>
+        Look back at what you shared in Zone 02. Has anything shifted?
+      </div>
+      <div class="axis-wrap">
+        <div class="axis-label" style="color:var(--blue-deep)">Still me</div>
+        <div class="axis-line"></div>
+        <div class="axis-label" style="color:var(--pink)">Shifted →</div>
+      </div>
+      <div class="text-block" style="font-size:10px;color:var(--text-soft)">
+        💡 Ask people to look at the word/image/sentence from Zone 02 before placing themselves
+      </div>
+      <div class="text-block">
+        <div class="label">2036 Sticky (one per person)</div>
+        <strong>It's 2036…</strong><br>I am ___<br>My work is ___
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 7: CHECK OUT -->
+  <div class="mframe">
+    <div class="mframe-header">
+      <div class="zone-badge c7">07</div>
+      <div>
+        <div class="zone-title">Check Out</div>
+        <div class="zone-time">⏱ 5 min · plenary</div>
+      </div>
+    </div>
+    <div class="mframe-body">
+      <div class="text-block">
+        <div class="label">Next steps block</div>
+        📅 Next session date · 📬 Slack channel · 🧪 What to expect
+      </div>
+      <div class="text-block">
+        <div class="label">Check-out prompt</div>
+        What do you look forward to in the coming weeks?
+      </div>
+      <div class="checkout-stickies">
+        <div class="sticky s-green">P1 ✨</div>
+        <div class="sticky s-green">P2 ✨</div>
+        <div class="sticky s-green">P3 ✨</div>
+        <div class="sticky s-green">P4 ✨</div>
+        <div class="sticky s-green" style="opacity:.4">×17 more</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /board-grid -->
+
+<!-- PASSPORT SECTION -->
+<div class="passport-section">
+  <div class="passport-section-title">
+    <span style="background:var(--blue-deep);color:white;border-radius:6px;padding:3px 10px;font-size:11px">📖</span>
+    Learning Passport — 3 pages · one per participant (duplicate ×21)
+  </div>
+  <div class="passport-pages">
+
+    <div class="passport-page">
+      <div class="pp-num">PAGE 1 — Before</div>
+      <div class="pp-title">Who I am now</div>
+      <div class="pp-field">
+        <div class="pp-field-label">A word that describes my L&amp;D identity today</div>
+        <div class="pp-field-hint">type here…</div>
+      </div>
+      <div class="pp-field">
+        <div class="pp-field-label">An image or sentence</div>
+        <div class="pp-field-hint">add image or write…</div>
+      </div>
+      <div class="pp-field">
+        <div class="pp-field-label">What I'm most curious about</div>
+        <div class="pp-field-hint">type here…</div>
+      </div>
+    </div>
+
+    <div class="passport-page">
+      <div class="pp-num">PAGE 2 — Pact</div>
+      <div class="pp-title">How I want to collaborate</div>
+      <div class="pp-field">
+        <div class="pp-field-label">My go's — what helps me do great work</div>
+        <div class="pp-field-hint">type here…</div>
+      </div>
+      <div class="pp-field">
+        <div class="pp-field-label">My no-go's — my boundaries / redlines</div>
+        <div class="pp-field-hint">type here…</div>
+      </div>
+      <div class="pp-field">
+        <div class="pp-field-label">One thing I'm willing to experiment with</div>
+        <div class="pp-field-hint">type here…</div>
+      </div>
+    </div>
+
+    <div class="passport-page">
+      <div class="pp-num">PAGE 3 — Future</div>
+      <div class="pp-title">My 2036 self</div>
+      <div class="pp-field">
+        <div class="pp-field-label">It's 2036. I am…</div>
+        <div class="pp-field-hint">type here…</div>
+      </div>
+      <div class="pp-field">
+        <div class="pp-field-label">My work is…</div>
+        <div class="pp-field-hint">type here…</div>
+      </div>
+      <div class="pp-field">
+        <div class="pp-field-label">What I had to let go of…</div>
+        <div class="pp-field-hint">type here…</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FACILITATOR NOTES -->
+<div class="fac-bar">
+  <strong>Miro setup notes:</strong>
+  Set board background to <strong>white with dot grid</strong> (Miro default or #F7F7F8). Use <strong>frames</strong> with rounded corners for each zone — label them 00–07. Zone 04 (Arcade) spans double width. Use <strong>brand blue #1A2ED4</strong> for frame headers, teal <strong>#00C9C0</strong> for accents, and pink <strong>#E040C0</strong> for the identity shift axis. Sticky colors: yellow / sky blue / green / pink / teal / purple (all standard Miro palette). Lock text prompt blocks. Leave stickies and identity wall unlocked for participants.
+</div>
+
+</body>
+</html>

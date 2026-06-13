@@ -3,9 +3,15 @@
   "configurations": [
     {
       "name": "dev",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "/Users/saraguagnini/.bun/bin/bun",
       "runtimeArgs": ["run", "dev"],
       "port": 8080
+    },
+    {
+      "name": "problem-finder",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "--cwd", "ai-fieldwork-problem-finder", "dev"],
+      "port": 8090
     }
   ]
 }

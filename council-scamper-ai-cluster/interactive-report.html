@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCAMPER Council — AI Cluster Architecture Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #fffbeb;
+  --fg: #1a237e;
+  --primary: #1e3a8a;
+  --secondary: #d97706;        /* amber-600 — readable on cream */
+  --secondary-light: #fef3c7;
+  --accent-green: #059669;
+  --accent-orange: #d97706;
+  --accent-purple: #7c3aed;
+  --muted: #fef9ec;
+  --border: #e8d88a;
+  --charcoal: #374151;
+  --gray: #6b7280;
+  --radius: 12px;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--charcoal);
+  line-height: 1.65;
+  font-size: 15px;
+}
+
+/* ── Nav ── */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--primary);
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.top-nav::-webkit-scrollbar { display: none; }
+.top-nav a {
+  flex-shrink: 0;
+  padding: 12px 18px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.top-nav a:hover { color: white; border-bottom-color: var(--secondary); }
+
+/* ── Layout ── */
+.page-wrapper { max-width: 1120px; margin: 0 auto; padding: 0 28px 80px; }
+
+header {
+  background: var(--primary);
+  color: white;
+  padding: 52px 32px 44px;
+  text-align: center;
+  margin-bottom: 52px;
+}
+header .eyebrow {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: var(--secondary);
+  margin-bottom: 14px;
+}
+header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 5vw, 46px);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 14px;
+}
+header .subtitle {
+  font-size: 16px;
+  color: rgba(255,255,255,0.72);
+  max-width: 580px;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+.header-meta {
+  margin-top: 28px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.header-meta .chip {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+}
+.header-meta .chip strong { color: var(--secondary); }
+
+section { margin-bottom: 60px; }
+.section-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--secondary);
+  margin-bottom: 4px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+}
+
+/* ── Insight callout ── */
+.insight-callout {
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius);
+  padding: 36px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.insight-callout::before {
+  content: '"';
+  position: absolute;
+  top: -10px; left: 24px;
+  font-size: 180px;
+  font-family: Georgia, serif;
+  color: rgba(255,255,255,0.06);
+  line-height: 1;
+  pointer-events: none;
+}
+.insight-callout .label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--secondary);
+  margin-bottom: 14px;
+}
+.insight-callout blockquote {
+  font-family: var(--font-display);
+  font-size: clamp(17px, 2.5vw, 22px);
+  font-weight: 500;
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin-bottom: 14px;
+  color: white;
+}
+.insight-callout .attribution {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+}
+
+/* ── Advisor cards ── */
+.advisor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+.advisor-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.advisor-card-top {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+.advisor-accent {
+  height: 4px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+.accent-architect { background: var(--primary); }
+.accent-transformer { background: #059669; }
+.accent-guardian { background: #d97706; }
+.accent-pioneer { background: #7c3aed; }
+
+.advisor-tag {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.tag-architect { color: var(--primary); }
+.tag-transformer { color: #059669; }
+.tag-guardian { color: #d97706; }
+.tag-pioneer { color: #7c3aed; }
+
+.advisor-card h3 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 10px;
+}
+.advisor-card .desc {
+  font-size: 13.5px;
+  color: var(--charcoal);
+  line-height: 1.55;
+  margin-bottom: 8px;
+}
+.advisor-card .blind {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.5;
+  font-style: italic;
+}
+.advisor-card .blind strong { font-style: normal; color: var(--charcoal); }
+
+.vote-section { margin-top: auto; padding-top: 14px; }
+.vote-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.vote-label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 4px;
+}
+.vpill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  line-height: 1.3;
+}
+.vpill-r1 { background: #e5e7eb; color: #374151; }
+.vpill-final { background: var(--secondary-light); color: #92400e; }
+.arrow-icon { color: var(--gray); font-size: 14px; line-height: 1.8; flex-shrink: 0; }
+.change-note {
+  font-size: 12.5px;
+  color: var(--charcoal);
+  line-height: 1.5;
+  margin-top: 6px;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.badge-changed { background: #fee2e2; color: #b91c1c; }
+.badge-partial { background: #fef3c7; color: #92400e; }
+.badge-held { background: #d1fae5; color: #065f46; }
+
+/* ── Vote table ── */
+.vote-table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1.5px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead th {
+  background: var(--primary);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 13px 16px;
+  text-align: left;
+  white-space: nowrap;
+}
+td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.5;
+  color: var(--charcoal);
+}
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: #fffbf2; }
+.vd { font-weight: 700; font-family: var(--font-display); font-size: 11px; white-space: nowrap; }
+.vd-redesign { color: #b91c1c; }
+.vd-stress { color: #d97706; }
+.vd-holds { color: #065f46; }
+td strong { color: var(--fg); }
+
+/* ── Signal pills row ── */
+.signal-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.signal-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  min-width: 100px;
+  flex: 1;
+  text-align: center;
+}
+.signal-chip .lens-name {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gray);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.signal-chip .verdict-pill {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.sp-redesign { background: #fee2e2; color: #b91c1c; }
+.sp-stress { background: #fef3c7; color: #92400e; }
+.sp-holds { background: #d1fae5; color: #065f46; }
+
+/* ── Key improvements ── */
+.improvements-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: white;
+}
+.improvement-item {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.improvement-item:last-child { border-bottom: none; }
+.imp-num {
+  background: var(--primary);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  flex-shrink: 0;
+}
+.imp-body {
+  padding: 20px 24px;
+}
+.imp-body h4 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 5px;
+}
+.imp-body p {
+  font-size: 14px;
+  color: var(--charcoal);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.imp-body .imp-what {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.5;
+  border-left: 3px solid var(--border);
+  padding-left: 12px;
+  margin-top: 6px;
+}
+.imp-body .imp-what strong { color: var(--charcoal); }
+.imp-status {
+  padding: 20px 20px 20px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+.imp-tag {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.imp-now { background: #d1fae5; color: #065f46; }
+.imp-next { background: #dbeafe; color: #1e40af; }
+.imp-test { background: #ede9fe; color: #5b21b6; }
+
+/* ── Sliders ── */
+.slider-section {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+}
+.slider-intro {
+  font-size: 14.5px;
+  color: var(--charcoal);
+  margin-bottom: 28px;
+  max-width: 700px;
+  line-height: 1.6;
+}
+.slider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+  margin-bottom: 36px;
+}
+.slider-item {}
+.slider-item label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 10px;
+  gap: 10px;
+}
+.slider-item label span.name { flex: 1; }
+.slider-value {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: #92400e;
+  background: var(--secondary-light);
+  padding: 3px 11px;
+  border-radius: 7px;
+  min-width: 60px;
+  text-align: center;
+}
+input[type=range] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.slider-hint { font-size: 12px; color: var(--gray); margin-top: 6px; line-height: 1.4; }
+
+.projections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.proj-card {
+  background: var(--muted);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 16px;
+  text-align: center;
+}
+.proj-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+.proj-value {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.proj-value.negative { color: #b91c1c; }
+.proj-value.positive { color: #065f46; }
+.proj-sub { font-size: 11.5px; color: var(--gray); line-height: 1.4; }
+
+.complexity-note {
+  padding: 16px 20px;
+  background: #eff6ff;
+  border-left: 3px solid var(--primary);
+  border-radius: 0 8px 8px 0;
+  font-size: 13.5px;
+  color: var(--charcoal);
+  line-height: 1.6;
+}
+
+/* ── Tensions ── */
+.tension-list { display: flex; flex-direction: column; gap: 14px; }
+.tension-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+}
+.tension-card h4 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 8px;
+}
+.tension-card .tension-body {
+  font-size: 14px;
+  color: var(--charcoal);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+.tension-card .parties {
+  font-size: 13px;
+  color: var(--gray);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.tension-card .parties strong { color: var(--charcoal); }
+.tension-status {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-display);
+}
+.status-unresolved { background: #fee2e2; color: #b91c1c; }
+.status-partial { background: #fef3c7; color: #92400e; }
+.status-resolved { background: #d1fae5; color: #065f46; }
+
+/* ── Consensus ── */
+.consensus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.consensus-item {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.consensus-num {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--secondary);
+  line-height: 1;
+  flex-shrink: 0;
+  width: 32px;
+}
+.consensus-item h4 {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 5px;
+}
+.consensus-item p { font-size: 13.5px; color: var(--charcoal); line-height: 1.55; }
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 28px;
+  font-size: 12.5px;
+  color: var(--gray);
+  border-top: 1px solid var(--border);
+  margin-top: 48px;
+}
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a href="#insight">Key Finding</a>
+  <a href="#advisors">Advisors</a>
+  <a href="#votes">Vote Tracker</a>
+  <a href="#signals">Signals</a>
+  <a href="#improvements">Key Improvements</a>
+  <a href="#projections">Projections</a>
+  <a href="#tensions">Tensions</a>
+  <a href="#consensus">Consensus</a>
+</nav>
+
+<header>
+  <div class="eyebrow">L&D Shakers · Design Council Session</div>
+  <h1>SCAMPER Architecture Review<br>AI Cluster</h1>
+  <p class="subtitle">Four voices. Seven lenses. Two rounds of adversarial debate. One architecture stress-tested against itself.</p>
+  <div class="header-meta">
+    <div class="chip"><strong>Date:</strong> 2026-03-24</div>
+    <div class="chip"><strong>Lenses:</strong> All 7 SCAMPER</div>
+    <div class="chip"><strong>Rounds:</strong> 2 — Opening + Full Rebuttal</div>
+    <div class="chip"><strong>Result:</strong> 4× Redesign · 2× Holds · 1× Stress Point</div>
+  </div>
+</header>
+
+<div class="page-wrapper">
+
+  <!-- SHARPEST INSIGHT -->
+  <section id="insight">
+    <div class="insight-callout">
+      <div class="label">Sharpest Insight — Session Finding</div>
+      <blockquote>"The Override Log is load-bearing and may not be carrying the weight the architecture assumes."</blockquote>
+      <div class="attribution">— Synthesis, Substitute lens · Confirmed by all four voices in Round 2. Everything else is downstream of verifying this with a live cohort.</div>
+    </div>
+  </section>
+
+  <!-- ADVISORS -->
+  <section id="advisors">
+    <div class="section-label">The Council</div>
+    <div class="section-title">Four Voices, Two Rounds</div>
+    <div class="advisor-grid">
+
+      <div class="advisor-card">
+        <div class="advisor-accent accent-architect"></div>
+        <div class="advisor-card-top">
+          <div class="advisor-tag tag-architect">Architect</div>
+          <h3>Sara's AI Proxy</h3>
+          <p class="desc">Protects conceptual integrity of the identity gap framing. Won't let the design slide into tool adoption territory. Builds an argument, stakes a position, then stress-tests it.</p>
+          <p class="blind"><strong>Blind spot:</strong> Over-indexes on structure. Assumes people are ready for confrontation if the architecture is right.</p>
+        </div>
+        <div class="vote-section">
+          <div class="vote-label">Round 1 → Final</div>
+          <div class="vote-row">
+            <span class="vpill vpill-r1">R1: Compress + Rename layers</span>
+            <span class="arrow-icon">→</span>
+            <span class="vpill vpill-final">Final: Same + accept J→C bridge gap</span>
+          </div>
+          <div class="vote-row"><span class="badge badge-partial">Partial shift</span></div>
+          <p class="change-note">Changed on: Judgment-to-Capability bridge — accepted the Transformer's structural observation that the gap is a real design task, not a sequencing footnote.</p>
+        </div>
+      </div>
+
+      <div class="advisor-card">
+        <div class="advisor-accent accent-transformer"></div>
+        <div class="advisor-card-top">
+          <div class="advisor-tag tag-transformer">Cautious Transformer</div>
+          <h3>The Safety-Seeker</h3>
+          <p class="desc">Uses AI daily, but "good at it" means faster content. Wants incremental steps with clear safety nets. Will flag anything that feels like exposure without psychological safety.</p>
+          <p class="blind"><strong>Blind spot:</strong> Mistakes comfort for competence. Calls delay "safety." Resists anything that asks them to name what they can't yet do.</p>
+        </div>
+        <div class="vote-section">
+          <div class="vote-label">Round 1 → Final</div>
+          <div class="vote-row">
+            <span class="vpill vpill-r1">R1: Keep 2-week Efficiency</span>
+            <span class="arrow-icon">→</span>
+            <span class="vpill vpill-final">Final: Compress it</span>
+          </div>
+          <div class="vote-row"><span class="badge badge-changed">Yes — significant shift</span></div>
+          <p class="change-note">Also changed on: Week 9 identity statement — moved from "keep it" to "eliminate it." Biggest mind-change in the session. Moved on the two things they most defended in Round 1.</p>
+        </div>
+      </div>
+
+      <div class="advisor-card">
+        <div class="advisor-accent accent-guardian"></div>
+        <div class="advisor-card-top">
+          <div class="advisor-tag tag-guardian">Craft Guardian</div>
+          <h3>The Standards Keeper</h3>
+          <p class="desc">Value is judgment, taste, and process. Overrides AI constantly. Challenges anything that flattens expertise into a prompt. Precise and quality-focused — occasionally sharp.</p>
+          <p class="blind"><strong>Blind spot:</strong> Uses "craft" as shield against examining which parts of their process AI has already made redundant.</p>
+        </div>
+        <div class="vote-section">
+          <div class="vote-label">Round 1 → Final</div>
+          <div class="vote-row">
+            <span class="vpill vpill-r1">R1: Rename + Critique format</span>
+            <span class="arrow-icon">→</span>
+            <span class="vpill vpill-final">Final: Same + J→C gap is real</span>
+          </div>
+          <div class="vote-row"><span class="badge badge-partial">Partial — held core</span></div>
+          <p class="change-note">Fully endorsed Architect's pre-work Override Log. Confirmed Transformer's structural point on Judgment-to-Capability gap. Sharpest single argument of the session: form vs. rawness at the Closing Expo.</p>
+        </div>
+      </div>
+
+      <div class="advisor-card">
+        <div class="advisor-accent accent-pioneer"></div>
+        <div class="advisor-card-top">
+          <div class="advisor-tag tag-pioneer">Untethered Pioneer</div>
+          <h3>The Impatient Challenger</h3>
+          <p class="desc">Efficiency and judgment are table stakes. The real question is what becomes possible when you stop protecting the old workflow entirely. Asks "why not?" more than "how?"</p>
+          <p class="blind"><strong>Blind spot:</strong> Forgets that comfort with ambiguity is the exception. Dismisses friction as resistance rather than a legitimate signal about design gaps.</p>
+        </div>
+        <div class="vote-section">
+          <div class="vote-label">Round 1 → Final</div>
+          <div class="vote-row">
+            <span class="vpill vpill-r1">R1: Start with Capability</span>
+            <span class="arrow-icon">→</span>
+            <span class="vpill vpill-final">Final: Test 1 cohort only</span>
+          </div>
+          <div class="vote-row"><span class="badge badge-partial">Partial — backed down</span></div>
+          <p class="change-note">Conceded form matters for the Closing Expo (Guardian's argument). Capability-first demoted from default design to one-cohort experiment. Held on: Override Log as active practice, elimination of Week 9 statement.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- VOTE TABLE -->
+  <section id="votes">
+    <div class="section-label">Vote Tracker</div>
+    <div class="section-title">Round 1 → Final by Lens</div>
+    <div class="vote-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Lens</th>
+            <th>Decision on the Table</th>
+            <th>Architect</th>
+            <th>Transformer</th>
+            <th>Guardian</th>
+            <th>Pioneer</th>
+            <th>Verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Substitute</strong></td>
+            <td>Rename layers → Surface / Standard / Original Work</td>
+            <td>✓ Rename layers</td>
+            <td>Keep sequence as map</td>
+            <td>✓ Rename vocab; "Efficiency" validates the trap</td>
+            <td>Override Log must become a practice with cadence</td>
+            <td><span class="vd vd-stress">STRESS POINT</span></td>
+          </tr>
+          <tr>
+            <td><strong>Combine</strong></td>
+            <td>Week 1 + Week 9 explicitly paired; Closing Expo built from Override Log</td>
+            <td>✓ Pair the Expos; Week 9 writes back to Week 1</td>
+            <td>✓ Log continuity across sessions</td>
+            <td>Make the contrast between Expos sharp and explicit</td>
+            <td>Strip Expo format — read Override Log aloud instead</td>
+            <td><span class="vd vd-holds">HOLDS</span></td>
+          </tr>
+          <tr>
+            <td><strong>Adapt</strong></td>
+            <td>Judgment layer redesigned as structured critique (design school model)</td>
+            <td>Medical residency — practitioner reviews Override Logs</td>
+            <td>Executive coaching — continuity of history across sessions</td>
+            <td>✓ Design critique with "rigor of reflection" as explicit standard</td>
+            <td>Documentary editing — outside reader reviews log cold</td>
+            <td><span class="vd vd-redesign">REDESIGN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Modify</strong></td>
+            <td>Deepen Judgment before modifying anything else</td>
+            <td>Week 9 is under-weighted; front-load identity earlier</td>
+            <td>Shrink Capability to one week; add consolidation</td>
+            <td>✓ Shrink Expo scope to do one thing only</td>
+            <td>Fewer sessions, longer gaps, more designed in-between time</td>
+            <td><span class="vd vd-redesign">REDESIGN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Put to Other Uses</strong></td>
+            <td>Closing Expo → pipeline to next cohort's Opening Expo</td>
+            <td>Opening Expo as cohort diagnostic tool</td>
+            <td>Override Log as peer accountability mechanism</td>
+            <td>✓ Alumni pipeline — previous participants set next ceiling</td>
+            <td>Build in Public documentation as active case library</td>
+            <td><span class="vd vd-holds">HOLDS</span></td>
+          </tr>
+          <tr>
+            <td><strong>Eliminate</strong></td>
+            <td>Efficiency → 1 session; Week 9 identity statement removed</td>
+            <td>✓ Compress Efficiency; two weeks is convention</td>
+            <td>→ <em>Changed in R2:</em> compress it</td>
+            <td>Eliminate the name "cluster" — it does no work</td>
+            <td>✓ Eliminate Week 9 statement — deliverable over discovery</td>
+            <td><span class="vd vd-redesign">REDESIGN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Reverse</strong></td>
+            <td>Pre-work Override Log + Expo arc reversed (struggle before success)</td>
+            <td>✓ Pre-work Override Log before the Expo</td>
+            <td>Against pre-work log — anxiety without framing</td>
+            <td>✓ Reverse Expo narrative arc</td>
+            <td>Reverse full arc — start with Capability in Week 1 (→ 1 cohort test)</td>
+            <td><span class="vd vd-redesign">REDESIGN</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SIGNALS -->
+  <section id="signals">
+    <div class="section-label">Decision Signal</div>
+    <div class="section-title">Architecture Status by Lens</div>
+    <div class="signal-row">
+      <div class="signal-chip"><span class="lens-name">Substitute</span><span class="verdict-pill sp-stress">Stress Point</span></div>
+      <div class="signal-chip"><span class="lens-name">Combine</span><span class="verdict-pill sp-holds">Holds</span></div>
+      <div class="signal-chip"><span class="lens-name">Adapt</span><span class="verdict-pill sp-redesign">Redesign</span></div>
+      <div class="signal-chip"><span class="lens-name">Modify</span><span class="verdict-pill sp-redesign">Redesign</span></div>
+      <div class="signal-chip"><span class="lens-name">Other Uses</span><span class="verdict-pill sp-holds">Holds</span></div>
+      <div class="signal-chip"><span class="lens-name">Eliminate</span><span class="verdict-pill sp-redesign">Redesign</span></div>
+      <div class="signal-chip"><span class="lens-name">Reverse</span><span class="verdict-pill sp-redesign">Redesign</span></div>
+    </div>
+    <p style="font-size:14px;color:var(--charcoal);line-height:1.6;"><strong>4 Redesign · 2 Holds · 1 Stress Point.</strong> The thesis is correct — the identity gap framing holds. The implementation is more protective than the thesis requires. The architecture defers the hard question at several points where it should be asking it.</p>
+  </section>
+
+  <!-- KEY IMPROVEMENTS -->
+  <section id="improvements">
+    <div class="section-label">Agreed Actions</div>
+    <div class="section-title">Key Improvements — Stated</div>
+    <p style="font-size:14.5px;color:var(--charcoal);margin-bottom:24px;line-height:1.65;max-width:780px;">These are the changes the council converged on. They are ordered by implementation readiness — the first three cost nothing and can happen immediately. Items 4–6 require design work. Item 7 is a future experiment.</p>
+
+    <div class="improvements-grid">
+
+      <div class="improvement-item">
+        <div class="imp-num">1</div>
+        <div class="imp-body">
+          <h4>Compress the Efficiency layer from two sessions to one</h4>
+          <p>The two-week Efficiency block was designed to surface the "faster content" ceiling — but dedicating that much time to it risks validating the trap rather than exposing it. One session is enough to name the ceiling, show the trap, and move on.</p>
+          <p class="imp-what"><strong>What changes:</strong> Session 2 becomes the single Efficiency session. The reclaimed week shifts into the Judgment layer design, which all four advisors agree is the most under-resourced part of the architecture. No structural redesign required — this is a scheduling change with an immediate effect on where attention lands.</p>
+        </div>
+        <div class="imp-status"><span class="imp-tag imp-now">Implement now</span></div>
+      </div>
+
+      <div class="improvement-item">
+        <div class="imp-num">2</div>
+        <div class="imp-body">
+          <h4>Add a pre-work Override Log before the Opening Expo</h4>
+          <p>Participants currently arrive at the Opening Expo as an audience. Giving them seven days of unframed Override Log practice before they walk in converts them into analysts — they watch the practitioner presentations against a self-established baseline, not as aspirational spectators.</p>
+          <p class="imp-what"><strong>What changes:</strong> One prompt sent one week before the Opening Expo: "Note what you change when you use AI this week — what you accept, what you override, why." No framing, no rubric, no right answer. Seven days of low-stakes data collection. The Expo landing is fundamentally different when participants are comparing, not just watching.</p>
+        </div>
+        <div class="imp-status"><span class="imp-tag imp-now">Implement now</span></div>
+      </div>
+
+      <div class="improvement-item">
+        <div class="imp-num">3</div>
+        <div class="imp-body">
+          <h4>Reverse the Opening Expo narrative arc — lead with struggle, not arrival</h4>
+          <p>The current Expo format presumably opens with practitioners demonstrating new capabilities — the destination. This creates aspiration but also distance. Starting instead with the moment before the thing clicked — what the practitioner couldn't do, where they got stuck, what they had to give up — changes how the ceiling lands.</p>
+          <p class="imp-what"><strong>What changes:</strong> Briefing practitioners to structure their presentations as a transition arc, not a capability showcase. The question shifts from "look what I can do" to "here's the work of getting here." Costs nothing. Requires only a revised brief to Expo presenters.</p>
+        </div>
+        <div class="imp-status"><span class="imp-tag imp-now">Implement now</span></div>
+      </div>
+
+      <div class="improvement-item">
+        <div class="imp-num">4</div>
+        <div class="imp-body">
+          <h4>Rename the three peer deep dive layers</h4>
+          <p>"Efficiency / Judgment / Capability" are accurate descriptors but carry the wrong connotations. "Efficiency" is a management word that validates what participants came to move past. The vocabulary sets the frame before the session starts.</p>
+          <p class="imp-what"><strong>What changes:</strong> Rename to <strong>Surface Work</strong> (where AI saves time — and the trap), <strong>Standard Work</strong> (where you override AI — what taste and judgment are yours), and <strong>Original Work</strong> (what you can now do that wasn't possible before). The session content stays the same; the framing does not. "Surface Work" signals a ceiling to move through. "Efficiency" signals something to protect.</p>
+        </div>
+        <div class="imp-status"><span class="imp-tag imp-now">Implement now</span></div>
+      </div>
+
+      <div class="improvement-item">
+        <div class="imp-num">5</div>
+        <div class="imp-body">
+          <h4>Redesign the Judgment (Standard Work) layer as structured critique</h4>
+          <p>This is the highest-leverage change in the architecture. Judgment is the hinge — it's where the identity work begins, and it's what must deliver participants ready for the Original Work frame. Currently the Judgment sessions are peer discussions. Peer discussion surfaces what people are comfortable saying. Structured critique surfaces the gap between intent and execution. That gap is where identity work actually starts.</p>
+          <p class="imp-what"><strong>What changes:</strong> Each Judgment session is redesigned around a formal critique structure borrowed from design education: participant shares an Override Log entry and states their intent; peers apply "rigor of reflection" as an explicit standard — not "what did you do" but "why did you override, and what standard are you holding that AI doesn't?" The participant responds. This isn't therapy and it isn't feedback. It's craft critique applied to a new kind of work.</p>
+        </div>
+        <div class="imp-status"><span class="imp-tag imp-next">Design required</span></div>
+      </div>
+
+      <div class="improvement-item">
+        <div class="imp-num">6</div>
+        <div class="imp-body">
+          <h4>Eliminate the Week 9 identity statement as a standalone deliverable</h4>
+          <p>Week 9 currently asks participants to synthesize their Override Log patterns into a written identity statement before the Closing Expo. The problem: it creates a deliverable that participants optimise for the product rather than the discovery. A polished statement that smooths over rough edges is the opposite of what the Closing Expo is trying to surface.</p>
+          <p class="imp-what"><strong>What changes:</strong> Remove the standalone Week 9 statement. Instead, participants bring their three sharpest Override Log entries to the Closing Expo — the moments where their standard, taste, or judgment diverged most clearly from what AI suggested. The Expo preparation IS the synthesis. The Closing Expo presents those entries, not a distillation of them. The identity is demonstrated, not declared.</p>
+        </div>
+        <div class="imp-status"><span class="imp-tag imp-next">Design required</span></div>
+      </div>
+
+      <div class="improvement-item">
+        <div class="imp-num">7</div>
+        <div class="imp-body">
+          <h4>Activate the Closing Expo → Opening Expo alumni pipeline</h4>
+          <p>The Closing Expo currently closes a cohort. It could also open the next one. Participants from one cohort's Closing Expo become the practitioners who set the ceiling at the next cohort's Opening Expo — replacing external practitioners with people who have lived the same transition arc the new cohort is about to enter.</p>
+          <p class="imp-what"><strong>What changes:</strong> After Cohort 1 closes, three to four participants are invited back for Cohort 2's Opening Expo. They present using the reversed narrative arc (improvement #3): where they were in Week 1, what shifted in the Judgment sessions, what they can claim as theirs now. The standard-raising is structural and compounding — each cohort's ceiling is set by the previous cohort's work, not by external practitioners whose context may not match.</p>
+        </div>
+        <div class="imp-status"><span class="imp-tag imp-test">After cohort 1</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- IMPACT PROJECTIONS -->
+  <section id="projections">
+    <div class="section-label">Impact Projections</div>
+    <div class="section-title">Adjust Assumptions → See Impact</div>
+    <div class="slider-section">
+      <p class="slider-intro">Model different pricing, scale, and design-complexity scenarios. Complexity reflects the council's redesign recommendations — moving from 5 (current) toward 7–10 models the Judgment redesign and its facilitator cost implications.</p>
+
+      <div class="slider-grid">
+        <div class="slider-item">
+          <label><span class="name">Price per Participant</span> <span class="slider-value" id="val-price">$1,500</span></label>
+          <input type="range" id="sl-price" min="500" max="5000" step="100" value="1500" oninput="recalc()">
+          <div class="slider-hint">Range: $500 – $5,000</div>
+        </div>
+        <div class="slider-item">
+          <label><span class="name">Participants per Cohort</span> <span class="slider-value" id="val-participants">12</span></label>
+          <input type="range" id="sl-participants" min="5" max="30" step="1" value="12" oninput="recalc()">
+          <div class="slider-hint">Range: 5 – 30</div>
+        </div>
+        <div class="slider-item">
+          <label><span class="name">Cohorts per Year</span> <span class="slider-value" id="val-cohorts">3</span></label>
+          <input type="range" id="sl-cohorts" min="1" max="6" step="1" value="3" oninput="recalc()">
+          <div class="slider-hint">Range: 1 – 6</div>
+        </div>
+        <div class="slider-item">
+          <label><span class="name">Expo Conversion Rate</span> <span class="slider-value" id="val-conversion">20%</span></label>
+          <input type="range" id="sl-conversion" min="5" max="80" step="1" value="20" oninput="recalc()">
+          <div class="slider-hint">% of Expo attendees who enrol · Range: 5 – 80%</div>
+        </div>
+        <div class="slider-item">
+          <label><span class="name">Facilitator Hours / Cohort</span> <span class="slider-value" id="val-hours">40</span></label>
+          <input type="range" id="sl-hours" min="20" max="120" step="5" value="40" oninput="recalc()">
+          <div class="slider-hint">Rises with Judgment redesign · Range: 20 – 120</div>
+        </div>
+        <div class="slider-item">
+          <label><span class="name">Design Complexity (1–10)</span> <span class="slider-value" id="val-complexity">5</span></label>
+          <input type="range" id="sl-complexity" min="1" max="10" step="1" value="5" oninput="recalc()">
+          <div class="slider-hint">1 = minimal facilitation · 10 = full Judgment redesign implemented</div>
+        </div>
+      </div>
+
+      <div class="projections">
+        <div class="proj-card">
+          <div class="proj-label">Revenue per Cohort</div>
+          <div class="proj-value" id="proj-rev-cohort">$18,000</div>
+          <div class="proj-sub">price × participants</div>
+        </div>
+        <div class="proj-card">
+          <div class="proj-label">Annual Revenue</div>
+          <div class="proj-value" id="proj-rev-annual">$54,000</div>
+          <div class="proj-sub">× cohorts per year</div>
+        </div>
+        <div class="proj-card">
+          <div class="proj-label">Facilitator Cost per Cohort</div>
+          <div class="proj-value negative" id="proj-fac-cohort">−$3,000</div>
+          <div class="proj-sub">hours × $50/hr × complexity factor</div>
+        </div>
+        <div class="proj-card">
+          <div class="proj-label">Net per Cohort</div>
+          <div class="proj-value positive" id="proj-net-cohort">$15,000</div>
+          <div class="proj-sub">revenue − facilitator cost</div>
+        </div>
+        <div class="proj-card">
+          <div class="proj-label">Annual Net</div>
+          <div class="proj-value positive" id="proj-net-annual">$45,000</div>
+          <div class="proj-sub">net × cohorts per year</div>
+        </div>
+        <div class="proj-card">
+          <div class="proj-label">Expo Attendees Needed</div>
+          <div class="proj-value" id="proj-expo">60</div>
+          <div class="proj-sub">participants ÷ conversion rate</div>
+        </div>
+      </div>
+
+      <div class="complexity-note" id="complexity-note">
+        <strong>Complexity note:</strong> At complexity 5, this models the current architecture — standard facilitator prep. Increasing toward 7–10 reflects the Judgment redesign cost: structured critique sessions, Override Log review protocols, possible practitioner-in-residence. Price or cohort size needs to absorb the increase.
+      </div>
+    </div>
+  </section>
+
+  <!-- TENSIONS -->
+  <section id="tensions">
+    <div class="section-label">Unresolved Friction</div>
+    <div class="section-title">Key Tensions from the Council</div>
+    <div class="tension-list">
+
+      <div class="tension-card">
+        <h4>Protection vs. Disruption — ran through every lens</h4>
+        <p class="tension-body">The Transformer interpreted every design friction as a safety gap. The Pioneer interpreted every safety mechanism as a design compromise. The Architect's reframe was the most useful intervention: safety-vs-delay is not the same as safety-vs-no-safety. You can build a container that holds difficulty without removing the difficulty. But whether the architecture actually creates productive discomfort — or just defers it — was not resolved by the council.</p>
+        <p class="parties"><strong>Parties:</strong> Cautious Transformer vs. Untethered Pioneer, across all seven lenses</p>
+        <span class="tension-status status-unresolved">Unresolved</span>
+      </div>
+
+      <div class="tension-card">
+        <h4>Form vs. Rawness — Closing Expo</h4>
+        <p class="tension-body">Pioneer: the presentation format protects people from saying the actual thing. The Override Log should be read aloud, unmediated — strip the abstraction. Guardian: form is not abstraction. Unmediated exposure in a public context produces self-protection, not revelation. The sonnet isn't less honest than raw feeling; it's what makes feeling hold still long enough to mean something. You can't shortcut form and call it honesty.</p>
+        <p class="tension-body">Pioneer conceded in Round 2 that "curated, staged, read aloud" is itself a form — and that their argument was right but their execution proposal was wrong.</p>
+        <p class="parties"><strong>Parties:</strong> Pioneer vs. Craft Guardian · Pioneer partially conceded</p>
+        <span class="tension-status status-partial">Partially Resolved</span>
+      </div>
+
+      <div class="tension-card">
+        <h4>Structural Iteration vs. Disruption Assumption</h4>
+        <p class="tension-body">The Architect's solutions across all seven lenses were consistently the tighter version of the existing mechanism. Pre-work Override Log. Sharper Judgment sessions. Better Expo framing. The Pioneer's challenge in Round 2: the architecture has an assumption baked in that we never named — that participants will engage with identity transition if the container is well-designed. The Pioneer doesn't believe that. Identity transition requires a disruption the architecture keeps smoothing over at the last moment.</p>
+        <p class="parties"><strong>Parties:</strong> Pioneer vs. Architect · Pioneer argues that sophisticated iteration is not the same as redesign</p>
+        <span class="tension-status status-unresolved">Unresolved</span>
+      </div>
+
+      <div class="tension-card">
+        <h4>Week 9 Identity Statement — Keep or Cut</h4>
+        <p class="tension-body">Pioneer's argument: a deliverable that makes people optimise for product over discovery. When the hard thing has a deadline and a format, people write toward the format. The Transformer originally held that the statement was necessary synthesis — a way to consolidate before the Expo. In Round 2, the Transformer changed position: the Closing Expo IS the identity statement, demonstrated rather than declared. Cutting the standalone Week 9 deliverable frees the arc to land in the Expo rather than in a document the week before it.</p>
+        <p class="parties"><strong>Parties:</strong> Pioneer + Architect vs. Transformer · Transformer changed position in Round 2</p>
+        <span class="tension-status status-resolved">Resolved — Eliminate (3 of 4 votes)</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONSENSUS -->
+  <section id="consensus">
+    <div class="section-label">Unanimous Agreement</div>
+    <div class="section-title">Where All Four Voices Converged</div>
+    <div class="consensus-grid">
+      <div class="consensus-item">
+        <div class="consensus-num">1</div>
+        <div>
+          <h4>Judgment is the hinge</h4>
+          <p>Under-designed. Every other disagreement in the session is downstream of whether the Judgment layer does its job. Redesign this before anything else.</p>
+        </div>
+      </div>
+      <div class="consensus-item">
+        <div class="consensus-num">2</div>
+        <div>
+          <h4>Efficiency compressed to one session</h4>
+          <p>Two weeks is convention dressed as structure. One session: name the ceiling, show the trap, leave. The reclaimed time goes directly to Judgment.</p>
+        </div>
+      </div>
+      <div class="consensus-item">
+        <div class="consensus-num">3</div>
+        <div>
+          <h4>Pre-work Override Log before the Expo</h4>
+          <p>Seven days, one prompt, no framing. Converts participants from audience to analysts. Costs nothing. Changes the Expo's entire dynamic.</p>
+        </div>
+      </div>
+      <div class="consensus-item">
+        <div class="consensus-num">4</div>
+        <div>
+          <h4>Expo arc reversed — struggle before success</h4>
+          <p>Lead with the work of transition, not the destination. Briefing change to Expo practitioners only. Zero structural cost.</p>
+        </div>
+      </div>
+      <div class="consensus-item">
+        <div class="consensus-num">5</div>
+        <div>
+          <h4>Rename the layers</h4>
+          <p>Surface Work / Standard Work / Original Work. "Efficiency" is a management word. It validates the trap the first layer is supposed to expose.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  L&D Shakers AI Cluster · SCAMPER Design Council · 2026-03-24 · ldshakers-aiclusterbuild.lovable.app
+</footer>
+
+<script>
+function fmt(n) {
+  if (n < 0) return '−$' + Math.abs(n).toLocaleString('en-US', {maximumFractionDigits:0});
+  if (Math.abs(n) >= 1000) return '$' + n.toLocaleString('en-US', {maximumFractionDigits:0});
+  return '$' + n;
+}
+
+function recalc() {
+  const price = +document.getElementById('sl-price').value;
+  const participants = +document.getElementById('sl-participants').value;
+  const cohorts = +document.getElementById('sl-cohorts').value;
+  const conversion = +document.getElementById('sl-conversion').value;
+  const hours = +document.getElementById('sl-hours').value;
+  const complexity = +document.getElementById('sl-complexity').value;
+
+  document.getElementById('val-price').textContent = '$' + price.toLocaleString();
+  document.getElementById('val-participants').textContent = participants;
+  document.getElementById('val-cohorts').textContent = cohorts;
+  document.getElementById('val-conversion').textContent = conversion + '%';
+  document.getElementById('val-hours').textContent = hours;
+  document.getElementById('val-complexity').textContent = complexity;
+
+  const revPerCohort = price * participants;
+  const revAnnual = revPerCohort * cohorts;
+  const complexityFactor = 0.5 + (complexity / 10) * 1.5;
+  const facilitatorRate = 50;
+  const facPerCohort = Math.round(hours * facilitatorRate * complexityFactor);
+  const netPerCohort = revPerCohort - facPerCohort;
+  const netAnnual = netPerCohort * cohorts;
+  const expoNeeded = Math.ceil(participants / (conversion / 100));
+
+  document.getElementById('proj-rev-cohort').textContent = fmt(revPerCohort);
+  document.getElementById('proj-rev-annual').textContent = fmt(revAnnual);
+  document.getElementById('proj-fac-cohort').textContent = fmt(-facPerCohort);
+  document.getElementById('proj-net-cohort').textContent = fmt(netPerCohort);
+  document.getElementById('proj-net-annual').textContent = fmt(netAnnual);
+  document.getElementById('proj-expo').textContent = expoNeeded;
+
+  document.getElementById('proj-fac-cohort').className = 'proj-value negative';
+  const netCEl = document.getElementById('proj-net-cohort');
+  const netAEl = document.getElementById('proj-net-annual');
+  netCEl.className = 'proj-value ' + (netPerCohort >= 0 ? 'positive' : 'negative');
+  netAEl.className = 'proj-value ' + (netAnnual >= 0 ? 'positive' : 'negative');
+
+  let note = '';
+  if (complexity <= 3) {
+    note = '<strong>Complexity ' + complexity + ':</strong> Lighter-touch facilitation model — lower prep cost but insufficient capacity for the Override Log critique protocols and structured Judgment sessions the redesign requires. Suitable for a pilot or first run only.';
+  } else if (complexity <= 6) {
+    note = '<strong>Complexity ' + complexity + ':</strong> Current architecture range — standard facilitator prep. The Judgment critique redesign sits at the upper end of this band. If implementing improvements 1–4, aim for complexity 6 at minimum.';
+  } else {
+    note = '<strong>Complexity ' + complexity + ':</strong> Full redesign implemented — structured critique sessions, Override Log review protocols, possible practitioner-in-residence. Facilitator cost rises significantly. Price per participant or cohort size needs to absorb the increase. This is the target state after improvements 5 and 6.';
+  }
+  document.getElementById('complexity-note').innerHTML = note;
+}
+
+recalc();
+</script>
+</body>
+</html>

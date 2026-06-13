@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Problem Finder — MVP</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #000;
+    --white: #fff;
+    --gold: #fbd000;
+    --red: #e52521;
+    --dark: #1a0a00;
+    --tile: #4A2C1A;
+    --tile-dark: #3a1c0a;
+    --surface: rgba(0,0,0,0.45);
+  }
+
+  body {
+    background-color: var(--dark);
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(0,0,0,0.15) 31px, rgba(0,0,0,0.15) 32px),
+      repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(0,0,0,0.15) 31px, rgba(0,0,0,0.15) 32px);
+    min-height: 100vh;
+    color: var(--white);
+    font-family: 'VT323', monospace;
+    padding-bottom: 80px;
+  }
+
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: rgba(0,0,0,0.7);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    color: var(--white);
+    border-bottom: 4px solid var(--gold);
+    letter-spacing: 0.05em;
+  }
+
+  .turrets {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    margin-bottom: 8px;
+  }
+  .turret {
+    width: 32px; height: 48px;
+    background: var(--tile);
+    box-shadow: -2px 0 0 var(--black), 2px 0 0 var(--black), 0 -2px 0 var(--black), 0 2px 0 var(--black);
+  }
+
+  .container {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 32px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .step { display: none; flex-direction: column; gap: 20px; }
+  .step.active { display: flex; }
+
+  h2 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.8);
+    line-height: 2;
+  }
+  h2.red { color: var(--red); }
+
+  .sub {
+    font-size: 1.3rem;
+    color: var(--gold);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .sub.grey { color: #ccc; }
+
+  .recall {
+    background: rgba(0,0,0,0.4);
+    padding: 12px 16px;
+    box-shadow: -2px 0 0 #555, 2px 0 0 #555, 0 -2px 0 #555, 0 2px 0 #555;
+  }
+  .recall-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.35rem;
+    color: #aaa;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+  .recall-text {
+    color: #ddd;
+    font-size: 1.1rem;
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .recall-text.gold { color: var(--gold); }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    box-shadow: -2px 0 0 var(--gold), 2px 0 0 var(--gold), 0 -2px 0 var(--gold), 0 2px 0 var(--gold);
+    color: var(--white);
+    font-family: 'VT323', monospace;
+    font-size: 1.2rem;
+    padding: 12px 16px;
+    line-height: 1.8;
+    resize: vertical;
+    outline: none;
+  }
+  textarea { min-height: 120px; }
+  textarea::placeholder, input::placeholder { color: #666; }
+
+  .btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    border: none;
+    padding: 14px 20px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    box-shadow: -4px 0 0 rgba(0,0,0,0.5), 4px 0 0 rgba(0,0,0,0.5), 0 -4px 0 rgba(0,0,0,0.5), 0 6px 0 rgba(0,0,0,0.5);
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .btn:active {
+    transform: translateY(2px);
+    box-shadow: -4px 0 0 rgba(0,0,0,0.5), 4px 0 0 rgba(0,0,0,0.5), 0 -2px 0 rgba(0,0,0,0.5), 0 2px 0 rgba(0,0,0,0.5);
+  }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  .btn-gold { background: var(--gold); color: var(--black); }
+  .btn-red  { background: var(--red);  color: var(--white); }
+  .btn-dark { background: #333; color: #aaa; font-size: 0.38rem; }
+
+  .option-btn {
+    background: var(--surface);
+    border: none;
+    box-shadow: -4px 0 0 var(--white), 4px 0 0 var(--white), 0 -4px 0 var(--white), 0 4px 0 var(--white);
+    color: var(--white);
+    font-family: 'VT323', monospace;
+    font-size: 1.2rem;
+    padding: 16px 20px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: background 0.1s;
+  }
+  .option-btn:hover { background: rgba(251,208,0,0.15); }
+  .option-btn .opt-sub { font-size: 0.95rem; color: #888; }
+
+  .pov-frame {
+    box-shadow: -2px 0 0 var(--gold), 2px 0 0 var(--gold), 0 -2px 0 var(--gold), 0 2px 0 var(--gold);
+  }
+  .pov-row {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(251,208,0,0.2);
+  }
+  .pov-row:last-child { border-bottom: none; }
+  .pov-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.38rem;
+    padding: 10px 12px;
+    white-space: nowrap;
+    min-width: 72px;
+    letter-spacing: 0.05em;
+  }
+  .pov-label.gold { color: var(--gold); }
+  .pov-label.dim  { color: #555; }
+  .pov-row input {
+    flex: 1;
+    box-shadow: none;
+    background: transparent;
+    padding: 10px 12px;
+    border: none;
+  }
+
+  .live-pov {
+    font-size: 1.4rem;
+    color: var(--gold);
+    font-style: italic;
+    line-height: 1.6;
+    min-height: 2rem;
+  }
+
+  .size-check-banner {
+    background: rgba(251,208,0,0.1);
+    border-left: 4px solid var(--gold);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mirror-box {
+    background: rgba(251,208,0,0.08);
+    border-left: 4px solid var(--gold);
+    padding: 14px 18px;
+  }
+  .mirror-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.35rem;
+    color: var(--gold);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+  .mirror-quote {
+    font-size: 1.3rem;
+    color: var(--gold);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .mirror-hold {
+    font-size: 1rem;
+    color: #aaa;
+    margin-top: 6px;
+  }
+
+  .verdict-banner {
+    background: rgba(0,0,0,0.6);
+    border-left: 4px solid var(--gold);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .step-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 0 0;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    background: #333;
+    box-shadow: -1px 0 0 #555, 1px 0 0 #555, 0 -1px 0 #555, 0 1px 0 #555;
+    transition: background 0.15s;
+  }
+  .dot.done { background: var(--gold); }
+  .dot.active { background: var(--red); }
+
+  @media (max-width: 480px) {
+    h2 { font-size: 0.55rem; }
+    .btn { font-size: 0.42rem; padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hud">
+  <span>PROBLEM FINDER</span>
+  <span id="hud-label">START</span>
+  <span id="hud-step">1 / 6</span>
+</div>
+
+<div class="turrets">
+  <div class="turret"></div>
+  <div class="turret"></div>
+  <div class="turret"></div>
+  <div class="turret"></div>
+  <div class="turret"></div>
+</div>
+
+<div class="step-dots" id="dots"></div>
+
+<div class="container">
+
+  <!-- STEP 1: Name your challenge -->
+  <div class="step active" id="s1">
+    <h2>WHAT'S THE PROBLEM?</h2>
+    <p class="sub">Name the one thing that keeps coming back.</p>
+    <p class="sub grey" style="font-size:1rem">Only your final statement is shared at the end. Nothing before that is visible.</p>
+    <textarea id="challenge" placeholder="The thing that comes back every time..."></textarea>
+    <button class="btn btn-red" onclick="advance(1)">DIG DEEPER ▶</button>
+  </div>
+
+  <!-- STEP 2: Why is this happening? -->
+  <div class="step" id="s2">
+    <h2>WHY IS THIS HAPPENING?</h2>
+    <p class="sub">Don't explain. Describe.</p>
+    <div class="recall">
+      <div class="recall-label">YOUR CHALLENGE:</div>
+      <div class="recall-text" id="r-challenge"></div>
+    </div>
+    <textarea id="why" placeholder="Because..."></textarea>
+    <button class="btn btn-gold" onclick="advance(2)">DIG DEEPER ▶</button>
+  </div>
+
+  <!-- STEP 3: Still broken? -->
+  <div class="step" id="s3">
+    <h2>IF YOU FIXED IT TOMORROW, WHAT WOULD STILL BE BROKEN?</h2>
+    <p class="sub">This tells you whether you found the root — or just a symptom.</p>
+    <textarea id="still" placeholder="Even if I fixed this, I'd still have..."></textarea>
+
+    <!-- Size check — shown after typing -->
+    <div class="size-check-banner" id="size-check-banner" style="display:none">
+      <p class="sub" style="font-size:1.1rem">Is this one problem or three? Name the smallest version.</p>
+      <textarea id="size-check" placeholder="The smallest version of this is..." style="min-height:80px"></textarea>
+    </div>
+
+    <button class="btn btn-gold" onclick="advance(3)">THAT'S THE ROOT ▶</button>
+  </div>
+
+  <!-- STEP 4: Write your statement -->
+  <div class="step" id="s4">
+    <h2>YOUR L&D PROBLEM WORTH SOLVING IS...</h2>
+    <p class="sub">Write freely. No rules here.</p>
+    <div class="recall">
+      <div class="recall-label">YOUR DIG FOUND:</div>
+      <div class="recall-text" id="r-still"></div>
+    </div>
+    <textarea id="draft" placeholder="The problem worth solving is..." style="min-height:160px"></textarea>
+    <button class="btn btn-gold" onclick="advance(4)">SHARPEN IT ▶</button>
+  </div>
+
+  <!-- STEP 5: Voice question -->
+  <div class="step" id="s5">
+    <h2>THE VOICE QUESTION</h2>
+    <p class="sub">What would the person most affected say if they heard your diagnosis?</p>
+    <textarea id="voice" placeholder='"They\'d say..."'></textarea>
+    <div class="mirror-box" id="mirror" style="display:none">
+      <div class="mirror-label">THEY'D SAY:</div>
+      <div class="mirror-quote" id="mirror-text"></div>
+      <div class="mirror-hold">Hold that voice when you write your POV.</div>
+    </div>
+    <button class="btn btn-gold" onclick="advance(5)">HOLD THAT VOICE ▶</button>
+  </div>
+
+  <!-- STEP 6: POV builder -->
+  <div class="step" id="s6">
+    <h2>WRITE YOUR POV.</h2>
+    <p class="sub">The 'who' might be a learner, a manager — or you. All three are valid.</p>
+
+    <!-- Subject picker -->
+    <div id="subject-picker">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <button class="option-btn" onclick="pickSubject('learner','A learner or participant')">
+          🧑‍💼 A learner or participant
+          <span class="opt-sub">The person going through the experience</span>
+        </button>
+        <button class="option-btn" onclick="pickSubject('stakeholder','A stakeholder or manager')">
+          👔 A stakeholder or manager
+          <span class="opt-sub">The person who owns the context or budget</span>
+        </button>
+        <button class="option-btn" onclick="pickSubject('me','Me, as L&D')">
+          🛠️ Me, as L&D
+          <span class="opt-sub">I am the one blocked, under-resourced, or working around the problem</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- POV fields — hidden until subject picked -->
+    <div id="pov-builder" style="display:none;flex-direction:column;gap:20px">
+      <div class="pov-frame">
+        <div class="pov-row">
+          <span class="pov-label gold">WHO</span>
+          <input type="text" id="pov-who" placeholder="the person or role" oninput="updatePOV()">
+        </div>
+        <div class="pov-row">
+          <span class="pov-label dim">NEEDS</span>
+          <input type="text" id="pov-needs" placeholder="what they actually need" oninput="updatePOV()">
+        </div>
+        <div class="pov-row">
+          <span class="pov-label dim">BECAUSE</span>
+          <input type="text" id="pov-because" placeholder="what's making it hard" oninput="updatePOV()">
+        </div>
+      </div>
+
+      <div class="live-pov" id="live-pov"></div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-red" id="pov-submit" onclick="advance(6)" disabled>THIS IS MY POV ▶</button>
+        <button class="btn btn-dark" onclick="resetSubject()">← CHANGE WHO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 7: Result -->
+  <div class="step" id="s7">
+    <h2 style="color:var(--gold)">YOUR PROBLEM STATEMENT.</h2>
+
+    <div class="verdict-banner">
+      <div>
+        <div class="recall-label" style="margin-bottom:8px">YOUR POV:</div>
+        <div class="live-pov" id="final-pov" style="font-size:1.5rem"></div>
+      </div>
+
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:16px">
+        <div class="recall-label" style="margin-bottom:8px">ONE SMALL THING — WHERE COULD AI TOUCH THIS?</div>
+        <textarea id="experiment" placeholder="The bit that's repetitive, slow, or manual every single time..." style="min-height:80px;box-shadow:-2px 0 0 #555,2px 0 0 #555,0 -2px 0 #555,0 2px 0 #555"></textarea>
+      </div>
+
+      <button class="btn btn-red" onclick="finish()" style="align-self:flex-start">RAISE THE FLAG 🚩</button>
+    </div>
+  </div>
+
+  <!-- STEP 8: Done -->
+  <div class="step" id="s8">
+    <h2 style="color:var(--gold);text-align:center">LEVEL COMPLETE!</h2>
+    <div class="verdict-banner" style="align-items:flex-start;gap:20px">
+      <div>
+        <div class="recall-label" style="margin-bottom:8px">YOUR PROBLEM STATEMENT:</div>
+        <div id="done-pov" style="font-size:1.4rem;color:var(--gold);font-style:italic;line-height:1.6"></div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;width:100%">
+        <div class="recall-label" style="margin-bottom:8px">FIRST EXPERIMENT:</div>
+        <div id="done-experiment" style="font-size:1.1rem;color:#aaa;line-height:1.5"></div>
+      </div>
+    </div>
+    <button class="btn btn-dark" onclick="restart()" style="align-self:flex-start">↺ START AGAIN</button>
+  </div>
+
+</div>
+
+<script>
+  const STEPS = 8;
+  const LABELS = ['CHALLENGE','WHY?','ROOT','DRAFT','VOICE','POV','FIRST MOVE','DONE'];
+  let current = 1;
+  const data = {};
+
+  // Dots
+  const dotsEl = document.getElementById('dots');
+  for (let i = 1; i <= 6; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.id = 'dot-' + i;
+    dotsEl.appendChild(d);
+  }
+
+  function updateDots() {
+    for (let i = 1; i <= 6; i++) {
+      const d = document.getElementById('dot-' + i);
+      d.className = 'dot' + (i < current ? ' done' : i === current ? ' active' : '');
+    }
+    document.getElementById('hud-label').textContent = LABELS[current - 1] || 'DONE';
+    document.getElementById('hud-step').textContent = Math.min(current, 6) + ' / 6';
+  }
+
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById('s' + n);
+    if (el) el.classList.add('active');
+    current = n;
+    updateDots();
+    window.scrollTo(0, 0);
+  }
+
+  function advance(from) {
+    if (from === 1) {
+      const val = document.getElementById('challenge').value.trim();
+      if (!val) return;
+      data.challenge = val;
+      document.getElementById('r-challenge').textContent = '"' + val + '"';
+      showStep(2);
+
+    } else if (from === 2) {
+      const val = document.getElementById('why').value.trim();
+      if (!val) return;
+      data.why = val;
+      // Pre-fill still-broken with a nudge
+      showStep(3);
+
+    } else if (from === 3) {
+      const val = document.getElementById('still').value.trim();
+      if (!val) return;
+      data.still = val;
+      data.sizeCheck = document.getElementById('size-check').value.trim();
+      // Pre-fill draft with size check answer if present, else still-broken
+      const draftSeed = data.sizeCheck || val;
+      document.getElementById('r-still').textContent = '"' + draftSeed + '"';
+      document.getElementById('draft').value = '';
+      showStep(4);
+
+    } else if (from === 4) {
+      const val = document.getElementById('draft').value.trim();
+      if (!val) return;
+      data.draft = val;
+      // Pre-fill pov-because from why answer
+      document.getElementById('pov-because').value = data.why || '';
+      updatePOV();
+      showStep(5);
+
+    } else if (from === 5) {
+      const val = document.getElementById('voice').value.trim();
+      if (!val) return;
+      data.voice = val;
+      // Show mirror
+      document.getElementById('mirror-text').textContent = '"' + val + '"';
+      document.getElementById('mirror').style.display = 'block';
+      setTimeout(() => showStep(6), 800);
+
+    } else if (from === 6) {
+      const pov = buildPOV();
+      if (!pov) return;
+      data.pov = pov;
+      document.getElementById('final-pov').textContent = pov;
+      showStep(7);
+    }
+  }
+
+  // Step 3 size check trigger — show after typing
+  document.getElementById('still').addEventListener('input', function() {
+    const words = this.value.trim().split(/\s+/).filter(Boolean).length;
+    if (words > 8) {
+      document.getElementById('size-check-banner').style.display = 'flex';
+    }
+  });
+
+  // Step 5 mirror on input
+  document.getElementById('voice').addEventListener('input', function() {
+    const val = this.value.trim();
+    if (val.length > 10) {
+      document.getElementById('mirror-text').textContent = '"' + val + '"';
+      document.getElementById('mirror').style.display = 'block';
+    } else {
+      document.getElementById('mirror').style.display = 'none';
+    }
+  });
+
+  // POV subject picker
+  function pickSubject(type, label) {
+    data.povSubject = type;
+    document.getElementById('subject-picker').style.display = 'none';
+    const builder = document.getElementById('pov-builder');
+    builder.style.display = 'flex';
+    document.getElementById('pov-who').value = label;
+    document.getElementById('pov-who').focus();
+    updatePOV();
+  }
+
+  function resetSubject() {
+    document.getElementById('subject-picker').style.display = 'block';
+    document.getElementById('pov-builder').style.display = 'none';
+    document.getElementById('pov-who').value = '';
+    document.getElementById('live-pov').textContent = '';
+  }
+
+  function buildPOV() {
+    const who = document.getElementById('pov-who').value.trim();
+    const needs = document.getElementById('pov-needs').value.trim();
+    const because = document.getElementById('pov-because').value.trim();
+    const parts = [];
+    if (who) parts.push(who);
+    if (needs) { parts.push('needs'); parts.push(needs); }
+    if (because) { parts.push('because'); parts.push(because); }
+    return parts.length >= 2 ? parts.join(' ') + '.' : '';
+  }
+
+  function updatePOV() {
+    const pov = buildPOV();
+    document.getElementById('live-pov').textContent = pov;
+    const btn = document.getElementById('pov-submit');
+    const who = document.getElementById('pov-who').value.trim();
+    btn.disabled = !who;
+  }
+
+  function finish() {
+    data.experiment = document.getElementById('experiment').value.trim();
+    document.getElementById('done-pov').textContent = data.pov;
+    document.getElementById('done-experiment').textContent = data.experiment || '—';
+    showStep(8);
+    // Bounce dots to gold
+    for (let i = 1; i <= 6; i++) document.getElementById('dot-' + i).className = 'dot done';
+    document.getElementById('hud-label').textContent = 'DONE';
+    document.getElementById('hud-step').textContent = '✓';
+  }
+
+  function restart() {
+    data.challenge = data.why = data.still = data.sizeCheck = data.draft = data.voice = data.pov = data.experiment = '';
+    document.querySelectorAll('textarea, input[type="text"]').forEach(el => el.value = '');
+    document.getElementById('mirror').style.display = 'none';
+    document.getElementById('size-check-banner').style.display = 'none';
+    document.getElementById('subject-picker').style.display = 'block';
+    document.getElementById('pov-builder').style.display = 'none';
+    document.getElementById('live-pov').textContent = '';
+    showStep(1);
+  }
+
+  updateDots();
+</script>
+</body>
+</html>

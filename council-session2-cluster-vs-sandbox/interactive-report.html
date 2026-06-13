@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Council Session 2 — Cluster vs Sandbox</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #fffbeb;
+  --fg: #1a237e;
+  --primary: #1e3a8a;
+  --amber: #d97706;
+  --amber-light: #fef3c7;
+  --green: #059669;
+  --green-light: #d1fae5;
+  --red: #b91c1c;
+  --red-light: #fee2e2;
+  --purple: #7c3aed;
+  --purple-light: #ede9fe;
+  --border: #e8d88a;
+  --muted: #fef9ec;
+  --charcoal: #374151;
+  --gray: #6b7280;
+  --radius: 12px;
+  --FD: 'Space Grotesk', sans-serif;
+  --FB: 'DM Sans', sans-serif;
+}
+body { font-family: var(--FB); background: var(--bg); color: var(--charcoal); line-height: 1.65; font-size: 15px; }
+
+/* Nav */
+.nav { position: sticky; top: 0; z-index: 100; background: var(--primary); display: flex; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { flex-shrink: 0; padding: 12px 18px; font-family: var(--FD); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.6); text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap; transition: all .15s; }
+.nav a:hover { color: white; border-bottom-color: var(--amber); }
+
+/* Layout */
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px 80px; }
+header { background: var(--primary); color: white; padding: 52px 32px 44px; text-align: center; margin-bottom: 52px; }
+header .eye { font-family: var(--FD); font-size: 10px; font-weight: 700; letter-spacing: 3.5px; text-transform: uppercase; color: var(--amber); margin-bottom: 14px; }
+header h1 { font-family: var(--FD); font-size: clamp(26px,4.5vw,42px); font-weight: 700; line-height: 1.1; margin-bottom: 12px; }
+header .sub { font-size: 15px; color: rgba(255,255,255,0.7); max-width: 620px; margin: 0 auto 20px; line-height: 1.55; }
+.chips { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.chip { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 5px 14px; font-family: var(--FD); font-size: 12px; color: rgba(255,255,255,0.8); }
+.chip strong { color: var(--amber); }
+
+section { margin-bottom: 60px; }
+.slabel { font-family: var(--FD); font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--amber); margin-bottom: 4px; }
+.stitle { font-family: var(--FD); font-size: 26px; font-weight: 700; color: var(--primary); margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
+
+/* Gap table */
+.gap-table { width: 100%; border-collapse: collapse; font-size: 13.5px; border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.gap-table thead th { background: var(--primary); color: white; font-family: var(--FD); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 16px; text-align: left; }
+.gap-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+.gap-table tr:last-child td { border-bottom: none; }
+.gap-table tr:nth-child(even) td { background: #fffbf2; }
+.tag-sand { background: var(--amber-light); color: #92400e; padding: 2px 8px; border-radius: 5px; font-family: var(--FD); font-size: 11px; font-weight: 600; }
+.tag-clust { background: var(--green-light); color: #065f46; padding: 2px 8px; border-radius: 5px; font-family: var(--FD); font-size: 11px; font-weight: 600; }
+
+/* Insight */
+.insight { background: var(--primary); color: white; border-radius: var(--radius); padding: 36px 40px; position: relative; overflow: hidden; }
+.insight::before { content: '"'; position: absolute; top: -10px; left: 24px; font-size: 180px; font-family: Georgia, serif; color: rgba(255,255,255,0.05); line-height: 1; }
+.insight .ilabel { font-family: var(--FD); font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--amber); margin-bottom: 14px; }
+.insight blockquote { font-family: var(--FD); font-size: clamp(16px,2.5vw,21px); font-weight: 500; line-height: 1.5; z-index: 1; position: relative; max-width: 720px; margin-bottom: 12px; }
+.insight .attr { font-size: 13px; color: rgba(255,255,255,0.55); }
+
+/* Advisor cards */
+.advisor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+.advisor-card { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+.card-top { padding: 22px 22px 16px; border-bottom: 1px solid var(--border); flex: 1; }
+.card-accent { height: 4px; margin: -22px -22px 16px; }
+.a-arch .card-accent { background: var(--primary); }
+.a-trans .card-accent { background: var(--green); }
+.a-guard .card-accent { background: var(--amber); }
+.a-pion .card-accent { background: var(--purple); }
+.atag { font-family: var(--FD); font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+.a-arch .atag { color: var(--primary); }
+.a-trans .atag { color: var(--green); }
+.a-guard .atag { color: var(--amber); }
+.a-pion .atag { color: var(--purple); }
+.card-top h3 { font-family: var(--FD); font-size: 16px; font-weight: 700; color: var(--fg); margin-bottom: 10px; }
+.card-top .desc { font-size: 13.5px; color: var(--charcoal); line-height: 1.55; margin-bottom: 8px; }
+.card-top .blind { font-size: 12.5px; color: var(--gray); font-style: italic; line-height: 1.5; }
+.card-top .blind strong { font-style: normal; color: var(--charcoal); }
+.card-vote { padding: 16px 22px; }
+.vote-label { font-family: var(--FD); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); margin-bottom: 8px; }
+.vote-row { display: flex; align-items: flex-start; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.vp { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; font-family: var(--FD); line-height: 1.3; }
+.vp-r1 { background: #e5e7eb; color: #374151; }
+.vp-f { background: var(--amber-light); color: #92400e; }
+.arr { color: var(--gray); font-size: 14px; line-height: 1.8; }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 6px; font-size: 10px; font-weight: 700; font-family: var(--FD); letter-spacing: 1px; text-transform: uppercase; }
+.b-changed { background: var(--red-light); color: var(--red); }
+.b-partial { background: var(--amber-light); color: #92400e; }
+.b-held { background: var(--green-light); color: var(--green); }
+.change-note { font-size: 12.5px; color: var(--charcoal); line-height: 1.5; margin-top: 6px; }
+
+/* Design decisions interactive */
+.decisions-wrap { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.decision-item { border-bottom: 1px solid var(--border); }
+.decision-item:last-child { border-bottom: none; }
+.decision-header { display: grid; grid-template-columns: 52px 1fr auto; align-items: stretch; }
+.d-num { background: var(--primary); color: white; font-family: var(--FD); font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; min-height: 80px; }
+.d-body { padding: 18px 22px; }
+.d-body h4 { font-family: var(--FD); font-size: 14.5px; font-weight: 700; color: var(--fg); margin-bottom: 5px; }
+.d-body .d-from { font-size: 12px; color: var(--gray); margin-bottom: 4px; }
+.d-body .d-from span { font-weight: 600; text-decoration: line-through; color: #b91c1c; }
+.d-body .d-to { font-size: 13.5px; color: var(--charcoal); line-height: 1.55; }
+.d-body .d-to strong { color: var(--fg); }
+.d-meta { padding: 18px 20px 18px 0; display: flex; align-items: flex-start; }
+.d-tag { font-family: var(--FD); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+.d-now { background: var(--green-light); color: #065f46; }
+.d-design { background: #dbeafe; color: #1e40af; }
+.d-pilot { background: var(--purple-light); color: var(--purple); }
+
+/* Score panel */
+.score-panel { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 32px; }
+.score-intro { font-size: 14.5px; color: var(--charcoal); margin-bottom: 28px; line-height: 1.6; max-width: 680px; }
+.toggles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.toggle-item { padding: 16px 18px; background: var(--muted); border: 1.5px solid var(--border); border-radius: 10px; }
+.toggle-item .tlabel { font-family: var(--FD); font-size: 13px; font-weight: 700; color: var(--fg); margin-bottom: 4px; }
+.toggle-item .tdesc { font-size: 12px; color: var(--gray); margin-bottom: 12px; line-height: 1.45; }
+.toggle-row { display: flex; align-items: center; gap: 10px; }
+.toggle-opt { font-family: var(--FD); font-size: 11px; font-weight: 600; color: var(--gray); }
+.toggle-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider { position: absolute; inset: 0; background: #d1d5db; border-radius: 13px; cursor: pointer; transition: background .2s; }
+.toggle-slider::before { content: ''; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+
+.score-display { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.score-card { background: var(--muted); border: 1.5px solid var(--border); border-radius: 10px; padding: 18px 16px; text-align: center; }
+.sc-label { font-family: var(--FD); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); margin-bottom: 8px; line-height: 1.35; }
+.sc-val { font-family: var(--FD); font-size: 26px; font-weight: 700; color: var(--primary); line-height: 1; margin-bottom: 4px; }
+.sc-val.good { color: var(--green); }
+.sc-val.warn { color: var(--amber); }
+.sc-val.bad { color: var(--red); }
+.sc-sub { font-size: 11.5px; color: var(--gray); }
+
+/* Vote table */
+.vote-table-wrap { overflow-x: auto; border: 1.5px solid var(--border); border-radius: var(--radius); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead th { background: var(--primary); color: white; font-family: var(--FD); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 16px; text-align: left; white-space: nowrap; }
+td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; color: var(--charcoal); }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: #fffbf2; }
+td strong { color: var(--fg); }
+.vd { font-weight: 700; font-family: var(--FD); font-size: 11px; white-space: nowrap; }
+.vd-r { color: var(--red); } .vd-s { color: var(--amber); } .vd-h { color: var(--green); }
+
+/* Signals */
+.sig-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.sig-chip { flex: 1; min-width: 90px; background: white; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; text-align: center; }
+.sig-lens { font-family: var(--FD); font-size: 10px; font-weight: 700; color: var(--gray); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.sig-v { font-family: var(--FD); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.sv-r { background: var(--red-light); color: var(--red); }
+.sv-s { background: var(--amber-light); color: var(--amber); }
+.sv-h { background: var(--green-light); color: var(--green); }
+
+/* Tensions */
+.tension-list { display: flex; flex-direction: column; gap: 14px; }
+.tension-card { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 22px 26px; }
+.tension-card h4 { font-family: var(--FD); font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 8px; }
+.tension-card p { font-size: 14px; color: var(--charcoal); line-height: 1.65; margin-bottom: 8px; }
+.tension-card .parties { font-size: 13px; color: var(--gray); }
+.tension-card .parties strong { color: var(--charcoal); }
+.tstatus { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; font-family: var(--FD); margin-top: 8px; }
+.ts-u { background: var(--red-light); color: var(--red); }
+.ts-p { background: var(--amber-light); color: var(--amber); }
+.ts-r { background: var(--green-light); color: var(--green); }
+
+/* Consensus */
+.cons-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.cons-item { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px 22px; display: flex; gap: 16px; align-items: flex-start; }
+.cons-num { font-family: var(--FD); font-size: 26px; font-weight: 700; color: var(--amber); line-height: 1; flex-shrink: 0; width: 32px; }
+.cons-item h4 { font-family: var(--FD); font-size: 14px; font-weight: 700; color: var(--fg); margin-bottom: 5px; }
+.cons-item p { font-size: 13.5px; color: var(--charcoal); line-height: 1.55; }
+
+footer { text-align: center; padding: 28px; font-size: 12.5px; color: var(--gray); border-top: 1px solid var(--border); margin-top: 48px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="#gap">The Gap</a>
+  <a href="#insight">Key Insight</a>
+  <a href="#advisors">Advisors</a>
+  <a href="#decisions">Design Decisions</a>
+  <a href="#score">Design Health</a>
+  <a href="#votes">Vote Tracker</a>
+  <a href="#signals">Signals</a>
+  <a href="#tensions">Tensions</a>
+  <a href="#consensus">Consensus</a>
+</nav>
+
+<header>
+  <div class="eye">L&D Shakers · SCAMPER Design Council · Session 2</div>
+  <h1>Cluster vs. Sandbox<br>What the Prototype Reveals</h1>
+  <p class="sub">The council ran with full prototype knowledge this session. The live build at ai-transform-space.lovable.app is the AI Sandbox — a workflow-redesign experience. The AI Cluster is its intended successor. The gap between them is the design problem.</p>
+  <div class="chips">
+    <div class="chip"><strong>Date:</strong> 2026-03-24</div>
+    <div class="chip"><strong>Session:</strong> 2 of 2</div>
+    <div class="chip"><strong>Lenses:</strong> All 7 SCAMPER</div>
+    <div class="chip"><strong>Result:</strong> 5× Redesign · 1× Stress Point · 1× Holds</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- GAP -->
+  <section id="gap">
+    <div class="slabel">The Core Problem</div>
+    <div class="stitle">Prototype (Sandbox) vs. Architecture (Cluster)</div>
+    <p style="font-size:14.5px;color:var(--charcoal);line-height:1.65;margin-bottom:20px;max-width:780px;">The prototype was built as a workflow-redesign experience. The Cluster is designed as an identity transition. These are not the same thing. Every REDESIGN verdict below is a place where the Cluster cannot inherit the prototype's design.</p>
+    <div style="overflow-x:auto;border-radius:var(--radius);border:1.5px solid var(--border);">
+    <table class="gap-table">
+      <thead><tr><th>Element</th><th>Prototype — AI Sandbox</th><th>Cluster — Under Review</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Opening</strong></td><td>No Opening Expo — starts with Weekly Workflow</td><td>Opening Expo Week 1 — practitioners demonstrate new capabilities</td></tr>
+        <tr><td><strong>Override Log</strong></td><td>4-field form: AI Suggestion / Modification / Why Changed / Human Insight</td><td>3 questions: What did AI suggest? What did I override? <strong>What is uniquely mine?</strong></td></tr>
+        <tr><td><strong>Deep dive structure</strong></td><td>4 workflow topics: Define / Discover / Design / Deploy</td><td>3 identity layers: Efficiency → Judgment → Capability</td></tr>
+        <tr><td><strong>Week 9</strong></td><td>Deep Dive with Peers (workflow focus)</td><td>Identity statement preparation</td></tr>
+        <tr><td><strong>Closing event</strong></td><td>Transformation Expo — World Café, before/after workflow showcase, awards</td><td>Closing Expo — Override Log patterns, not projects</td></tr>
+        <tr><td><strong>Central frame</strong></td><td>Workflow redesign — "what can we do now?"</td><td>Identity transition — "what is specifically mine?"</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- INSIGHT -->
+  <section id="insight">
+    <div class="insight">
+      <div class="ilabel">Sharpest Insight — Session Finding</div>
+      <blockquote>"The cycle design IS the first experiment."</blockquote>
+      <div class="attr">— Craft Guardian, resolving the Pioneer vs. Architect friction on the Eliminate lens. The five-step cycle is a default with a visible override mechanism — participants who design their own cycle are doing Override Log work from day one.</div>
+    </div>
+    <div style="margin-top:16px;background:white;border:1.5px solid var(--border);border-radius:var(--radius);padding:22px 26px;">
+      <div class="slabel" style="margin-bottom:8px;">Second Sharpest</div>
+      <p style="font-family:var(--FD);font-size:17px;font-weight:500;color:var(--fg);line-height:1.5;margin-bottom:10px;">"A graduating cohort's Override Log entries are the most credible evidence that the identity transition is real — more credible than any practitioner showcase."</p>
+      <p style="font-size:13px;color:var(--gray);">— Craft Guardian, Put to Other Uses lens. Activates the Closing-to-Opening pipeline and changes what the Closing Expo is for.</p>
+    </div>
+  </section>
+
+  <!-- ADVISORS -->
+  <section id="advisors">
+    <div class="slabel">The Council</div>
+    <div class="stitle">Four Voices — Round 1 → Final</div>
+    <div class="advisor-grid">
+
+      <div class="advisor-card a-arch">
+        <div class="card-top">
+          <div class="card-accent"></div>
+          <div class="atag">Architect</div>
+          <h3>Sara's AI Proxy</h3>
+          <p class="desc">Protects the identity gap framing. Won't let the design slide into tool adoption. Stakes a position then stress-tests it.</p>
+          <p class="blind"><strong>Blind spot:</strong> Assumes structure creates readiness.</p>
+        </div>
+        <div class="card-vote">
+          <div class="vote-label">Round 1 → Final</div>
+          <div class="vote-row">
+            <span class="vp vp-r1">R1: Opening Expo → Week 5</span>
+            <span class="arr">→</span>
+            <span class="vp vp-f">Final: Week 1, reversed format</span>
+          </div>
+          <div class="vote-row"><span class="badge b-changed">Changed</span></div>
+          <p class="change-note">Abandoned Week 5 timing. Adopted Transformer's reversed format (participants first) + Guardian's practitioner constraint. Confirmed: Closing Expo rebuilt from Override Log, renamed, awards cut.</p>
+        </div>
+      </div>
+
+      <div class="advisor-card a-trans">
+        <div class="card-top">
+          <div class="card-accent"></div>
+          <div class="atag">Cautious Transformer</div>
+          <h3>The Safety-Seeker</h3>
+          <p class="desc">Uses AI daily — "good at it" means faster content. Wants incremental steps. Will flag exposure without psychological safety.</p>
+          <p class="blind"><strong>Blind spot:</strong> Mistakes comfort for competence.</p>
+        </div>
+        <div class="card-vote">
+          <div class="vote-label">Round 1 → Final</div>
+          <div class="vote-row">
+            <span class="vp vp-r1">R1: Participants present first</span>
+            <span class="arr">→</span>
+            <span class="vp vp-f">Final: Same + practitioner constraint</span>
+          </div>
+          <div class="vote-row"><span class="badge b-partial">Partial</span></div>
+          <p class="change-note">Conceded Week 5 timing less important than format. Held: Week 9 as single facilitated session. Held: learning contract at Week 1. Pioneer's "opening question" substitution not accepted.</p>
+        </div>
+      </div>
+
+      <div class="advisor-card a-guard">
+        <div class="card-top">
+          <div class="card-accent"></div>
+          <div class="atag">Craft Guardian</div>
+          <h3>The Standards Keeper</h3>
+          <p class="desc">Value is judgment, taste, and process. Overrides AI constantly. Challenges anything that flattens expertise into a prompt.</p>
+          <p class="blind"><strong>Blind spot:</strong> Craft as shield against examining what AI has already replaced.</p>
+        </div>
+        <div class="card-vote">
+          <div class="vote-label">Round 1 → Final</div>
+          <div class="vote-row">
+            <span class="vp vp-r1">R1: Closing-to-Opening pipeline</span>
+            <span class="arr">→</span>
+            <span class="vp vp-f">Final: Same + adopt reversed Opening Expo</span>
+          </div>
+          <div class="vote-row"><span class="badge b-changed">Changed</span></div>
+          <p class="change-note">Adopted Transformer's reversed Opening Expo as sharper than own Round 1 position. Added practitioner constraint: respond only with a specific override, no general encouragement. Maintained all other positions.</p>
+        </div>
+      </div>
+
+      <div class="advisor-card a-pion">
+        <div class="card-top">
+          <div class="card-accent"></div>
+          <div class="atag">Untethered Pioneer</div>
+          <h3>The Impatient Challenger</h3>
+          <p class="desc">Efficiency and judgment are table stakes. Asks "why not?" more than "how?" Pushes the design to be bolder.</p>
+          <p class="blind"><strong>Blind spot:</strong> Comfort with ambiguity is the exception, not the rule.</p>
+        </div>
+        <div class="card-vote">
+          <div class="vote-label">Round 1 → Final</div>
+          <div class="vote-row">
+            <span class="vp vp-r1">R1: Expo credentialing moment</span>
+            <span class="arr">→</span>
+            <span class="vp vp-f">Final: Pipeline is stronger</span>
+          </div>
+          <div class="vote-row"><span class="badge b-changed">Changed</span></div>
+          <p class="change-note">Replaced credentialing argument with Guardian's Closing-to-Opening pipeline. Substituted learning contract with Week 1 opening question. Held: Efficiency as extended confrontation (pilot). Held: cycle as first Override Log entry.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DESIGN DECISIONS -->
+  <section id="decisions">
+    <div class="slabel">Agreed Actions</div>
+    <div class="stitle">Key Design Decisions — Stated</div>
+    <p style="font-size:14.5px;color:var(--charcoal);margin-bottom:24px;line-height:1.65;max-width:780px;">These are the changes the council converged on across both rounds. The first four are immediate — no additional design work required. Items 5–7 require facilitation design. Item 8 is a one-cohort pilot.</p>
+    <div class="decisions-wrap">
+
+      <div class="decision-item">
+        <div class="decision-header">
+          <div class="d-num">1</div>
+          <div class="d-body">
+            <h4>Reverse the Opening Expo — participants present their ceiling first</h4>
+            <div class="d-from">Current prototype: <span>Practitioners present new capabilities to a passive audience</span></div>
+            <p class="d-to">Participants open the Expo with five minutes each: "Here is my current best use of AI. Here is what I can't yet do." Practitioners then respond — but only with a <strong>specific override moment from their own log</strong>. No general encouragement. The event becomes diagnostic before it becomes aspirational.</p>
+          </div>
+          <div class="d-meta"><span class="d-tag d-now">Implement now</span></div>
+        </div>
+      </div>
+
+      <div class="decision-item">
+        <div class="decision-header">
+          <div class="d-num">2</div>
+          <div class="d-body">
+            <h4>Rebuild the Closing Expo from Override Log entries — rename it</h4>
+            <div class="d-from">Current prototype: <span>World Café, before/after workflow showcase, awards, six rotations</span></div>
+            <p class="d-to">Every participant reads <strong>one Override Log entry</strong> — the sharpest override moment in their log — and answers one question from the group. Five minutes each. Cohort of twelve = one hour, every voice in the room. No audience rotation. No awards. The name "Transformation Expo" signals a workflow showcase; rename it to signal what it actually is.</p>
+          </div>
+          <div class="d-meta"><span class="d-tag d-now">Implement now</span></div>
+        </div>
+      </div>
+
+      <div class="decision-item">
+        <div class="decision-header">
+          <div class="d-num">3</div>
+          <div class="d-body">
+            <h4>Eliminate the awards section entirely</h4>
+            <div class="d-from">Current prototype: <span>"Boldest Experiment," "Best Override," "Best Validation Discipline," "Most Transferable Prompt"</span></div>
+            <p class="d-to">Awards individualise what should be a <strong>collective discovery moment</strong>. Competitive framing at the closing event is the wrong register. The Closing Expo is not a competition — it's a reading of what the cohort found. Cut all award categories.</p>
+          </div>
+          <div class="d-meta"><span class="d-tag d-now">Implement now</span></div>
+        </div>
+      </div>
+
+      <div class="decision-item">
+        <div class="decision-header">
+          <div class="d-num">4</div>
+          <div class="d-body">
+            <h4>Name the Override Log as a professional portfolio artefact from Week 1</h4>
+            <div class="d-from">Current: <span>Override Log treated as an in-program reflection tool only</span></div>
+            <p class="d-to">Tell participants at Week 1 that the Override Log will become a <strong>professional evidence base</strong> — a record of judgment decisions that didn't exist before AI. "Here are twelve instances where I applied context, taste, and domain knowledge that AI couldn't supply." Naming this changes how participants write entries from the start. No structural change required — only a framing change in the Week 1 brief.</p>
+          </div>
+          <div class="d-meta"><span class="d-tag d-now">Implement now</span></div>
+        </div>
+      </div>
+
+      <div class="decision-item">
+        <div class="decision-header">
+          <div class="d-num">5</div>
+          <div class="d-body">
+            <h4>Extend Capability to 3 weeks, compress Judgment to 2</h4>
+            <div class="d-from">Current: <span>Judgment 3 weeks (Weeks 4–6), Capability 2 weeks (Weeks 7–8)</span></div>
+            <p class="d-to">The hardest question — "What can you do now that wasn't possible before?" — currently has the least runway. Judgment at three weeks has room to drift. <strong>New allocation: Judgment Weeks 4–5, Capability Weeks 6–8.</strong> The reclaimed Judgment week moves to Capability, where identity work has to land.</p>
+          </div>
+          <div class="d-meta"><span class="d-tag d-design">Design required</span></div>
+        </div>
+      </div>
+
+      <div class="decision-item">
+        <div class="decision-header">
+          <div class="d-num">6</div>
+          <div class="d-body">
+            <h4>Midpoint Override Log pin-up at Week 5</h4>
+            <div class="d-from">Current: <span>Override Log is private — only surfaced at Closing Expo</span></div>
+            <p class="d-to">At Week 5, every participant pins <strong>one override moment</strong> (three lines: AI suggested X, I did Y, because Z). Anonymous if needed. The cohort reads all entries in fifteen minutes. The collective reading does two things: normalises overriding (everyone is doing it) and shows the range of what people protect (aspiration). A private log for ten weeks wastes the architecture's most powerful comparative data.</p>
+          </div>
+          <div class="d-meta"><span class="d-tag d-design">Design required</span></div>
+        </div>
+      </div>
+
+      <div class="decision-item">
+        <div class="decision-header">
+          <div class="d-num">7</div>
+          <div class="d-body">
+            <h4>Make the five-step cycle a default with a visible override mechanism</h4>
+            <div class="d-from">Current: <span>Five-step cycle presented as the required structure</span></div>
+            <p class="d-to">The cycle is not a procedure — it's one valid experiment design. Participants who follow it are doing an experiment. Participants who change it are doing a different experiment, and <strong>that design decision becomes their first Override Log entry.</strong> "I changed my cycle because the standard one wasn't producing the insight I needed." Make the override mechanism explicit and celebrated, not hidden.</p>
+          </div>
+          <div class="d-meta"><span class="d-tag d-design">Design required</span></div>
+        </div>
+      </div>
+
+      <div class="decision-item">
+        <div class="decision-header">
+          <div class="d-num">8</div>
+          <div class="d-body">
+            <h4>Activate the Closing-to-Opening cohort pipeline from Cohort 2</h4>
+            <div class="d-from">Current: <span>Each cohort is standalone — no connection to future cohorts</span></div>
+            <p class="d-to">After Cohort 1 closes, three to four participants return for Cohort 2's Opening Expo. They present using the reversed format: ceiling at Week 1, what shifted in Judgment sessions, what they can now claim as theirs. <strong>Previous participants' Override Log entries are the most credible evidence that the transition is real</strong> — more credible than any external practitioner showcase. The standard-raising compounds across cohorts.</p>
+          </div>
+          <div class="d-meta"><span class="d-tag d-pilot">After Cohort 1</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DESIGN HEALTH SCORE -->
+  <section id="score">
+    <div class="slabel">Design Health</div>
+    <div class="stitle">Toggle Decisions → See Impact</div>
+    <div class="score-panel">
+      <p class="score-intro">Each toggle represents a design decision the council reached. Turn them on to model the Cluster as designed. Turn them off to see what the current prototype delivers. The scores reflect identity transition readiness — how well the architecture does the thing the Sandbox couldn't.</p>
+
+      <div class="toggles-grid">
+        <div class="toggle-item">
+          <div class="tlabel">Opening Expo reversed</div>
+          <div class="tdesc">Participants present ceiling first. Practitioners respond with specific override only.</div>
+          <div class="toggle-row">
+            <span class="toggle-opt">Sandbox</span>
+            <label class="toggle-switch"><input type="checkbox" id="t1" checked onchange="score()"><span class="toggle-slider"></span></label>
+            <span class="toggle-opt">Cluster</span>
+          </div>
+        </div>
+        <div class="toggle-item">
+          <div class="tlabel">Closing Expo rebuilt + renamed</div>
+          <div class="tdesc">Override Log entries, not World Café. Every participant reads one moment.</div>
+          <div class="toggle-row">
+            <span class="toggle-opt">Sandbox</span>
+            <label class="toggle-switch"><input type="checkbox" id="t2" checked onchange="score()"><span class="toggle-slider"></span></label>
+            <span class="toggle-opt">Cluster</span>
+          </div>
+        </div>
+        <div class="toggle-item">
+          <div class="tlabel">Awards eliminated</div>
+          <div class="tdesc">No competitive framing at the closing event.</div>
+          <div class="toggle-row">
+            <span class="toggle-opt">Keep awards</span>
+            <label class="toggle-switch"><input type="checkbox" id="t3" checked onchange="score()"><span class="toggle-slider"></span></label>
+            <span class="toggle-opt">Eliminated</span>
+          </div>
+        </div>
+        <div class="toggle-item">
+          <div class="tlabel">Override Log as portfolio artefact</div>
+          <div class="tdesc">Named as professional evidence base from Week 1.</div>
+          <div class="toggle-row">
+            <span class="toggle-opt">Not named</span>
+            <label class="toggle-switch"><input type="checkbox" id="t4" checked onchange="score()"><span class="toggle-slider"></span></label>
+            <span class="toggle-opt">Named</span>
+          </div>
+        </div>
+        <div class="toggle-item">
+          <div class="tlabel">Capability extended to 3 weeks</div>
+          <div class="tdesc">Judgment compressed to 2. Hardest layer gets most time.</div>
+          <div class="toggle-row">
+            <span class="toggle-opt">Current split</span>
+            <label class="toggle-switch"><input type="checkbox" id="t5" checked onchange="score()"><span class="toggle-slider"></span></label>
+            <span class="toggle-opt">Rebalanced</span>
+          </div>
+        </div>
+        <div class="toggle-item">
+          <div class="tlabel">Midpoint pin-up at Week 5</div>
+          <div class="tdesc">Override Log entries made visible collectively. Cohort reads together.</div>
+          <div class="toggle-row">
+            <span class="toggle-opt">Private log</span>
+            <label class="toggle-switch"><input type="checkbox" id="t6" checked onchange="score()"><span class="toggle-slider"></span></label>
+            <span class="toggle-opt">Collective reading</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="score-display">
+        <div class="score-card">
+          <div class="sc-label">Identity Transition Readiness</div>
+          <div class="sc-val good" id="s-identity">95%</div>
+          <div class="sc-sub">How well the arc produces identity work</div>
+        </div>
+        <div class="score-card">
+          <div class="sc-label">Override Log Quality</div>
+          <div class="sc-val good" id="s-log">High</div>
+          <div class="sc-sub">Depth of entries the design will produce</div>
+        </div>
+        <div class="score-card">
+          <div class="sc-label">Closing Expo Clarity</div>
+          <div class="sc-val good" id="s-expo">Strong</div>
+          <div class="sc-sub">Format matches identity transition thesis</div>
+        </div>
+        <div class="score-card">
+          <div class="sc-label">Prototype Debt</div>
+          <div class="sc-val good" id="s-debt">Low</div>
+          <div class="sc-sub">How much the Sandbox is leaking into the Cluster</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VOTE TABLE -->
+  <section id="votes">
+    <div class="slabel">Vote Tracker</div>
+    <div class="stitle">Round 1 → Final by Lens</div>
+    <div class="vote-table-wrap">
+      <table>
+        <thead><tr><th>Lens</th><th>Decision on the Table</th><th>Architect</th><th>Transformer</th><th>Guardian</th><th>Pioneer</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Substitute</strong></td>
+            <td>Closing Expo cannot inherit World Café; Override Log 4th field is a placeholder</td>
+            <td>"What is uniquely mine?" is right; prototype version is a placeholder</td>
+            <td>Four-field form more accessible; third question freezes people</td>
+            <td>✓ Closing Expo is the substitution target; World Café celebrates wrong thing</td>
+            <td>No Opening Expo in prototype is the real gap</td>
+            <td><span class="vd vd-r">REDESIGN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Combine</strong></td>
+            <td>Too many parallel reflection mechanisms; Override Log must absorb them</td>
+            <td>✓ Reflection Pods into Deep Dives — peer reflection IS the session</td>
+            <td>Tiny Experiment scaffold inside Deep Dives</td>
+            <td>Ground identity layers in workflow domains</td>
+            <td>Make Closing Expo visible in Week 1</td>
+            <td><span class="vd vd-s">STRESS POINT</span></td>
+          </tr>
+          <tr>
+            <td><strong>Adapt</strong></td>
+            <td>Midpoint Override Log pin-up at Week 5; verb constraint on identity claims</td>
+            <td>Member check — someone else names your pattern</td>
+            <td>Learning contract — Week 1 claim tested at Week 10</td>
+            <td>✓ Pin-up from design education — collective reading at Week 5</td>
+            <td>Verb constraint — no adjectives in "What is uniquely mine?"</td>
+            <td><span class="vd vd-r">REDESIGN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Modify</strong></td>
+            <td>Capability 3 weeks; Week 9 as single facilitated session</td>
+            <td>Closing Expo: every participant reads one entry, no audience</td>
+            <td>✓ Week 9 compressed to single facilitated session</td>
+            <td>✓ Compress Judgment to 2 weeks, extend Capability to 3</td>
+            <td>"What became possible?" opens every session from Week 4</td>
+            <td><span class="vd vd-r">REDESIGN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Put to Other Uses</strong></td>
+            <td>Portfolio naming; Closing-to-Opening pipeline</td>
+            <td>✓ Experiment library as onboarding for next cohort</td>
+            <td>✓ Override Log as professional portfolio artefact</td>
+            <td>Pin-up as research instrument for Build in Public</td>
+            <td>Closing Expo as credentialing → changed to pipeline</td>
+            <td><span class="vd vd-h">HOLDS</span></td>
+          </tr>
+          <tr>
+            <td><strong>Eliminate</strong></td>
+            <td>Awards eliminated; "Transformation Expo" renamed; cycle as default</td>
+            <td>✓ Rename "Transformation Expo"</td>
+            <td>Reduce 4-field builder to 2 fields</td>
+            <td>✓ Eliminate awards — wrong competitive frame</td>
+            <td>Five-step cycle as default, not requirement → best reframe: cycle as first Override Log entry</td>
+            <td><span class="vd vd-r">REDESIGN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Reverse</strong></td>
+            <td>Opening Expo reversed — participants first, practitioners respond with specific override only</td>
+            <td>Week 5 timing → changed to Week 1 reversed format</td>
+            <td>✓ Participants present ceiling first; practitioners respond unscripted</td>
+            <td>✓ Closing-to-Opening pipeline; adds practitioner constraint</td>
+            <td>Efficiency as extended confrontation (pilot)</td>
+            <td><span class="vd vd-r">REDESIGN</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SIGNALS -->
+  <section id="signals">
+    <div class="slabel">Architecture Status</div>
+    <div class="stitle">Signal by Lens</div>
+    <div class="sig-row">
+      <div class="sig-chip"><div class="sig-lens">Substitute</div><div class="sig-v sv-r">Redesign</div></div>
+      <div class="sig-chip"><div class="sig-lens">Combine</div><div class="sig-v sv-s">Stress Point</div></div>
+      <div class="sig-chip"><div class="sig-lens">Adapt</div><div class="sig-v sv-r">Redesign</div></div>
+      <div class="sig-chip"><div class="sig-lens">Modify</div><div class="sig-v sv-r">Redesign</div></div>
+      <div class="sig-chip"><div class="sig-lens">Other Uses</div><div class="sig-v sv-h">Holds</div></div>
+      <div class="sig-chip"><div class="sig-lens">Eliminate</div><div class="sig-v sv-r">Redesign</div></div>
+      <div class="sig-chip"><div class="sig-lens">Reverse</div><div class="sig-v sv-r">Redesign</div></div>
+    </div>
+    <p style="font-size:14px;color:var(--charcoal);line-height:1.6;"><strong>5 Redesign · 1 Stress Point · 1 Holds.</strong> The Cluster cannot inherit the Sandbox's design. Every REDESIGN verdict marks a place where something new must be built — not adapted from what currently exists.</p>
+  </section>
+
+  <!-- TENSIONS -->
+  <section id="tensions">
+    <div class="slabel">Unresolved Friction</div>
+    <div class="stitle">What the Council Couldn't Settle</div>
+    <div class="tension-list">
+      <div class="tension-card">
+        <h4>Learning contract vs. opening question — Week 1 commitment</h4>
+        <p>Transformer: participants name a claim at Week 1 ("I will be able to say X at Week 10") and test it against their Override Log across the program. Gives a throughline. Pioneer: a Week 1 claim turns the program into a ten-week argument for a position staked before participants knew enough to stake anything. Participants filter Override Log entries toward the claim rather than following the log wherever it goes. Pioneer's substitute: "What do you most want to be wrong about?" — not a commitment but an admission of uncertainty.</p>
+        <p class="parties"><strong>Parties:</strong> Transformer vs. Pioneer · Transformer did not directly respond to the Pioneer's counterargument in Round 2</p>
+        <span class="tstatus ts-u">Unresolved</span>
+      </div>
+      <div class="tension-card">
+        <h4>Efficiency layer as exposure vs. extended confrontation</h4>
+        <p>Guardian: surface the ceiling fast, then provide contrast. Extended sameness produces exhaustion and resentment, not identity rupture. Pioneer: participants don't feel the limit of the efficiency frame if they're not in it long enough. Two weeks of deliberate efficiency work with real output — then "Is this what you want?" — requires attachment before rupture. The Pioneer's response to the Guardian's objection: facilitation failure, not design failure. Requires structured output during the two weeks.</p>
+        <p class="parties"><strong>Parties:</strong> Pioneer vs. Craft Guardian · Pioneer recommended a one-cohort pilot</p>
+        <span class="tstatus ts-p">Pilot recommended</span>
+      </div>
+      <div class="tension-card">
+        <h4>"What became possible?" as opening vs. closing prompt</h4>
+        <p>Pioneer proposed opening each session from Week 4 with the question, anchored to Override Log evidence. Transformer argued this asks participants to aspirate into a vacuum before the session has produced anything. The friction round produced a partial resolution: closing prompt, not opening aspiration, from Week 4 onward — but this was not fully adopted by all voices.</p>
+        <p class="parties"><strong>Parties:</strong> Pioneer vs. Transformer · Partial resolution in friction round</p>
+        <span class="tstatus ts-p">Partially resolved</span>
+      </div>
+      <div class="tension-card">
+        <h4>Override Log fourth question — "What is uniquely mine?" vs. "What uniquely human knowledge did I apply?"</h4>
+        <p>Architect: "What is uniquely mine?" is an identity claim. "What uniquely human knowledge did I apply?" is a process description. The Cluster needs the identity claim — scaffold the ramp to it, don't substitute it. Transformer: the Cluster's question is a Week 9 question being asked in Week 2. The four-field prototype form lands in the middle and stays there, but at least people can answer it.</p>
+        <p class="parties"><strong>Parties:</strong> Architect vs. Transformer · Architect's position held but ramp design remains unspecified</p>
+        <span class="tstatus ts-p">Partially resolved</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONSENSUS -->
+  <section id="consensus">
+    <div class="slabel">Unanimous Agreement</div>
+    <div class="stitle">Where All Four Voices Converged</div>
+    <div class="cons-grid">
+      <div class="cons-item">
+        <div class="cons-num">1</div>
+        <div>
+          <h4>Opening Expo format reversed</h4>
+          <p>Participants present ceiling first. Practitioners respond with one specific override moment only — no general encouragement. Diagnostic before aspirational.</p>
+        </div>
+      </div>
+      <div class="cons-item">
+        <div class="cons-num">2</div>
+        <div>
+          <h4>Awards section eliminated</h4>
+          <p>Wrong competitive frame for a collective transition moment. Cut all award categories from the Closing Expo.</p>
+        </div>
+      </div>
+      <div class="cons-item">
+        <div class="cons-num">3</div>
+        <div>
+          <h4>Closing Expo rebuilt and renamed</h4>
+          <p>Cannot inherit the World Café format. Built from Override Log entries. Every participant reads one moment. "Transformation Expo" name carries the wrong signal.</p>
+        </div>
+      </div>
+      <div class="cons-item">
+        <div class="cons-num">4</div>
+        <div>
+          <h4>Capability extended to 3 weeks</h4>
+          <p>Judgment compressed to 2. The hardest question needs the most runway. Current allocation has it backwards.</p>
+        </div>
+      </div>
+      <div class="cons-item">
+        <div class="cons-num">5</div>
+        <div>
+          <h4>Cycle design as first Override Log entry</h4>
+          <p>Five-step cycle is a default with a visible override mechanism. Participants who redesign it are doing Override Log work from day one.</p>
+        </div>
+      </div>
+      <div class="cons-item">
+        <div class="cons-num">6</div>
+        <div>
+          <h4>Override Log named as portfolio artefact from Week 1</h4>
+          <p>Naming it changes how participants write entries from the start. No structural change — framing change only.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>L&D Shakers AI Cluster · SCAMPER Council Session 2 · 2026-03-24 · ai-transform-space.lovable.app</footer>
+
+<script>
+function score() {
+  const t1=document.getElementById('t1').checked;
+  const t2=document.getElementById('t2').checked;
+  const t3=document.getElementById('t3').checked;
+  const t4=document.getElementById('t4').checked;
+  const t5=document.getElementById('t5').checked;
+  const t6=document.getElementById('t6').checked;
+  const on = [t1,t2,t3,t4,t5,t6].filter(Boolean).length;
+
+  const pct = Math.round(40 + on * 9.5);
+  const id = document.getElementById('s-identity');
+  id.textContent = pct + '%';
+  id.className = 'sc-val ' + (pct>=80?'good':pct>=60?'warn':'bad');
+
+  const logQ = ['Very Low','Low','Moderate','Moderate','High','High','Very High'][on];
+  const logEl = document.getElementById('s-log');
+  logEl.textContent = logQ;
+  logEl.className = 'sc-val ' + (on>=4?'good':on>=2?'warn':'bad');
+
+  const expoQ = t2 ? (t3 ? 'Strong' : 'Moderate') : 'Weak';
+  const expoEl = document.getElementById('s-expo');
+  expoEl.textContent = expoQ;
+  expoEl.className = 'sc-val ' + (t2&&t3?'good':t2?'warn':'bad');
+
+  const debt = ['Very High','High','High','Moderate','Moderate','Low','Low'][on];
+  const debtEl = document.getElementById('s-debt');
+  debtEl.textContent = debt;
+  debtEl.className = 'sc-val ' + (on>=4?'good':on>=2?'warn':'bad');
+}
+score();
+</script>
+</body>
+</html>
