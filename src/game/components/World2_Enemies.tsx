@@ -188,7 +188,10 @@ const World2_Enemies: React.FC = () => {
               NAME YOUR CHALLENGES
             </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0 }}>
-              You can't fight what you won't name.
+              What's keeping you awake at night?
+            </p>
+            <p className="vt323-font" style={{ color: '#aaa', fontSize: '1rem', margin: 0 }}>
+              Your final problem statement will be shared on the Wall of Challenges — nothing before that is visible.
             </p>
             {[
               'The thing that comes back every time...',

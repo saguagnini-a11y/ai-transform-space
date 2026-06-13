@@ -188,7 +188,7 @@ const World3_Blocks: React.FC = () => {
               THE LEARNER QUESTION
             </h2>
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', textAlign: 'center', margin: 0 }}>
-              What would a learner say if they heard your diagnosis?
+              What would the person most affected say if they heard your diagnosis?
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
