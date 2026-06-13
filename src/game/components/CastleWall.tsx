@@ -192,9 +192,14 @@ const CastleWall: React.FC = () => {
                 </div>
 
                 {/* Problem statement */}
-                <p style={{ fontFamily: 'VT323, monospace', fontSize: '1.2rem', color: '#1a1a1a', margin: '0 0 12px', lineHeight: 1.5 }}>
+                <p style={{ fontFamily: 'VT323, monospace', fontSize: '1.2rem', color: '#1a1a1a', margin: '0 0 6px', lineHeight: 1.5 }}>
                   {s.sharpened_statement}
                 </p>
+                {s.raw_statement && s.raw_statement !== s.sharpened_statement && (
+                  <p style={{ fontFamily: 'VT323, monospace', fontSize: '0.95rem', color: '#555', margin: '0 0 12px', lineHeight: 1.4, fontStyle: 'italic' }}>
+                    {s.raw_statement}
+                  </p>
+                )}
 
                 <VerdictBadge verdict={s.ai_fitness_verdict} />
 
