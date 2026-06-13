@@ -7,6 +7,17 @@ import '../styles/mario.css';
 
 const AMBER = 'var(--coin-gold)';
 
+const SOLUTION_TRIGGERS = [
+  'we need', 'i need', 'i want to build', "let's build", 'implement',
+  'deploy', 'create a tool', 'build a', 'develop a', 'use ai to',
+  'an ai that', 'a chatbot', 'a system that', 'a platform',
+];
+
+const hasSolutionTrigger = (text: string) => {
+  const lower = text.toLowerCase();
+  return SOLUTION_TRIGGERS.some((t) => lower.includes(t));
+};
+
 const countWords = (text: string) =>
   text.trim().split(/\s+/).filter(Boolean).length;
 
@@ -27,6 +38,8 @@ const World4_Castle: React.FC = () => {
   const [verdict, setVerdict] = useState<ReturnType<typeof calculateVerdict> | null>(null);
   const [loading, setLoading] = useState(false);
   const [flagRaised, setFlagRaised] = useState(false);
+  const [fieldChecks, setFieldChecks] = useState([false, false, false]);
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
 
   if (!playerId) { navigate('/game'); return null; }
 
@@ -121,14 +134,82 @@ const World4_Castle: React.FC = () => {
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               YOUR L&D PROBLEM<br />WORTH SOLVING IS...
             </h2>
+
             <textarea
               className="mario-input"
               style={{ minHeight: 160, resize: 'vertical', lineHeight: 1.8 }}
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => { setDraft(e.target.value); setNudgeDismissed(false); }}
               placeholder="Write freely. No rules here."
               autoFocus
             />
+
+            {/* Mechanic 4 — Solution detector */}
+            {hasSolutionTrigger(draft) && !nudgeDismissed && (
+              <div style={{
+                background: 'rgba(251,208,0,0.12)',
+                borderLeft: '4px solid var(--coin-gold)',
+                padding: '12px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+              }}>
+                <p className="vt323-font" style={{ color: AMBER, fontSize: '1.2rem', margin: 0 }}>
+                  That sounds like a solution. What problem does it solve?
+                </p>
+                <button
+                  type="button"
+                  className="mario-btn mario-btn-dark"
+                  style={{ fontSize: '0.45rem', alignSelf: 'flex-start' }}
+                  onClick={() => setNudgeDismissed(true)}
+                >
+                  I KNOW, KEEP GOING
+                </button>
+              </div>
+            )}
+
+            {/* Mechanic 3 — Who + when field test */}
+            {draft.trim() && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <p className="mario-font" style={{ fontSize: '0.4rem', color: AMBER, margin: 0, letterSpacing: '0.05em' }}>
+                  DOES YOUR PROBLEM PASS THE FIELD TEST?
+                </p>
+                {[
+                  'My problem has a who (a specific person, team, or role)',
+                  'My problem has a when (a moment, frequency, or trigger)',
+                  'My problem has a what — and it\'s not a solution',
+                ].map((label, i) => (
+                  <label
+                    key={i}
+                    style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer' }}
+                  >
+                    <div
+                      onClick={() => setFieldChecks((prev) => prev.map((v, j) => j === i ? !v : v))}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        flexShrink: 0,
+                        marginTop: 2,
+                        background: fieldChecks[i] ? AMBER : 'transparent',
+                        boxShadow: `-2px 0 0 ${AMBER}, 2px 0 0 ${AMBER}, 0 -2px 0 ${AMBER}, 0 2px 0 ${AMBER}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {fieldChecks[i] && (
+                        <span style={{ color: 'var(--black)', fontSize: '0.65rem', fontFamily: 'Press Start 2P, monospace', lineHeight: 1 }}>✓</span>
+                      )}
+                    </div>
+                    <span className="vt323-font" style={{ color: fieldChecks[i] ? AMBER : '#aaa', fontSize: '1.1rem', lineHeight: 1.4, transition: 'color 0.15s' }}>
+                      {label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+
             <button type="submit" className="mario-btn mario-btn-red" disabled={!draft.trim()}>
               SHARPEN IT ▶
             </button>
