@@ -179,7 +179,7 @@ const World4_Castle: React.FC = () => {
   const playerId = localStorage.getItem('game_player_id');
   const playerName = localStorage.getItem('game_player_name') ?? 'Player';
 
-  // 0=Draft, 1=The Problem, 2=Refine, 3=POV, 4=OneSmallThing
+  // 0=Draft, 1=The Problem, 2=Refine, 3=POV
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState(localStorage.getItem('game_chosen_challenge') ?? '');
   const [rootCauseCategory, setRootCauseCategory] = useState('');
@@ -187,7 +187,7 @@ const World4_Castle: React.FC = () => {
   const [povWho, setPovWho] = useState('');
   const [povWhat, setPovWhat] = useState('');
   const [povInsight, setPovInsight] = useState(localStorage.getItem('game_root_cause_why') ?? '');
-  const [firstExperiment, setFirstExperiment] = useState('');
+
   const [verdict, setVerdict] = useState<VerdictResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [flagRaised, setFlagRaised] = useState(false);
@@ -197,7 +197,7 @@ const World4_Castle: React.FC = () => {
   const [reframeMode, setReframeMode] = useState(false);
   const [triangulationWarning, setTriangulationWarning] = useState<string | null>(null);
 
-  const STEP_TITLES = ['Your problem draft | AI Problem Finder', 'The problem type | AI Problem Finder', 'Refine your statement | AI Problem Finder', 'Frame your POV | AI Problem Finder', 'One small thing | AI Problem Finder'];
+  const STEP_TITLES = ['Your problem draft | AI Problem Finder', 'The problem type | AI Problem Finder', 'Refine your statement | AI Problem Finder', 'Frame your POV | AI Problem Finder'];
   useEffect(() => { document.title = STEP_TITLES[step] ?? 'World 3 | AI Problem Finder'; }, [step]);
 
   if (!playerId) { navigate('/game'); return null; }
@@ -244,9 +244,7 @@ const World4_Castle: React.FC = () => {
     setLoading(true);
     try {
       const contextTags = JSON.parse(localStorage.getItem('game_context_tags') ?? '{}');
-      if (firstExperiment.trim()) {
-        contextTags.first_experiment = firstExperiment.trim();
-      }
+
       const pov = buildPOV(povWho, povWhat, povInsight);
       const statement = pov || finalStatement;
       await gameSupabase.from('problem_statements').insert({
@@ -271,14 +269,10 @@ const World4_Castle: React.FC = () => {
     }
   };
 
-  const handleFinalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await submitToWall();
-  };
 
   const assembledPOV = buildPOV(povWho, povWhat, povInsight);
 
-  const stepLabels = ['DRAFT', 'THE PROBLEM', 'REFINE', 'POV', 'FIRST MOVE'];
+  const stepLabels = ['DRAFT', 'THE PROBLEM', 'REFINE', 'POV'];
 
   return (
     <div className="game-screen castle-bg" style={{ minHeight: '100vh', paddingBottom: 80, color: 'var(--white)' }}>
@@ -556,59 +550,12 @@ const World4_Castle: React.FC = () => {
               </p>
             )}
 
-            <button className="mario-btn mario-btn-red" onClick={() => setStep(4)} disabled={!povWho.trim()}>
-              THIS IS MY POV ▶
+            <button className="mario-btn mario-btn-red" onClick={submitToWall} disabled={!povWho.trim() || loading}>
+              {loading ? 'SAVING...' : 'THIS IS MY POV ▶'}
             </button>
           </div>
         )}
 
-        {/* Step 4 — One Small Thing */}
-        {step === 4 && (
-          <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.38rem', alignSelf: 'flex-start' }} onClick={() => setStep(3)}>
-              ← GO BACK
-            </button>
-            <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
-              ONE SMALL THING.
-            </h2>
-
-            <div style={{ background: 'rgba(0,0,0,0.4)', padding: '12px 16px', boxShadow: '-2px 0 0 #555, 2px 0 0 #555, 0 -2px 0 #555, 0 2px 0 #555' }}>
-              <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: '0 0 6px' }}>YOUR POV:</p>
-              <p className="vt323-font" style={{ color: AMBER, fontSize: '1.2rem', margin: 0, fontStyle: 'italic', lineHeight: 1.5 }}>
-                "{assembledPOV || finalStatement}"
-              </p>
-            </div>
-
-            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              You have a problem worth solving. Now find the crack in it.
-            </p>
-
-            <p className="vt323-font" style={{ color: '#ccc', fontSize: '1.1rem', margin: 0, lineHeight: 1.6 }}>
-              {verdict?.verdict === 'redirect'
-                ? 'If AI opened one corner of this — what could you attempt that you couldn\'t before?'
-                : 'What becomes possible now that wasn\'t before — not faster, but at all?'}
-            </p>
-
-            <textarea
-              className="mario-input"
-              aria-label="One small experiment — the first thing you could try"
-              style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
-              value={firstExperiment}
-              onChange={(e) => setFirstExperiment(e.target.value)}
-              placeholder="What you could attempt that you couldn't before..."
-              autoFocus
-            />
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button type="submit" className="mario-btn mario-btn-red" disabled={loading || !firstExperiment.trim()}>
-                {loading ? 'SAVING...' : 'RAISE THE FLAG 🚩'}
-              </button>
-              <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.4rem' }} onClick={submitToWall} disabled={loading}>
-                {loading ? '...' : 'SKIP — TAKE IT TO THE WALL'}
-              </button>
-            </div>
-          </form>
-        )}
       </main>
 
       {/* Flag raising + win screen */}
