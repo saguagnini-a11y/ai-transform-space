@@ -14,34 +14,16 @@ const AMBER = 'var(--coin-gold)';
 
 type Tier = 'gold' | 'silver' | 'red';
 
-const TIER_OPTIONS: { tier: Tier; emoji: string; label: string; hint: string; color: string }[] = [
-  {
-    tier: 'gold',
-    emoji: '🟢',
-    label: 'No system or structure',
-    hint: "People do this manually, skip it, or it depends who's available",
-    color: '#fbd000',
-  },
-  {
-    tier: 'silver',
-    emoji: '🟡',
-    label: 'Something exists but isn\'t working',
-    hint: 'Inconsistent, under-used, or incomplete — the process is there, the results aren\'t',
-    color: '#c8c8c8',
-  },
-  {
-    tier: 'red',
-    emoji: '🔴',
-    label: 'People won\'t, or the tool is broken',
-    hint: 'The system exists. People are choosing not to use it — or the tool itself is the problem',
-    color: 'var(--mario-red)',
-  },
+const STUCK_OPTIONS: { tier: Tier; emoji: string; label: string; color: string }[] = [
+  { tier: 'red',    emoji: '🔴', label: 'Very stuck — this blocks real work',          color: '#e94560' },
+  { tier: 'silver', emoji: '🟡', label: 'Somewhat stuck — it slows things, we manage', color: '#c8c8c8' },
+  { tier: 'gold',   emoji: '🟢', label: 'More of an itch — bothers me but not critical', color: '#fbd000' },
 ];
 
 const TIER_LABEL: Record<Tier, string> = {
-  gold: '🟢 Strong AI fit',
-  silver: '🟡 Maybe — needs framing',
-  red: '🔴 Not an AI problem yet',
+  red:    '🔴 Very stuck',
+  silver: '🟡 Somewhat stuck',
+  gold:   '🟢 More of an itch',
 };
 
 const World2_Enemies: React.FC = () => {
@@ -167,7 +149,7 @@ const World2_Enemies: React.FC = () => {
               QUICK SCAN
             </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              Before you pick one to dig, rate each problem. Then you'll choose based on what fits AI best.
+              Rate how stuck each one makes you. Then pick one to dig.
             </p>
 
             {digOptions.map((opt, i) => (
@@ -181,41 +163,37 @@ const World2_Enemies: React.FC = () => {
                   padding: '16px 18px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 14,
+                  gap: 12,
                   transition: 'border-color 0.2s',
                 }}
               >
                 <p className="vt323-font" style={{ color: '#fff', fontSize: '1.2rem', margin: 0, lineHeight: 1.4 }}>
                   {opt.length > 100 ? opt.slice(0, 100) + '...' : opt}
                 </p>
-                {challengeTiers[i] && (
-                  <span className="mario-font" style={{ fontSize: '0.38rem', color: tierColor(challengeTiers[i]) }}>
-                    {TIER_LABEL[challengeTiers[i]]}
-                  </span>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {TIER_OPTIONS.map(({ tier, emoji, label, hint, color }) => (
+                <p className="mario-font" style={{ fontSize: '0.35rem', color: '#aaa', margin: 0 }}>
+                  HOW STUCK DOES THIS MAKE YOU FEEL?
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {STUCK_OPTIONS.map(({ tier, emoji, label, color }) => (
                     <button
                       key={tier}
+                      type="button"
                       onClick={() => setChallengeTiers((prev) => ({ ...prev, [i]: tier }))}
                       style={{
                         fontFamily: 'VT323, monospace',
-                        fontSize: '1.1rem',
-                        background: challengeTiers[i] === tier ? `rgba(0,0,0,0.6)` : 'rgba(0,0,0,0.25)',
+                        fontSize: '1.15rem',
+                        background: challengeTiers[i] === tier ? `rgba(0,0,0,0.7)` : 'rgba(0,0,0,0.2)',
                         color: challengeTiers[i] === tier ? color : '#bbb',
-                        border: challengeTiers[i] === tier ? `2px solid ${color}` : '2px solid rgba(255,255,255,0.15)',
+                        border: challengeTiers[i] === tier ? `2px solid ${color}` : '2px solid rgba(255,255,255,0.12)',
                         padding: '10px 14px',
                         textAlign: 'left',
                         cursor: 'pointer',
-                        lineHeight: 1.4,
+                        lineHeight: 1.3,
                         transition: 'all 0.15s',
                       }}
                       aria-pressed={challengeTiers[i] === tier}
                     >
                       {emoji} {label}
-                      <span style={{ display: 'block', fontSize: '0.85rem', color: challengeTiers[i] === tier ? '#ddd' : '#777', marginTop: 2 }}>
-                        {hint}
-                      </span>
                     </button>
                   ))}
                 </div>
@@ -234,19 +212,25 @@ const World2_Enemies: React.FC = () => {
           </div>
         )}
 
-        {/* Step 2 — Choose your problem (with tier badges) */}
-        {step === 2 && (
+        {/* Step 2 — Choose your problem (sorted by stuck level) */}
+        {step === 2 && (() => {
+          const stuckOrder: Tier[] = ['red', 'silver', 'gold'];
+          const sorted = digOptions
+            .map((opt, i) => ({ opt, i, tier: challengeTiers[i] }))
+            .sort((a, b) => stuckOrder.indexOf(a.tier) - stuckOrder.indexOf(b.tier));
+          const topTier = sorted[0]?.tier;
+          return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               CHOOSE YOUR PROBLEM TO DIG
             </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              Pick the one that best fits AI — or the one you care about most.
+              Your most stuck problem is at the top. Pick one to dig into.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {digOptions.map((opt, i) => {
-                const tier = challengeTiers[i];
+              {sorted.map(({ opt, i, tier }, rank) => {
                 const borderColor = tier ? tierColor(tier) : 'rgba(255,255,255,0.3)';
+                const isTop = rank === 0 && tier === topTier;
                 return (
                   <button
                     key={i}
@@ -254,7 +238,7 @@ const World2_Enemies: React.FC = () => {
                     style={{
                       fontFamily: 'VT323, monospace',
                       fontSize: '1.3rem',
-                      background: 'rgba(0,0,0,0.5)',
+                      background: isTop ? 'rgba(0,0,0,0.65)' : 'rgba(0,0,0,0.4)',
                       color: 'var(--white)',
                       border: 'none',
                       padding: '20px 24px',
@@ -278,7 +262,8 @@ const World2_Enemies: React.FC = () => {
               })}
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* Step 3 — Why is this happening? */}
         {step === 3 && (
@@ -295,9 +280,20 @@ const World2_Enemies: React.FC = () => {
                 "{chosenChallenge}"
               </p>
             </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {[
+                'When exactly does this break down?',
+                'Who feels it most when it does?',
+                'What would have to be true for it not to happen?',
+              ].map((q, i) => (
+                <p key={i} className="vt323-font" style={{ color: '#aaa', fontSize: '1rem', margin: 0 }}>
+                  {i + 1}. {q}
+                </p>
+              ))}
+            </div>
             <textarea
               className="mario-input"
-              style={{ minHeight: 120, resize: 'vertical', lineHeight: 1.8 }}
+              style={{ minHeight: 140, resize: 'vertical', lineHeight: 1.8 }}
               value={whyHappening}
               onChange={(e) => setWhyHappening(e.target.value)}
               placeholder="Because..."

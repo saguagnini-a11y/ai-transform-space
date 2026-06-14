@@ -117,6 +117,15 @@ const ROOT_CAUSE_CATEGORIES: Array<{
     tier: 'red',
     icon: '⚠️',
   },
+  {
+    id: 'institution',
+    label: 'The institution is the constraint',
+    desc: 'Approval processes, governance, or measurement systems are actively blocking progress',
+    example: 'The AI tools exist but can\'t go live because IT security review is designed to say no',
+    verdict: 'skills',
+    tier: 'red',
+    icon: '🏛️',
+  },
 ];
 
 const TIER_COLORS: Record<string, string> = {
@@ -143,7 +152,11 @@ const computeTriangulationWarning = (categoryId: string, rootCauseText: string):
   const hasWill = detectSignals(rootCauseText, ["won't", "don't want", "choose not", "choosing not", "refuse", "not bothered", "ignore it", "skip it"]);
   const hasTool = detectSignals(rootCauseText, ['broken', "doesn't work", 'wrong tool', 'bad tool', 'outdated system', "system doesn't"]);
   const hasStructural = detectSignals(rootCauseText, ['no system', 'no process', 'manually', 'nobody knows', 'only one person', 'one person holds', 'depends on one']);
-  if (cat.tier === 'red' && hasStructural && !hasWill && !hasTool) {
+  const hasInstitutional = detectSignals(rootCauseText, ['approval', 'policy', 'governance', 'it review', 'security review', 'sign off', "can't go live", 'blocked by', 'not allowed', 'not permitted', 'measured by hours', 'budget for']);
+  if ((cat.id === 'will' || cat.id === 'wrong_tool') && hasInstitutional && !hasWill && !hasTool) {
+    return 'Your "why" sounds like an institutional constraint — approval processes, governance, or measurement systems. That\'s a different problem from "people won\'t" or "tool broken." Try the 🏛️ category instead.';
+  }
+  if (cat.tier === 'red' && hasStructural && !hasWill && !hasTool && !hasInstitutional) {
     return 'Your "why" describes a missing system or process — but the category you picked is about people choosing not to or a broken tool. Worth a second look: is there a structural gap underneath this?';
   }
   if ((cat.tier === 'gold' || cat.tier === 'silver') && hasWill) {
@@ -203,6 +216,9 @@ const World4_Castle: React.FC = () => {
     setFinalStatement(draft);
     const rootCauseText = localStorage.getItem('game_root_cause_why') ?? '';
     setTriangulationWarning(computeTriangulationWarning(categoryId, rootCauseText));
+    if (cat.tier === 'red') {
+      setRedirectInfoVisible(true);
+    }
     setStep(2);
   };
 
@@ -438,8 +454,10 @@ const World4_Castle: React.FC = () => {
                   </p>
                   <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.2rem', margin: 0, lineHeight: 1.5 }}>
                     {rootCauseCategory === 'wrong_tool'
-                      ? 'You found a tool mismatch. AI on top of a broken tool is still a broken tool. The fix is upstream — but there\'s a repeatable part of this worth finding.'
-                      : 'You found a behaviour and will problem. That needs incentives and culture change before technology. But somewhere in this, there\'s a repeatable step AI could eventually touch.'}
+                      ? 'You found a tool mismatch. AI on top of a broken tool is still a broken tool. The fix is upstream — replace or repair the tool first, then look for the repeatable part AI could touch.'
+                      : rootCauseCategory === 'institution'
+                      ? 'You found an institutional blockage — approval processes, governance, or measurement systems designed to say no. This needs political capital and change management, not AI. Come back when you\'ve named who owns the constraint and what it would take to move them.'
+                      : 'You found a behaviour and will problem. That needs incentives and culture change before technology. Name who isn\'t following through and what consequence is missing — then come back.'}
                   </p>
                 </div>
                 <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
