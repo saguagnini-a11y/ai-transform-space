@@ -389,7 +389,7 @@ const World4_Castle: React.FC = () => {
                   onClick={() => handleRoot(cat.id)}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span style={{ color: TIER_COLORS.red }}>{cat.icon} {cat.label}</span>
+                    <span style={{ color: '#fff' }}>{cat.icon} {cat.label}</span>
                     <span className="vt323-font" style={{ fontSize: '1rem', color: '#ccc', fontFamily: 'VT323, monospace' }}>{cat.desc}</span>
                   </div>
                 </button>
