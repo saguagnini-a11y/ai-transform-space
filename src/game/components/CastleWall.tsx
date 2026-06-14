@@ -86,7 +86,7 @@ const CastleWall: React.FC = () => {
       <div className="score-display" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px' }}>
         <span>THE WALL OF CHALLENGES</span>
         <span>{statements.length} problems</span>
-        <span>21 players</span>
+        <span>{statements.length} players</span>
       </div>
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 20px' }}>
@@ -94,7 +94,7 @@ const CastleWall: React.FC = () => {
           THE WALL OF CHALLENGES
         </h1>
         <p className="vt323-font" style={{ color: 'var(--white)', textAlign: 'center', fontSize: '1.4rem', marginBottom: 24 }}>
-          21 problems. One cohort.
+          {statements.length} problems. One cohort.
         </p>
 
         {/* My artifact button */}
