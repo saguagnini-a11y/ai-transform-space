@@ -344,7 +344,7 @@ const World4_Castle: React.FC = () => {
                 {[
                   'My problem has a who (a specific person, team, or role)',
                   'My problem has a when (a moment, frequency, or trigger)',
-                  "My problem has a what — and it's not a solution",
+                  "My problem has a what (what keeps happening — e.g. 'new hires ask the same questions every week') — and it's not a solution",
                 ].map((label, i) => (
                   <label key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer' }}>
                     <div

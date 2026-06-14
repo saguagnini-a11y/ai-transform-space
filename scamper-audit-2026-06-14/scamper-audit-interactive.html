@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCAMPER Audit — AI Problem Finder</title>
+<style>
+  :root{
+    --navy:#1a1a2e; --coral:#e94560; --bg:#f5f5f0;
+    --blue:#16213e; --mid:#0f3460; --purple:#533483;
+    --green:#2e7d52; --amber:#c98a1a; --red:#c0392b;
+    --ink:#1a1a2e; --muted:#5a5a6e; --line:rgba(26,26,46,0.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:48px 24px 80px}
+  header.top{border-bottom:3px solid var(--navy);padding-bottom:24px;margin-bottom:40px}
+  .kicker{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--coral);font-weight:700}
+  h1{font-size:38px;line-height:1.1;margin:8px 0 12px;font-weight:800;letter-spacing:-.02em}
+  .sub{font-size:18px;color:var(--muted);max-width:680px}
+  .meta{margin-top:16px;font-size:14px;color:var(--muted)}
+  h2{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--coral);
+    font-weight:700;margin:56px 0 20px;border-top:1px solid var(--line);padding-top:24px}
+  h3{font-size:22px;font-weight:700;margin:0 0 4px;letter-spacing:-.01em}
+  p{margin:0 0 12px}
+  .verdict-banner{background:var(--navy);color:#fff;border-radius:14px;padding:28px 32px;margin-bottom:8px}
+  .verdict-banner .q{font-size:20px;font-weight:700;margin-bottom:10px}
+  .verdict-banner .a{font-size:16px;color:#c8c8d8}
+  .verdict-banner .a b{color:var(--coral)}
+  /* persona cards */
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+  .pcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;border-top:5px solid var(--c)}
+  .pcard.marit{--c:var(--mid)} .pcard.yael{--c:var(--purple)} .pcard.daan{--c:var(--coral)}
+  .pname{font-size:20px;font-weight:800}
+  .prole{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .row{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0}
+  .row .lbl{color:var(--muted);min-width:74px}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
+  .yes{background:#d7f0e0;color:var(--green)} .no{background:#f8d7d7;color:var(--red)}
+  .cond{background:#fbeccf;color:var(--amber)}
+  .arrow{color:var(--muted);font-weight:700}
+  .quote{font-style:italic;color:var(--ink);border-left:3px solid var(--c);padding-left:12px;
+    margin-top:14px;font-size:14px}
+  .baseline{font-size:13px;color:var(--muted);margin-top:12px}
+  /* sliders */
+  .slider-block{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:16px}
+  .slider-q{font-weight:700;font-size:16px;margin-bottom:6px}
+  .ends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin:14px 0 4px}
+  .ends b{display:block;font-size:13px;color:var(--ink)}
+  input[type=range]{width:100%;accent-color:var(--coral);height:6px}
+  .ticks{position:relative;height:22px;margin-top:2px}
+  .tick{position:absolute;transform:translateX(-50%);font-size:11px;font-weight:700;
+    padding:1px 7px;border-radius:10px;color:#fff;white-space:nowrap}
+  .tick.m{background:var(--mid)} .tick.y{background:var(--purple)} .tick.d{background:var(--coral)}
+  .tip{font-size:13px;color:var(--muted);margin-top:14px;min-height:38px;
+    background:var(--bg);border-radius:8px;padding:10px 12px}
+  /* improvements */
+  .imp{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:14px}
+  .imp.cons{border:2px solid var(--coral)}
+  .imp-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .imp h3{font-size:17px}
+  .src{font-size:12px;color:var(--muted);margin-top:2px}
+  .votes{display:flex;gap:6px;flex-shrink:0}
+  .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px}
+  .comp{display:inline-block;font-size:11px;color:var(--mid);background:#e8edf5;
+    padding:2px 8px;border-radius:6px;margin-top:10px}
+  .star{color:var(--coral);font-weight:800}
+  /* timeline */
+  .tl{position:relative;padding-left:28px}
+  .tl::before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl-item{position:relative;margin-bottom:20px}
+  .tl-item::before{content:'';position:absolute;left:-24px;top:5px;width:12px;height:12px;
+    border-radius:50%;background:var(--c);border:2px solid var(--bg)}
+  .tl-item.marit{--c:var(--mid)} .tl-item.yael{--c:var(--purple)} .tl-item.daan{--c:var(--coral)}
+  .tl-when{font-size:12px;font-weight:700;color:var(--c);text-transform:uppercase;letter-spacing:.08em}
+  .tl-who{font-weight:700;font-size:15px}
+  .tl-txt{font-size:14px;color:var(--muted)}
+  .tl-fix{font-size:13px;color:var(--green);margin-top:4px}
+  /* fights */
+  .fight{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 20px 16px;margin-bottom:16px}
+  .line{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .line:last-child{border-bottom:none}
+  .who{font-weight:800;font-size:13px;flex-shrink:0;width:54px}
+  .who.m{color:var(--mid)} .who.y{color:var(--purple)} .who.d{color:var(--coral)}
+  .said{font-size:14px}
+  details{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:0 18px}
+  summary{cursor:pointer;font-weight:700;padding:14px 0;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:'+ ';color:var(--coral);font-weight:800}
+  details[open] summary::before{content:'– '}
+  details .body{padding:0 0 16px;font-size:14px;color:var(--muted)}
+  .note{font-size:13px;color:var(--muted);font-style:italic;margin-top:6px}
+  @media print{
+    body{background:#fff} .wrap{max-width:100%} input[type=range]{display:none}
+    details{border:none} details .body{display:block!important} summary::before{content:''}
+    h2{break-after:avoid} .pcard,.imp,.fight,.slider-block{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="kicker">SCAMPER Audit · Behavioral Persona Review</div>
+    <h1>Does the AI Problem Finder lead you to the right problem?</h1>
+    <p class="sub">Three L&amp;D personas play the game — World 1 → World 2 → World 3 → The Challenges Wall — and stress-test whether the flow actually points you at a problem worth solving with AI.</p>
+    <div class="meta">14 June 2026 · Personas: Marit (Constrained Corporate) · Yael (Authentic Craft) · Daan (Stranded Pioneer)</div>
+  </header>
+
+  <div class="verdict-banner">
+    <div class="q">The short answer: not reliably — yet.</div>
+    <div class="a">The game lets you <b>commit to a problem before any AI-fitness criteria appear</b>, then produces a verdict that mostly <b>echoes your own category click</b>, and ends by asking for the <b>“repetitive, slow, manual” bit</b> — the exact efficiency frame the program exists to break. Three independent fixes close most of the gap.</div>
+  </div>
+
+  <h2>The three players</h2>
+  <div class="pgrid">
+    <div class="pcard marit">
+      <div class="pname">Marit</div>
+      <div class="prole">Senior L&amp;D Advisor · regulated multinational</div>
+      <div class="row"><span class="lbl">Identity</span> compliant executor → responsible innovator</div>
+      <div class="row"><span class="lbl">Round 1</span> <span class="pill cond">Conditional</span></div>
+      <div class="row"><span class="lbl">Round 2</span> <span class="pill cond">Conditional</span> <span class="arrow">→ held</span></div>
+      <div class="quote">“A control that relies on the operator self-certifying the outcome is not a control.”</div>
+      <div class="baseline">Baseline: low-grade governance anxiety</div>
+    </div>
+    <div class="pcard yael">
+      <div class="pname">Yael</div>
+      <div class="prole">Independent learning designer · 12+ yrs</div>
+      <div class="row"><span class="lbl">Identity</span> craftsperson → AI-augmented practitioner</div>
+      <div class="row"><span class="lbl">Round 1</span> <span class="pill no">No</span></div>
+      <div class="row"><span class="lbl">Round 2</span> <span class="pill cond">Conditional</span> <span class="arrow">↑ shifted</span></div>
+      <div class="quote">“It found me a problem and handed me back a commodity.”</div>
+      <div class="baseline">Baseline: deflation + identity vigilance</div>
+    </div>
+    <div class="pcard daan">
+      <div class="pname">Daan</div>
+      <div class="prole">L&amp;D Manager · stranded pioneer</div>
+      <div class="row"><span class="lbl">Identity</span> content producer → org change agent</div>
+      <div class="row"><span class="lbl">Round 1</span> <span class="pill cond">Conditional</span></div>
+      <div class="row"><span class="lbl">Round 2</span> <span class="pill cond">Conditional</span> <span class="arrow">→ held</span></div>
+      <div class="quote">“The selection logic runs before the only screen that contains selection logic.”</div>
+      <div class="baseline">Baseline: productive frustration + loneliness</div>
+    </div>
+  </div>
+
+  <h2>Where the personas pull apart — move the sliders</h2>
+
+  <div class="slider-block">
+    <div class="slider-q">When should the game score problems for AI fitness?</div>
+    <div class="ends"><span><b>Before you pick</b><br>score all, then choose</span><span style="text-align:right"><b>After you pick</b><br>current design</span></div>
+    <input type="range" min="0" max="100" value="85" data-tip="s1">
+    <div class="ticks"><span class="tick m" style="left:12%">Marit</span><span class="tick y" style="left:18%">Yael</span><span class="tick d" style="left:6%">Daan</span></div>
+    <div class="tip" id="s1">All three sit hard left. The game currently scores <em>after</em> commitment (slider right) — the single most-agreed flaw. Daan: “it’s backwards.” Marit: “I polish the defensible one, not the right one.”</div>
+  </div>
+
+  <div class="slider-block">
+    <div class="slider-q">What should the final step optimise for?</div>
+    <div class="ends"><span><b>New capacity</b><br>“what’s now possible?”</span><span style="text-align:right"><b>Efficiency</b><br>“the repetitive bit” (current)</span></div>
+    <input type="range" min="0" max="100" value="80" data-tip="s2">
+    <div class="ticks"><span class="tick y" style="left:5%">Yael</span><span class="tick d" style="left:22%">Daan</span><span class="tick m" style="left:68%">Marit</span></div>
+    <div class="tip" id="s2">Yael wants pure capacity; Daan agrees. Marit drifts right — she can only sell measurable efficiency to a steering group. This is the audit’s unresolved tension.</div>
+  </div>
+
+  <div class="slider-block">
+    <div class="slider-q">Should a worked example precede the cold draft?</div>
+    <div class="ends"><span><b>Yes, show the path</b></span><span style="text-align:right"><b>No, it signals “beginner”</b></span></div>
+    <input type="range" min="0" max="100" value="50" data-tip="s3">
+    <div class="ticks"><span class="tick m" style="left:8%">Marit</span><span class="tick y" style="left:48%">Yael</span><span class="tick d" style="left:90%">Daan</span></div>
+    <div class="tip" id="s3">The widest split. Marit needs it to start at all; Daan leaves the moment he sees hand-holding. Resolution: make it <em>skippable</em>.</div>
+  </div>
+
+  <div class="slider-block">
+    <div class="slider-q">What is the game’s core verb?</div>
+    <div class="ends"><span><b>Selection</b><br>help me pick</span><span style="text-align:right"><b>Judgment</b><br>teach me what’s mine</span></div>
+    <input type="range" min="0" max="100" value="20" data-tip="s4">
+    <div class="ticks"><span class="tick m" style="left:18%">Marit</span><span class="tick d" style="left:30%">Daan</span><span class="tick y" style="left:88%">Yael</span></div>
+    <div class="tip" id="s4">The game does a thin version of selection and none of judgment. Yael: the Override Log — the program’s pedagogical spine — is entirely absent from the game.</div>
+  </div>
+
+  <h2>The fixes, ranked — and how the personas voted</h2>
+
+  <div class="imp cons">
+    <div class="imp-top">
+      <div><h3><span class="star">★ Consensus</span> Triangulate the verdict</h3>
+        <div class="src">Proposed by Daan · all three agree</div></div>
+      <div class="votes"><span class="badge yes">Marit ✓</span><span class="badge yes">Yael ✓</span><span class="badge yes">Daan ✓</span></div>
+    </div>
+    <p>Stop deriving the AI-fitness verdict from a single self-selected category. Cross-check category × root-cause text × recurrence, and flag contradictions (“you called this structural but described a people-won’t problem”).</p>
+    <span class="comp">World 3 · Step 1→2</span>
+  </div>
+
+  <div class="imp cons">
+    <div class="imp-top">
+      <div><h3><span class="star">★ Consensus</span> Score before you select</h3>
+        <div class="src">Proposed by Daan · all three agree</div></div>
+      <div class="votes"><span class="badge yes">Marit ✓</span><span class="badge yes">Yael ✓</span><span class="badge yes">Daan ✓</span></div>
+    </div>
+    <p>Run all 1–3 named challenges through the tier test and show their verdicts, <em>then</em> let the player choose the strongest AI candidate. Today selection happens before any criteria exist, so the abandoned challenges are never scored.</p>
+    <span class="comp">World 2 · Step 1</span>
+  </div>
+
+  <div class="imp cons">
+    <div class="imp-top">
+      <div><h3><span class="star">★ Consensus</span> Re-frame the ending around capacity</h3>
+        <div class="src">Proposed by Yael · cheapest thesis win</div></div>
+      <div class="votes"><span class="badge cond">Marit ~</span><span class="badge yes">Yael ✓</span><span class="badge yes">Daan ✓</span></div>
+    </div>
+    <p>Replace “the bit that’s repetitive, slow, or manual” with “what could you attempt that you couldn’t before — not faster, but at all?” One copy change; biggest alignment with the identity-transition thesis.</p>
+    <span class="comp">World 3 · Step 4 (One Small Thing)</span>
+  </div>
+
+  <div class="imp">
+    <div class="imp-top">
+      <div><h3>Add a live judgment beat (the missing Override Log)</h3>
+        <div class="src">Proposed by Yael</div></div>
+      <div class="votes"><span class="badge yes">Marit ✓</span><span class="badge yes">Daan ✓</span></div>
+    </div>
+    <p>After the verdict, show a plausible AI “answer” to the player’s problem and ask “what would you override, and why?” That single screen puts the professional’s judgment back at the centre — the part the program is actually about.</p>
+    <span class="comp">World 3 · new step after verdict</span>
+  </div>
+
+  <div class="imp">
+    <div class="imp-top">
+      <div><h3>Let context gate the verdict</h3>
+        <div class="src">Proposed by Marit</div></div>
+      <div class="votes"><span class="badge yes">Yael ✓</span><span class="badge yes">Daan ✓</span></div>
+    </div>
+    <p>World 1 currently decorates the artifact card and nothing else. A “strong” verdict in a regulated context should carry a caveat; a process-level player should see different categories. Make the constraints change the answer.</p>
+    <span class="comp">World 1 → World 3</span>
+  </div>
+
+  <div class="imp">
+    <div class="imp-top">
+      <div><h3>Skippable worked example before the draft</h3>
+        <div class="src">Proposed by Marit</div></div>
+      <div class="votes"><span class="badge cond">Yael ~</span><span class="badge yes">Daan ✓ (if skippable)</span></div>
+    </div>
+    <p>A 30-second redacted real problem run through the funnel to its verdict. Rescues Marit’s cold-start anxiety; must be skippable so Daan doesn’t read it as a beginner program.</p>
+    <span class="comp">World 3 · Step 0</span>
+  </div>
+
+  <h2>When each player would quit — pre-mortem timeline</h2>
+  <div class="tl">
+    <div class="tl-item daan">
+      <div class="tl-when">World 2 · minute 2</div>
+      <div class="tl-who">Daan leaves first</div>
+      <div class="tl-txt">Forced to pick a challenge before any criteria appear; gets a green verdict that just echoes his first click; the ending asks for a “repetitive bit” he doesn’t have. Closes it before the flag finishes raising.</div>
+      <div class="tl-fix">Prevented by: score-then-select + altitude switch</div>
+    </div>
+    <div class="tl-item marit">
+      <div class="tl-when">After 1 full play</div>
+      <div class="tl-who">Marit fades quietly</div>
+      <div class="tl-txt">Gets a green verdict, then can’t defend it upstairs — no validation trail, regulated context treated as flavour text. Stops opening the link rather than rage-quitting.</div>
+      <div class="tl-fix">Prevented by: context-gated verdict + verdict-as-documentation</div>
+    </div>
+    <div class="tl-item yael">
+      <div class="tl-when">At the final artifact</div>
+      <div class="tl-who">Yael closes the tab</div>
+      <div class="tl-txt">Ends with a tidy, interchangeable sentence and a note to automate. Nothing ever asked what only she could see. Closes it “the way you close a well-made thing that wasn’t made for you.”</div>
+      <div class="tl-fix">Prevented by: capacity-reframe ending + live judgment beat</div>
+    </div>
+  </div>
+
+  <h2>The two fights that didn’t resolve</h2>
+  <div class="fight">
+    <div class="line"><span class="who d">Daan</span><span class="said">A worked example is how you tell me this is for beginners. The moment I see a case study I’m gone.</span></div>
+    <div class="line"><span class="who m">Marit</span><span class="said">Then make it skippable. Your confidence is not a design spec. Some of us are calculating career exposure, not showing off pipelines.</span></div>
+  </div>
+  <div class="fight">
+    <div class="line"><span class="who m">Marit</span><span class="said">I can sell “we saved 40 hours” to a steering group. I can’t sell “possible.” Don’t design the ending around the one outcome I can’t defend.</span></div>
+    <div class="line"><span class="who y">Yael</span><span class="said">And there’s the whole problem in one sentence. The game keeps letting you choose defensible-and-small — so in two years L&amp;D still frames AI as faster content. The game is complicit in the thing it diagnoses.</span></div>
+    <div class="line"><span class="who m">Marit</span><span class="said">Or it’s realistic about where I actually live.</span></div>
+  </div>
+
+  <h2>Full detail</h2>
+  <details><summary>Key tensions with no clean resolution</summary>
+    <div class="body">
+      <p><b>1. Defensible-and-small vs. real-and-new.</b> Marit can only sell measurable efficiency upward; Yael says efficiency framing is the disease. The ending sides with Marit while claiming Yael’s mission.</p>
+      <p><b>2. Beginner legibility vs. expert respect.</b> A worked example rescues Marit and repels Daan. The map currently serves the median, so it serves neither edge.</p>
+      <p><b>3. Selection vs. judgment as the core verb.</b> Help you pick (Daan/Marit) or teach the judgment that makes a pick yours (Yael)? Currently a thin version of the first, none of the second.</p>
+    </div>
+  </details>
+  <details><summary>Consensus points — fix these first</summary>
+    <div class="body">
+      <p>1. Don’t trust the self-click — triangulate the verdict.<br>
+      2. Score before you select.<br>
+      3. The ending betrays the thesis — reframe to capacity.<br>
+      4. The Override Log / judgment move is missing from the game.<br>
+      5. Context is decorative — make it gate the verdict.</p>
+    </div>
+  </details>
+  <details><summary>Decision framework — priority order</summary>
+    <div class="body">
+      <p><b>Do first:</b> Triangulate verdict (#1) · Score-then-select (#2) — these fix <em>accuracy</em>, the literal answer to “does it lead me to the right problem.”<br>
+      <b>Cheapest thesis win:</b> Capacity-reframe ending (#3) — one line of copy.<br>
+      <b>Next:</b> Live judgment beat (#4) · context-gated verdict (#5).<br>
+      <b>Defer:</b> altitude switch (high effort) · worked example (low accuracy gain, make skippable).</p>
+      <p class="note">A PDF version was not generated — this machine has no Python/weasyprint toolchain. Use the browser’s Print to PDF (the layout includes a print stylesheet) if a printable copy is needed.</p>
+    </div>
+  </details>
+</div>
+<script>
+  document.querySelectorAll('input[type=range]').forEach(function(s){
+    var tip=document.getElementById(s.dataset.tip);
+    var base=tip.innerHTML;
+    s.addEventListener('input',function(){
+      var v=+s.value, msg;
+      if(v<33) msg='<b>Left:</b> the personas’ preferred design.';
+      else if(v<66) msg='<b>Middle:</b> a compromise — partial buy-in.';
+      else msg='<b>Right:</b> closer to the current build — where the friction lives.';
+      tip.innerHTML=msg+'<br>'+base;
+    });
+  });
+</script>
+</body>
+</html>

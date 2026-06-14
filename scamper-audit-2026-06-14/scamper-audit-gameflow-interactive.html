@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Flow Audit — AI Problem Finder</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1a1a2e;
+    --dark-blue: #16213e;
+    --midnight: #0f3460;
+    --coral: #e94560;
+    --warm-white: #f5f5f0;
+    --purple: #533483;
+    --gold: #fbd000;
+    --green: #2ecc71;
+    --amber: #f39c12;
+    --marit: #4a90d9;
+    --yael: #9b59b6;
+    --daan: #e67e22;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--warm-white);
+    color: var(--navy);
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--navy);
+    color: var(--warm-white);
+    padding: 48px 32px 40px;
+    border-bottom: 4px solid var(--coral);
+  }
+
+  header .label {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 12px;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.2;
+    max-width: 700px;
+    margin-bottom: 16px;
+  }
+
+  header p {
+    color: #a0aec0;
+    max-width: 600px;
+    font-size: 1rem;
+  }
+
+  nav {
+    background: var(--dark-blue);
+    padding: 0 32px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  nav a {
+    color: #a0aec0;
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 16px 20px;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  nav a:hover, nav a.active {
+    color: var(--warm-white);
+    border-bottom-color: var(--coral);
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 32px;
+  }
+
+  section { margin-bottom: 72px; }
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--midnight);
+    margin-bottom: 6px;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 10px;
+  }
+
+  .section-desc {
+    color: #555;
+    font-size: 0.95rem;
+    max-width: 680px;
+    margin-bottom: 32px;
+  }
+
+  /* ─── Persona Cards ─── */
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .persona-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e8e8e8;
+  }
+
+  .persona-card .top {
+    padding: 24px 24px 20px;
+    color: white;
+  }
+
+  .persona-card.marit .top { background: var(--marit); }
+  .persona-card.yael .top { background: var(--yael); }
+  .persona-card.daan .top { background: var(--daan); }
+
+  .persona-card .name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .persona-card .role {
+    font-size: 0.82rem;
+    opacity: 0.85;
+    margin-bottom: 14px;
+  }
+
+  .vote-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .vote-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  .vote-badge.yes { background: rgba(46,204,113,0.2); color: #1a7a42; border: 1px solid #2ecc71; }
+  .vote-badge.no { background: rgba(233,69,96,0.15); color: #c0292f; border: 1px solid var(--coral); }
+  .vote-badge.conditional { background: rgba(243,156,18,0.2); color: #a06000; border: 1px solid var(--amber); }
+  .vote-badge.changed { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5); }
+
+  .persona-card .body {
+    padding: 20px 24px 24px;
+  }
+
+  .persona-card blockquote {
+    font-size: 0.88rem;
+    font-style: italic;
+    color: #444;
+    border-left: 3px solid #e0e0e0;
+    padding-left: 14px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .persona-card .baseline {
+    font-size: 0.8rem;
+    color: #777;
+    margin-bottom: 12px;
+  }
+
+  .trigger-quote {
+    font-size: 0.8rem;
+    color: #555;
+    background: #f9f9f6;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-style: italic;
+  }
+
+  /* ─── Flow Steps ─── */
+  .flow-section { margin-bottom: 56px; }
+
+  .persona-flow {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e8e8e8;
+    overflow: hidden;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .flow-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 24px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .flow-header:hover { background: #fafaf7; }
+
+  .persona-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-marit { background: var(--marit); }
+  .dot-yael { background: var(--yael); }
+  .dot-daan { background: var(--daan); }
+
+  .flow-header .title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    flex: 1;
+  }
+
+  .flow-header .chevron {
+    font-size: 0.8rem;
+    color: #999;
+    transition: transform 0.2s;
+  }
+
+  .flow-header.open .chevron { transform: rotate(180deg); }
+
+  .flow-body { display: none; padding: 0 24px 24px; }
+  .flow-body.visible { display: block; }
+
+  .step-block {
+    border-left: 3px solid #e8e8e8;
+    padding: 14px 0 14px 20px;
+    margin-bottom: 4px;
+  }
+
+  .step-block.gold { border-left-color: var(--gold); }
+  .step-block.silver { border-left-color: #aaa; }
+  .step-block.red { border-left-color: var(--coral); }
+  .step-block.warning { border-left-color: var(--amber); background: #fffbf0; padding: 14px 14px 14px 20px; border-radius: 0 6px 6px 0; }
+
+  .step-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 6px;
+  }
+
+  .step-input {
+    background: var(--navy);
+    color: #e8e8e8;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 8px 0;
+    line-height: 1.5;
+  }
+
+  .step-reaction {
+    font-size: 0.85rem;
+    color: #555;
+    font-style: italic;
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+
+  .warning-flag {
+    font-size: 0.8rem;
+    background: #fff8e6;
+    border: 1px solid var(--amber);
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: #7a5500;
+    margin-top: 8px;
+  }
+
+  .warning-flag strong { font-weight: 600; }
+
+  .gap-flag {
+    font-size: 0.8rem;
+    background: #fff0f0;
+    border: 1px solid #f0c0c0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: #8b0000;
+    margin-top: 8px;
+  }
+
+  .final-statement {
+    background: var(--midnight);
+    color: white;
+    padding: 18px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+
+  .verdict-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  .verdict-strong { background: rgba(46,204,113,0.15); color: #1a7a42; border: 1px solid #2ecc71; }
+  .verdict-maybe { background: rgba(243,156,18,0.15); color: #7a5000; border: 1px solid var(--amber); }
+  .verdict-redirect { background: rgba(233,69,96,0.12); color: #8b001e; border: 1px solid var(--coral); }
+
+  /* ─── Debate ─── */
+  .debate-exchange {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e8e8e8;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .debate-title {
+    background: var(--dark-blue);
+    color: white;
+    padding: 14px 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .debate-lines { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  .debate-line { display: flex; gap: 14px; }
+
+  .persona-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  .tag-marit { background: rgba(74,144,217,0.15); color: #2060aa; }
+  .tag-yael { background: rgba(155,89,182,0.15); color: #6c3599; }
+  .tag-daan { background: rgba(230,126,34,0.15); color: #a05010; }
+
+  .debate-text { font-size: 0.88rem; color: #333; line-height: 1.6; }
+
+  .unresolved-flag {
+    font-size: 0.78rem;
+    background: #fafaf0;
+    border: 1px solid #e0e0a0;
+    padding: 10px 14px;
+    border-radius: 6px;
+    color: #666;
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* ─── Verdict Table ─── */
+  .vote-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  .vote-table th {
+    background: var(--dark-blue);
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .vote-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
+  }
+
+  .vote-table tr:nth-child(even) td { background: #fafaf7; }
+
+  /* ─── Tensions & Consensus ─── */
+  .tension-card {
+    background: #fff;
+    border-radius: 10px;
+    border-left: 4px solid var(--coral);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+
+  .consensus-card {
+    background: #fff;
+    border-radius: 10px;
+    border-left: 4px solid var(--green);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+
+  .card-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 6px;
+  }
+
+  .card-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; }
+  .card-body { font-size: 0.88rem; color: #555; line-height: 1.6; }
+
+  /* ─── Improvements Grid ─── */
+  .improvements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+
+  .improvement-card {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e8e8e8;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+
+  .improvement-card .source {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .source-marit { color: var(--marit); }
+  .source-yael { color: var(--yael); }
+  .source-daan { color: var(--daan); }
+
+  .improvement-card p { font-size: 0.88rem; color: #333; line-height: 1.5; margin-bottom: 14px; }
+
+  .votes-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .mini-vote {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  .mv-yes { background: #e8f8ef; color: #1a7a42; }
+  .mv-no { background: #fdecea; color: #c0292f; }
+  .mv-cond { background: #fef5e7; color: #a06000; }
+
+  /* ─── Pre-mortem ─── */
+  .premortem-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .premortem-card {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e8e8e8;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .premortem-top {
+    padding: 18px 20px 14px;
+    color: white;
+    font-size: 0.85rem;
+  }
+
+  .premortem-card.marit .premortem-top { background: var(--marit); }
+  .premortem-card.yael .premortem-top { background: var(--yael); }
+  .premortem-card.daan .premortem-top { background: var(--daan); }
+
+  .premortem-when {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .premortem-trigger {
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+
+  .premortem-body {
+    padding: 16px 20px;
+    font-size: 0.85rem;
+    color: #444;
+    line-height: 1.6;
+  }
+
+  .premortem-prevented {
+    background: #f5f5f0;
+    padding: 12px 16px;
+    font-size: 0.8rem;
+    color: #555;
+    border-top: 1px solid #e8e8e8;
+    font-style: italic;
+  }
+
+  /* ─── Decision Framework ─── */
+  .priority-block {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e8e8e8;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .priority-block.first { border-top: 4px solid var(--coral); }
+  .priority-block.later { border-top: 4px solid #ccc; }
+
+  .priority-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .priority-block.first .priority-label { color: var(--coral); }
+  .priority-block.later .priority-label { color: #999; }
+
+  .priority-item {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+
+  .priority-num {
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: var(--coral);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .priority-block.later .priority-num { background: #ccc; }
+
+  .priority-item p { font-size: 0.88rem; color: #333; line-height: 1.5; }
+  .priority-item strong { font-weight: 600; }
+
+  footer {
+    background: var(--navy);
+    color: #a0aec0;
+    text-align: center;
+    padding: 32px;
+    font-size: 0.8rem;
+    margin-top: 48px;
+  }
+
+  @media (max-width: 600px) {
+    main { padding: 32px 20px; }
+    header { padding: 32px 20px 28px; }
+  }
+
+  @media print {
+    nav { display: none; }
+    .flow-body { display: block !important; }
+    .persona-card, .debate-exchange, .tension-card, .consensus-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="label">Game Flow Simulation — 2026-06-14</div>
+  <h1>Does the game lead players to the right AI problem?</h1>
+  <p>Three personas walked through every step of World 2 and World 3. Here's what they found, what they argued about, and what they couldn't agree on.</p>
+</header>
+
+<nav>
+  <a href="#personas" class="active">Personas</a>
+  <a href="#walkthroughs">Walkthroughs</a>
+  <a href="#improvements">Improvements</a>
+  <a href="#debate">Debate</a>
+  <a href="#premortems">Pre-mortems</a>
+  <a href="#tensions">Tensions</a>
+  <a href="#decision">Decision</a>
+</nav>
+
+<main>
+
+  <!-- PERSONA CARDS -->
+  <section id="personas">
+    <div class="section-label">The Three Personas</div>
+    <h2>Who went through the game</h2>
+    <p class="section-desc">Each persona carries specific behavioral drivers grounded in qualitative research with L&D professionals. Votes reflect whether the game flow reliably produces the right problem — not just any problem.</p>
+
+    <div class="persona-grid">
+
+      <div class="persona-card marit">
+        <div class="top">
+          <div class="name">Marit</div>
+          <div class="role">Senior L&D Advisor, regulated multinational</div>
+          <div class="vote-row">
+            <span class="vote-badge conditional">Round 1: CONDITIONAL</span>
+            <span class="vote-badge conditional">Round 2: CONDITIONAL</span>
+          </div>
+        </div>
+        <div class="body">
+          <div class="baseline">Emotional baseline: Low-grade governance anxiety. Interested — but calculating what it costs.</div>
+          <blockquote>"The game gave me something I can put in a proposal. I can now say 'we identified a structural gap and assessed it as a strong AI candidate using a validated framework.'"</blockquote>
+          <div class="trigger-quote">Condition: Live sessions must use the verdict to gate what gets Sprint time. If 🔴 problems run anyway, the diagnostic is decorative.</div>
+        </div>
+      </div>
+
+      <div class="persona-card yael">
+        <div class="top">
+          <div class="name">Yael</div>
+          <div class="role">Independent learning designer, 12+ years</div>
+          <div class="vote-row">
+            <span class="vote-badge no">Round 1: NO</span>
+            <span class="vote-badge conditional">Round 2: CONDITIONAL ↑</span>
+            <span class="vote-badge changed">Changed</span>
+          </div>
+        </div>
+        <div class="body">
+          <div class="baseline">Emotional baseline: Deflation layered with identity vigilance. Scanning for whether this space sees her.</div>
+          <blockquote>"The 'one small thing' question found something I wasn't looking for. 'I've never had a way to make my own decision-making legible to me. That's new.'"</blockquote>
+          <div class="trigger-quote">Changed by: Marit's reframe — the game's output serves what comes after, not what happens during. It's a brief, not a verdict.</div>
+        </div>
+      </div>
+
+      <div class="persona-card daan">
+        <div class="top">
+          <div class="name">Daan</div>
+          <div class="role">L&D Manager, shadow AI pioneer, 18 months alone</div>
+          <div class="vote-row">
+            <span class="vote-badge conditional">Round 1: CONDITIONAL</span>
+            <span class="vote-badge yes">Round 2: YES ↑</span>
+            <span class="vote-badge changed">Changed</span>
+          </div>
+        </div>
+        <div class="body">
+          <div class="baseline">Emotional baseline: Productive frustration layered with loneliness. None of what he's built counts yet.</div>
+          <blockquote>"The game confirmed what I already knew in 8 minutes. What I needed was a sentence I could put in front of my director. I didn't know I was missing that."</blockquote>
+          <div class="trigger-quote">Changed by: Yael's point that articulation is a prerequisite for advocacy. The game isn't the solution — it's the first document in the argument.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- WALKTHROUGHS -->
+  <section id="walkthroughs">
+    <div class="section-label">Step-by-Step</div>
+    <h2>What each persona actually typed</h2>
+    <p class="section-desc">Every input, every reaction, and every moment the game succeeded or fell short — grounded in the actual World 2 and World 3 mechanics.</p>
+
+    <!-- MARIT -->
+    <div class="persona-flow">
+      <div class="flow-header" onclick="toggle(this)">
+        <div class="persona-dot dot-marit"></div>
+        <div class="title">Marit — compliance drop-off → manager transfer capture</div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="flow-body">
+
+        <div class="step-block">
+          <div class="step-label">World 2 · Step 0 — Name 3 Challenges</div>
+          <div class="step-input">1. Compliance training completion rates drop off after month 3<br>2. We don't capture what managers actually did differently after a leadership programme<br>3. New starters get 4 different onboarding experiences depending on who's available</div>
+          <div class="step-reaction">"The required-three mechanic works for me. It forces me to be honest about what the actual problems are, not just the loudest one."</div>
+        </div>
+
+        <div class="step-block gold">
+          <div class="step-label">World 2 · Step 1 — Quick Scan</div>
+          <div class="step-input">Challenge 1 (compliance): 🔴 — people are choosing not to complete<br>Challenge 2 (manager transfer): 🟢 — no mechanism exists at all<br>Challenge 3 (onboarding): 🟡 — guide exists, gets ignored differently each time</div>
+          <div class="step-reaction">"This is the most useful thing I've done in ten minutes. I came in thinking challenge 1 was the priority. Seeing it labelled 🔴 immediately reframes it."</div>
+          <div class="warning-flag"><strong>⚠ Design gap:</strong> The 🔴 tier conflates "people won't" (motivation) with "the tool is broken" (system failure). Marit rated challenge 1 as 🔴 but she's not sure it's right — the content is terrible AND people click through. The tier has no room for that nuance.</div>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">World 2 · Step 2 — Choose</div>
+          <div class="step-input">→ Challenge 2: Manager transfer capture [🟢 Strong AI fit]</div>
+          <div class="step-reaction">"It's the only one the scan said was genuinely structural. That's the signal I needed."</div>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">World 2 · Step 3 — Why</div>
+          <div class="step-input">Nobody has ever built a system for it. After a programme ends, managers go back to their jobs. There's no prompt, no tool, no moment that asks them to record what they actually did differently. It depends on whether their L&D contact follows up — and most don't because they're already running the next programme.</div>
+          <div class="step-reaction">"I'd have appreciated a prompt. Something like 'describe the moment the problem occurs.' I wrote a paragraph. Someone else writes two words."</div>
+        </div>
+
+        <div class="step-block gold">
+          <div class="step-label">World 3 · Step 1 — Root Cause Category</div>
+          <div class="step-input">Selected: 🔑 One person holds the knowledge</div>
+          <div class="step-reaction">"It's not quite right. The real problem is that nobody holds the knowledge — it disappears. But this category implies there's one person who has it. Close enough."</div>
+          <div class="warning-flag"><strong>Triangulation check:</strong> No warning fired (correctly — gold-tier pick, structural "why" text). But note: all three gold-tier categories produce the same verdict. The granularity is cosmetic at this tier level.</div>
+        </div>
+
+        <div class="step-block gold">
+          <div class="step-label">World 3 · Step 2 — Verdict</div>
+          <div class="step-input">🟢 Strong AI candidate — "This is a structural problem — great fit for AI-assisted solutions."</div>
+          <div class="step-reaction">"Something defensible. I can now say 'we identified a structural gap and assessed it as a strong AI candidate using a validated framework.' That's language I can put in a proposal."</div>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">World 3 · Step 3 — Frame Your POV</div>
+          <div class="step-input">Who: L&D teams running leadership programmes<br>Needs: a lightweight way to capture manager behaviour change after a programme ends<br>Because: nobody has ever built a system for it and the evidence disappears without one</div>
+          <div class="step-reaction">"The grammar is slightly off but the structure is useful. It reads like a design brief."</div>
+        </div>
+
+        <div class="step-block gold">
+          <div class="step-label">World 3 · Step 4 — One Small Thing</div>
+          <div class="step-input">We could create a 30-day post-programme check-in prompt that asks managers three specific questions and logs their answers. AI could generate the questions, route them, and synthesise the responses. That literally cannot happen now because there's no system to hold the data.</div>
+          <div class="step-reaction">"The capacity question actually redirected me. I wasn't thinking about 'what becomes possible' — I was thinking 'what would be faster.' The question changed my answer."</div>
+        </div>
+
+        <div class="final-statement">"L&D teams running leadership programmes needs a lightweight way to capture manager behaviour change after a programme ends because nobody has ever built a system for it and the evidence disappears without one."</div>
+        <div><span class="verdict-badge verdict-strong">🟢 Strong AI candidate</span></div>
+
+      </div>
+    </div>
+
+    <!-- YAEL -->
+    <div class="persona-flow">
+      <div class="flow-header" onclick="toggle(this)">
+        <div class="persona-dot dot-yael"></div>
+        <div class="title">Yael — briefing quality → reuse layer (bespoke every time)</div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="flow-body">
+
+        <div class="step-block">
+          <div class="step-label">World 2 · Step 0 — Name 3 Challenges</div>
+          <div class="step-input">1. Clients brief me on outcomes they want but can't name the behaviour change underneath<br>2. I rebuild the same underlying structures every project — nothing compounds<br>3. I spend 20% of every project on formatting and file conversion that adds no value</div>
+          <div class="step-reaction">"Three is a useful constraint. I immediately notice challenge 3 is the one I most want to solve but the least interesting one. The game doesn't acknowledge that tension."</div>
+        </div>
+
+        <div class="step-block gold">
+          <div class="step-label">World 2 · Step 1 — Quick Scan</div>
+          <div class="step-input">Challenge 1 (client briefing): 🟡 — process exists, clients don't know how to use it<br>Challenge 2 (bespoke every time): 🟢 — I've never built a reuse layer<br>Challenge 3 (formatting tax): 🔴 — incompatibility between file formats is the tool</div>
+          <div class="step-reaction">"My formative instinct was challenge 1 — most intellectually interesting. The scan says 🟡. Challenge 2 is 🟢. I'll follow the signal."</div>
+          <div class="gap-flag"><strong>Design gap:</strong> The 🟢 tier doesn't distinguish between unintentional structural gaps (problems) and deliberate structural choices (craft decisions). Yael works bespoke by design. Both look like 🟢 from the outside.</div>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">World 2 · Step 3 — Why</div>
+          <div class="step-input">Because every client is genuinely different, I've never invested in a reuse layer. I build each project from scratch because I believe the context requires it. But I suspect 60% of what I build could be templated without losing quality — I just don't know which 60%.</div>
+          <div class="step-reaction">"I've just admitted to myself that I might have a false belief about the necessity of bespoke work. I got there because I was writing for an audience."</div>
+        </div>
+
+        <div class="step-block gold">
+          <div class="step-label">World 3 · Step 1 — Root Cause Category</div>
+          <div class="step-input">Selected: 🔧 No system for it</div>
+          <div class="step-reaction">"The categories are written for teams, not solo practitioners. 'People do this manually, skip it, or wait on someone else' — I'm the people. There's no someone else."</div>
+          <div class="warning-flag"><strong>Triangulation check:</strong> Warning did NOT fire — her "why" text contained "I've never created a reuse layer" but not the keyword patterns ('no system', 'manually', etc.). Her precise language bypassed the detection. The system missed a genuine reflection opportunity.</div>
+        </div>
+
+        <div class="step-block gold">
+          <div class="step-label">World 3 · Step 4 — One Small Thing</div>
+          <div class="step-input">I could build a component library that evolves with each project — not a template, but a living index of the decisions I've made and why. AI could extract the structure from existing work. But more importantly: I've never had a way to make my own decision-making legible to me. That's new.</div>
+          <div class="step-reaction">"That last sentence surprised me. The capacity question found something the efficiency frame wouldn't have. I'm keeping that."</div>
+        </div>
+
+        <div class="final-statement">"Independent learning designers running multiple bespoke client projects needs a way to identify and extract the repeatable scaffolding from genuinely unique work because everything is built from scratch when 60% of the structure could compound across projects."</div>
+        <div><span class="verdict-badge verdict-strong">🟢 Strong AI candidate</span></div>
+
+      </div>
+    </div>
+
+    <!-- DAAN -->
+    <div class="persona-flow">
+      <div class="flow-header" onclick="toggle(this)">
+        <div class="persona-dot dot-daan"></div>
+        <div class="title">Daan — governance blockage, measurement mismatch → KPI alignment gap</div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="flow-body">
+
+        <div class="step-block">
+          <div class="step-label">World 2 · Step 0 — Name 3 Challenges</div>
+          <div class="step-input">1. L&D produce content nobody uses because we don't connect to what managers are actually measured on<br>2. The AI tools I've built can't go live because they haven't passed IT security review<br>3. My org measures L&D by hours delivered not outcomes — I can't get budget for anything I can't express as a course</div>
+          <div class="step-reaction">"Three is too few. I have seven. But fine."</div>
+        </div>
+
+        <div class="step-block silver">
+          <div class="step-label">World 2 · Step 1 — Quick Scan</div>
+          <div class="step-input">Challenge 1 (content nobody uses): 🟡<br>Challenge 2 (shadow AI, no path to legitimacy): 🔴<br>Challenge 3 (wrong measurement system): 🔴</div>
+          <div class="step-reaction">"I've rated two challenges 🔴. The scan is telling me my most important problems aren't AI problems. But '🔴 people won't' doesn't describe IT blocking AI tools. The institution is the bottleneck, not the person."</div>
+          <div class="gap-flag"><strong>Critical design gap:</strong> Daan's most important problems are governance blockages — IT approval processes, measurement system design. Neither maps to "people won't" or "tool broken." There is no tier for "the institution is the constraint." The diagnostic has a blind spot for systemic/political problems.</div>
+        </div>
+
+        <div class="step-block silver">
+          <div class="step-label">World 2 · Step 2 — Choose</div>
+          <div class="step-input">→ Challenge 1: KPI alignment gap [🟡 Maybe — needs framing]</div>
+          <div class="step-reaction">"The game chose this for me by process of elimination. My most important challenges rated 🔴. That's accurate. And uncomfortable."</div>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">World 2 · Step 3 — Why</div>
+          <div class="step-input">We design content based on what L&D thinks is important, not what managers are actually measured on at end of quarter. There's no system that connects learning design briefs to business KPIs. The connection is made informally in kick-off meetings and then never revisited.</div>
+          <div class="step-reaction">"Accurate. Boring. I've said this in three different strategy documents."</div>
+        </div>
+
+        <div class="step-block gold">
+          <div class="step-label">World 3 · Step 1 — Root Cause Category</div>
+          <div class="step-input">Selected: 🔧 No system for it</div>
+          <div class="step-reaction">"Closest. The real answer is 'no shared data layer between learning design and business performance tracking.' That's not in the taxonomy."</div>
+          <div class="warning-flag"><strong>Triangulation check:</strong> No warning fired. His "why" text contains "no system" — a structural signal — and he picked a gold-tier category. No mismatch. The system correctly passed him through.</div>
+        </div>
+
+        <div class="step-block gold">
+          <div class="step-label">World 3 · Step 2 — Verdict</div>
+          <div class="step-input">🟢 Strong AI candidate</div>
+          <div class="step-reaction">"I know. I've been saying this for 18 months. But seeing it in a structured output — that's the sentence I've been missing. 'We identified a structural gap in how L&D briefs connect to business KPIs and assessed it as a strong AI candidate.' My director could read that."</div>
+        </div>
+
+        <div class="step-block gold">
+          <div class="step-label">World 3 · Step 4 — One Small Thing</div>
+          <div class="step-input">I could pull the relevant manager KPIs from our HR system at brief-intake, surface them in the design document, and flag when learning objectives don't map to any of them. That quality gate doesn't exist now. Nobody does it because it would take too long and require accessing two systems manually. AI could do it at the point of brief creation. That's a workflow change that enables something that literally cannot exist today.</div>
+          <div class="step-reaction">"The capacity question worked on me. I was going to write about speed. I wrote about a quality gate instead."</div>
+        </div>
+
+        <div class="final-statement">"L&D managers designing programmes for line managers needs a way to connect learning design decisions to the business KPIs managers are actually measured on because the connection currently lives in one kick-off meeting and disappears before the programme is built."</div>
+        <div><span class="verdict-badge verdict-strong">🟢 Strong AI candidate</span></div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <!-- IMPROVEMENTS -->
+  <section id="improvements">
+    <div class="section-label">Key Improvements</div>
+    <h2>What each persona would change — and how the others voted</h2>
+    <p class="section-desc">9 structural suggestions across the three personas. Cross-votes reveal which changes have broad support vs which serve one persona at another's expense.</p>
+
+    <div class="improvements-grid">
+
+      <div class="improvement-card">
+        <div class="source source-marit">Marit</div>
+        <p>Split the 🔴 tier into two: "People won't" (motivation/culture) and "Institution is blocking" (governance/system failure). Different causes, different remedies, different next steps.</p>
+        <div class="votes-row">
+          <span class="mini-vote mv-cond">Yael: COND</span>
+          <span class="mini-vote mv-yes">Daan: YES</span>
+        </div>
+      </div>
+
+      <div class="improvement-card">
+        <div class="source source-marit">Marit</div>
+        <p>Add guided sub-questions to the "Why is this happening?" field: "When exactly does this break down? Who's affected? What would have to be true for it not to happen?" Triangulation is only as good as what players write.</p>
+        <div class="votes-row">
+          <span class="mini-vote mv-cond">Yael: COND</span>
+          <span class="mini-vote mv-yes">Daan: YES</span>
+        </div>
+      </div>
+
+      <div class="improvement-card">
+        <div class="source source-marit">Marit</div>
+        <p>Show tier badge rationale before rating, not after. Players should know what a 🟢 means for AI fit before they click it, not see it confirmed after.</p>
+        <div class="votes-row">
+          <span class="mini-vote mv-yes">Yael: YES</span>
+          <span class="mini-vote mv-yes">Daan: YES</span>
+        </div>
+      </div>
+
+      <div class="improvement-card">
+        <div class="source source-yael">Yael</div>
+        <p>"One small thing" should ask what judgment you'd apply, not just what you'd try: "What becomes possible — and what judgment would you need to apply to make sure AI doesn't flatten it?"</p>
+        <div class="votes-row">
+          <span class="mini-vote mv-yes">Marit: YES</span>
+          <span class="mini-vote mv-cond">Daan: COND</span>
+        </div>
+      </div>
+
+      <div class="improvement-card">
+        <div class="source source-yael">Yael</div>
+        <p>Add a single line to the 9 categories: "If you're a solo practitioner, 'people' in these descriptions means you." Five of nine categories assume a team context.</p>
+        <div class="votes-row">
+          <span class="mini-vote mv-cond">Marit: COND</span>
+          <span class="mini-vote mv-cond">Daan: COND</span>
+        </div>
+      </div>
+
+      <div class="improvement-card">
+        <div class="source source-yael">Yael</div>
+        <p>Add a second prompt to the "why" field: "Is this a fact about how things work, or a belief you hold about how they should work?" Belief-level blocks need to be named differently from structural ones.</p>
+        <div class="votes-row">
+          <span class="mini-vote mv-yes">Marit: YES</span>
+          <span class="mini-vote mv-cond">Daan: COND</span>
+        </div>
+      </div>
+
+      <div class="improvement-card">
+        <div class="source source-daan">Daan</div>
+        <p>Add a 4th tier: "The institution is the bottleneck." For governance blockages, approval process failures, and measurement systems that disincentivise change — the current 3 tiers can't name these.</p>
+        <div class="votes-row">
+          <span class="mini-vote mv-cond">Marit: COND</span>
+          <span class="mini-vote mv-yes">Yael: YES</span>
+        </div>
+      </div>
+
+      <div class="improvement-card">
+        <div class="source source-daan">Daan</div>
+        <p>The 🔴 verdict should say "what next" — not just "redirect." Even one sentence: "This needs change management or political capital, not AI. Come back when that's in motion."</p>
+        <div class="votes-row">
+          <span class="mini-vote mv-yes">Marit: YES</span>
+          <span class="mini-vote mv-yes">Yael: YES</span>
+        </div>
+      </div>
+
+      <div class="improvement-card">
+        <div class="source source-daan">Daan</div>
+        <p>"One small thing" should ask: "What would need to be true in your organisation for this experiment to be allowed?" Surfaces the real constraint before the commitment is made.</p>
+        <div class="votes-row">
+          <span class="mini-vote mv-yes">Marit: YES</span>
+          <span class="mini-vote mv-cond">Yael: COND</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DEBATE -->
+  <section id="debate">
+    <div class="section-label">The Debate</div>
+    <h2>Where the personas couldn't agree</h2>
+    <p class="section-desc">Four exchanges where the disagreement is structural — not just preference. At least one has no clean resolution.</p>
+
+    <div class="debate-exchange">
+      <div class="debate-title">Exchange 1 — Is the verdict an instrument or a decoration?</div>
+      <div class="debate-lines">
+        <div class="debate-line">
+          <span class="persona-tag tag-daan">DAAN</span>
+          <div class="debate-text">The verdict is self-certifying. I rated my problem 🟢 in the scan, picked a gold category, and got a 🟢 verdict. The two steps confirmed each other. That's not a diagnostic — it's a mirror.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-marit">MARIT</span>
+          <div class="debate-text">The mirror is the point. The game isn't testing whether your self-assessment is correct. It's giving you a structured way to articulate a self-assessment you can then defend. That's exactly what I need before I walk into a room with a compliance officer.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-daan">DAAN</span>
+          <div class="debate-text">So the game is a formatting tool, not a diagnostic tool.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-marit">MARIT</span>
+          <div class="debate-text">All diagnosis begins with self-report. You're expecting the game to know more about your organisation than you do.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-yael">YAEL</span>
+          <div class="debate-text">Marit's right that it starts with self-report. But then the game presents the output as a <em>verdict</em>, which implies external validation. It should present it as a <em>draft</em> — "here's your self-assessment, now go test it."</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="debate-exchange">
+      <div class="debate-title">Exchange 2 — Should 🔴 problems have a pathway, not just a redirect?</div>
+      <div class="debate-lines">
+        <div class="debate-line">
+          <span class="persona-tag tag-daan">DAAN</span>
+          <div class="debate-text">Two of my three problems rated 🔴. The game correctly said they weren't AI problems. Then it had nothing else to say. "Redirect — start here before AI" is not a pathway. It's a door with no handle.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-marit">MARIT</span>
+          <div class="debate-text">The 🔴 verdict IS the pathway. It tells you to fix the underlying problem before adding AI. That stops you building the wrong thing.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-daan">DAAN</span>
+          <div class="debate-text">It stops me, full stop. The game gives me a verdict and then sends me to the World Map. My 🔴 problems are still my most important problems. What do I do with them?</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-yael">YAEL</span>
+          <div class="debate-text">If the game tries to address institutional blockages, it becomes a change management programme. That's not what it is.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-daan">DAAN</span>
+          <div class="debate-text">Then say so. "This is a problem for a different programme" is more honest than "Redirect — start here before AI."</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-marit">MARIT</span>
+          <div class="debate-text">I agree with that. Name what the game is and isn't for.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="debate-exchange">
+      <div class="debate-title">Exchange 3 — Does the quick-scan find the right problem or the most tractable one? <span style="font-size:0.75rem;font-weight:400;opacity:0.7">(No clean resolution)</span></div>
+      <div class="debate-lines">
+        <div class="debate-line">
+          <span class="persona-tag tag-yael">YAEL</span>
+          <div class="debate-text">The scan moved me from challenge 1 to challenge 2. But challenge 2 was 🟢 because I've never built a reuse system — not because building one is necessarily right. The absence of a system isn't always a problem. Sometimes it's a choice. The scan treats all structural absences the same.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-daan">DAAN</span>
+          <div class="debate-text">My most important challenge is a governance blockage. The scan called it 🔴 and moved me away from it. The scan optimises for tractability, not importance.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-marit">MARIT</span>
+          <div class="debate-text">Are those different things? If a problem isn't tractable, is it one you should be working on right now?</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-yael">YAEL</span>
+          <div class="debate-text">Yes. The intractable problems are often the ones that matter most. The scan creates a selection bias toward solvable problems.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-marit">MARIT</span>
+          <div class="debate-text">I'd rather have a solvable problem I can make progress on than an important problem I can't touch. That's prioritisation, not avoidance.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-daan">DAAN</span>
+          <div class="debate-text">That works if you're working within an institution. If you're trying to change the institution, you have to work on the intractable problems.</div>
+        </div>
+      </div>
+      <div class="unresolved-flag">⚡ This exchange has no resolution. Both positions are correct for different contexts. The game cannot serve both simultaneously without explicit scoping.</div>
+    </div>
+
+    <div class="debate-exchange">
+      <div class="debate-title">Exchange 4 — Is the fluency of the output a feature or a bug?</div>
+      <div class="debate-lines">
+        <div class="debate-line">
+          <span class="persona-tag tag-yael">YAEL</span>
+          <div class="debate-text">The game produces well-structured statements from thin inputs. Someone can type two-word answers and get a grammatically clean POV statement that sounds like a design brief. It isn't one.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-daan">DAAN</span>
+          <div class="debate-text">A fluent-sounding problem statement gets into rooms that a messy one doesn't. I'd rather have a well-formatted wrong answer than a correct answer nobody can read.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-yael">YAEL</span>
+          <div class="debate-text">You're describing a communication tool, not a diagnostic tool.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-daan">DAAN</span>
+          <div class="debate-text">Correct. And communication is the thing most practitioners actually need help with. They understand their problems. They can't make them legible to the people who approve budgets.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-marit">MARIT</span>
+          <div class="debate-text">He's right. The game's output is more useful for what comes after than for what happens during. It's a brief-generator more than a diagnosis-engine.</div>
+        </div>
+        <div class="debate-line">
+          <span class="persona-tag tag-yael">YAEL</span>
+          <div class="debate-text">Then be honest about that. Don't call it a "verdict." Call it a "draft brief."</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- PRE-MORTEMS -->
+  <section id="premortems">
+    <div class="section-label">Pre-mortems</div>
+    <h2>How each persona drops out</h2>
+    <p class="section-desc">First-person dropout scenarios, written after the game flow but before the live sessions. The game flow isn't the whole experience.</p>
+
+    <div class="premortem-grid">
+
+      <div class="premortem-card marit">
+        <div class="premortem-top">
+          <div class="premortem-when">Drops out at: Week 3</div>
+          <div class="premortem-trigger">🔴 problems get Sprint time anyway</div>
+        </div>
+        <div class="premortem-body">
+          I went through the game. My problem statement came out well — I even showed my line manager. "L&D teams running leadership programmes needs a lightweight way to capture manager behaviour change..." She was impressed.<br><br>
+          Then in Session 2, someone's 🔴 problem — "managers skip the post-training reflection because nobody checks" — was still in the Sprint. The facilitator navigated it diplomatically. I watched them build a nudge bot for a will problem.<br><br>
+          I didn't drop out dramatically. I just stopped doing the between-session work. Nothing was dangerous — it just hadn't been worth the careful navigation.
+        </div>
+        <div class="premortem-prevented">Could have been prevented: Live sessions actively using the verdict to gate Sprint participation.</div>
+      </div>
+
+      <div class="premortem-card yael">
+        <div class="premortem-top">
+          <div class="premortem-when">Drops out at: Week 4</div>
+          <div class="premortem-trigger">Sprint format optimises for visible task-level output</div>
+        </div>
+        <div class="premortem-body">
+          The game flow was actually good. I found something real — the reuse-layer problem I'd been half-aware of for years. The capacity question surprised me. I left the pre-work feeling the programme had looked at me.<br><br>
+          Then Week 2: someone built an AI-generated quiz and the group spent 25 minutes discussing which multiple-choice questions were better. I kept attending but stopped sharing. Week 3, I showed my component library prototype. Someone asked if it was an AI tool. It wasn't — it was a system I'd designed. The question revealed they couldn't see the difference.<br><br>
+          I didn't drop out formally. I became a spectator.
+        </div>
+        <div class="premortem-prevented">Could have been prevented: Sprint format that accommodates process-level work, not just task-level artefacts.</div>
+      </div>
+
+      <div class="premortem-card daan">
+        <div class="premortem-top">
+          <div class="premortem-when">Drops out at: Week 2</div>
+          <div class="premortem-trigger">Sprint container doesn't match the problem complexity</div>
+        </div>
+        <div class="premortem-body">
+          The game was fine. Fast. My problem statement was accurate. I went into Session 1 thinking someone else would have problems as specific as mine — workflow architecture, system integration. Instead: 45 minutes on prompt engineering for a quiz generator.<br><br>
+          The workflow integration I'd described in "one small thing" requires HR system access I don't have, an API integration needing IT approval, and a governance document I'd need to write. The Sprint gave me 45 minutes and a whiteboard.<br><br>
+          Second week: someone building slides with AI. I didn't come back the third week. The game did its job. The container didn't match the problem.
+        </div>
+        <div class="premortem-prevented">Could have been prevented: A capability-level filter in the participant selection, or a parallel track for systems-level work.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TENSIONS & CONSENSUS -->
+  <section id="tensions">
+    <div class="section-label">Tensions & Consensus</div>
+    <h2>What the debate surfaced</h2>
+
+    <h3 style="margin-bottom:16px; margin-top:32px; color:#c0292f;">Unresolved tensions</h3>
+
+    <div class="tension-card">
+      <div class="card-num">Tension 1</div>
+      <div class="card-title">Tractability vs Importance</div>
+      <div class="card-body">The quick-scan optimises for finding the most AI-tractable problem. For practitioners whose most important problems are governance, culture, or institutional design, the game correctly tells them those aren't AI problems — and then has nothing else to offer. It cannot address this without becoming a change management programme. It should at minimum acknowledge the limitation explicitly.</div>
+    </div>
+
+    <div class="tension-card">
+      <div class="card-num">Tension 2</div>
+      <div class="card-title">Legibility vs Accuracy</div>
+      <div class="card-body">The POV template produces fluent, meeting-ready output. Genuinely useful for communicating upward. May also produce confident-sounding misdiagnoses. The game has no quality gate on the POV — any input generates a valid-looking output. Making the statement more legible may reduce the pressure players feel to think carefully.</div>
+    </div>
+
+    <div class="tension-card">
+      <div class="card-num">Tension 3</div>
+      <div class="card-title">Consistency Check vs Self-Report</div>
+      <div class="card-body">The quick-scan and World 3 category selection are designed to be independent checks. In practice, a player who rates their problem 🟢 in the scan will almost always pick a gold-tier category in World 3, confirming the rating rather than checking it. The triangulation warning partially addresses this but only fires on obvious keyword mismatches. Subtle mismatches — and belief-level blocks — pass through undetected.</div>
+    </div>
+
+    <h3 style="margin-bottom:16px; margin-top:40px; color:#1a7a42;">Consensus points</h3>
+
+    <div class="consensus-card">
+      <div class="card-num">Consensus 1</div>
+      <div class="card-title">The quick-scan is the most valuable addition</div>
+      <div class="card-body">All three personas found it redirected them correctly. Marit moved from compliance (🔴) to transfer capture (🟢). Yael moved from briefing quality (🟡) to reuse layer (🟢). Daan was correctly told his most important problems weren't AI problems — uncomfortable, but accurate. The scan is the one step that functions as a check rather than just a capture.</div>
+    </div>
+
+    <div class="consensus-card">
+      <div class="card-num">Consensus 2</div>
+      <div class="card-title">The capacity reframe is working</div>
+      <div class="card-body">All three personas wrote about what becomes possible, not what becomes faster. Marit wrote about a 30-day check-in system. Yael wrote about making her own decision-making legible. Daan wrote about a quality gate that can't exist today. The reframe did its job on all three.</div>
+    </div>
+
+    <div class="consensus-card">
+      <div class="card-num">Consensus 3</div>
+      <div class="card-title">The "why" field is the game's weakest link</div>
+      <div class="card-body">All three wanted more scaffolding. Quality of output depends heavily on quality of input. The triangulation system, POV step, and "one small thing" all inherit from what players write here. A two-word answer produces a two-word diagnosis wearing a fluent costume.</div>
+    </div>
+
+    <div class="consensus-card">
+      <div class="card-num">Consensus 4</div>
+      <div class="card-title">The game is better understood as a brief-generator than a diagnostic engine</div>
+      <div class="card-body">All three accepted, by the end of the debate, that the game's most valuable output is a communication artefact for what comes after — a brief that gets the meeting that enables the project. Not a final diagnosis. Calling the output a "verdict" overstates what the game can actually know.</div>
+    </div>
+
+    <div class="consensus-card">
+      <div class="card-num">Consensus 5</div>
+      <div class="card-title">The 🔴 verdict needs a "what next" pathway</div>
+      <div class="card-body">All three agreed "Redirect — start here before AI" is useful but incomplete. It names the problem type without giving any direction. Even one sentence pointing toward what kind of intervention would help would do significant work.</div>
+    </div>
+
+  </section>
+
+  <!-- DECISION FRAMEWORK -->
+  <section id="decision">
+    <div class="section-label">Decision Framework</div>
+    <h2>What to prioritise and what can wait</h2>
+
+    <div class="priority-block first">
+      <div class="priority-label">Prioritise first — highest leverage, broadest agreement</div>
+
+      <div class="priority-item">
+        <div class="priority-num">1</div>
+        <p><strong>Scaffold the "why" field.</strong> Add 2–3 sub-questions as ghost prompts: "When exactly does this break down? Who's affected when it does? What would have to be true for it not to happen?" This improves triangulation accuracy, POV quality, and "one small thing" relevance simultaneously. All three personas wanted it. Highest leverage single change.</p>
+      </div>
+
+      <div class="priority-item">
+        <div class="priority-num">2</div>
+        <p><strong>Add "what next" copy to the 🔴 verdict.</strong> Even one sentence: "This isn't an AI problem yet. The change that needs to happen first is [problem type]. Come back when that's in motion." Universal agreement. Low implementation cost.</p>
+      </div>
+
+      <div class="priority-item">
+        <div class="priority-num">3</div>
+        <p><strong>Split the 🔴 tier into motivation (won't) vs governance/structural (can't).</strong> Different problems, different remedies. The current conflation forces players to pick the nearest approximation, not the true cause. This also addresses Daan's institutional-blockage blind spot.</p>
+      </div>
+
+    </div>
+
+    <div class="priority-block later">
+      <div class="priority-label">Can wait — valid but lower urgency</div>
+
+      <div class="priority-item">
+        <div class="priority-num">4</div>
+        <p><strong>Amend "one small thing" to name the judgment alongside the possibility.</strong> Yael's suggestion. High craft value. Lower urgency than the structural fixes above.</p>
+      </div>
+
+      <div class="priority-item">
+        <div class="priority-num">5</div>
+        <p><strong>Add solo practitioner note to category descriptions.</strong> Edge case addressed in the facilitator guide before the UI.</p>
+      </div>
+
+      <div class="priority-item">
+        <div class="priority-num">6</div>
+        <p><strong>Rename "verdict" to "draft brief" or "AI fit assessment."</strong> Accurate framing. But naming is the last thing to fix — fix the substance first.</p>
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+  Game Flow Simulation · AI Transform Space · 2026-06-14 · Three personas: Marit, Yael, Daan
+</footer>
+
+<script>
+  function toggle(header) {
+    header.classList.toggle('open');
+    const body = header.nextElementSibling;
+    body.classList.toggle('visible');
+  }
+
+  // Nav active state on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Smooth scroll
+  navLinks.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(link.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>
