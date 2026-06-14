@@ -289,14 +289,14 @@ const World2_Enemies: React.FC = () => {
                 "{chosenChallenge}"
               </p>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 6, padding: '12px 16px' }}>
               {[
                 'When exactly does this break down?',
                 'Who feels it most when it does?',
                 'What would have to be true for it not to happen?',
               ].map((q, i) => (
-                <p key={i} className="vt323-font" style={{ color: '#aaa', fontSize: '1rem', margin: 0 }}>
-                  {i + 1}. {q}
+                <p key={i} className="vt323-font" style={{ color: '#fff', fontSize: '1.2rem', margin: 0 }}>
+                  <span style={{ color: '#fbd000', marginRight: 8 }}>{i + 1}.</span>{q}
                 </p>
               ))}
             </div>
