@@ -121,7 +121,7 @@ const ROOT_CAUSE_CATEGORIES: Array<{
 
 const TIER_COLORS: Record<string, string> = {
   gold: 'var(--coin-gold)',
-  silver: '#aaa',
+  silver: '#c8c8c8',
   red: 'var(--mario-red)',
 };
 
@@ -159,7 +159,7 @@ const World4_Castle: React.FC = () => {
   const [redirectInfoVisible, setRedirectInfoVisible] = useState(false);
   const [reframeMode, setReframeMode] = useState(false);
 
-  const STEP_TITLES = ['Your problem draft | AI Problem Finder', 'The problem type | AI Problem Finder', 'Refine your statement | AI Problem Finder', 'Give it a who | AI Problem Finder', 'One small thing | AI Problem Finder'];
+  const STEP_TITLES = ['Your problem draft | AI Problem Finder', 'The problem type | AI Problem Finder', 'Refine your statement | AI Problem Finder', 'Frame your POV | AI Problem Finder', 'One small thing | AI Problem Finder'];
   useEffect(() => { document.title = STEP_TITLES[step] ?? 'World 3 | AI Problem Finder'; }, [step]);
 
   if (!playerId) { navigate('/game'); return null; }
@@ -370,7 +370,7 @@ const World4_Castle: React.FC = () => {
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <span style={{ color: TIER_COLORS.silver }}>{cat.icon} {cat.label}</span>
-                    <span className="vt323-font" style={{ fontSize: '1rem', color: '#888', fontFamily: 'VT323, monospace' }}>{cat.desc}</span>
+                    <span className="vt323-font" style={{ fontSize: '1rem', color: '#ccc', fontFamily: 'VT323, monospace' }}>{cat.desc}</span>
                   </div>
                 </button>
               ))}
@@ -390,7 +390,7 @@ const World4_Castle: React.FC = () => {
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <span style={{ color: TIER_COLORS.red }}>{cat.icon} {cat.label}</span>
-                    <span className="vt323-font" style={{ fontSize: '1rem', color: '#888', fontFamily: 'VT323, monospace' }}>{cat.desc}</span>
+                    <span className="vt323-font" style={{ fontSize: '1rem', color: '#ccc', fontFamily: 'VT323, monospace' }}>{cat.desc}</span>
                   </div>
                 </button>
               ))}
@@ -442,7 +442,7 @@ const World4_Castle: React.FC = () => {
                   </div>
                 )}
                 <button type="submit" className="mario-btn mario-btn-red" disabled={!finalStatement.trim()}>
-                  {verdict.verdict === 'redirect' ? 'SEE WHAT THIS MEANS ▶' : 'GIVE IT A WHO ▶'}
+                  {verdict.verdict === 'redirect' ? 'SEE WHAT THIS MEANS ▶' : 'FRAME YOUR POV ▶'}
                 </button>
               </form>
             )}
@@ -453,7 +453,7 @@ const World4_Castle: React.FC = () => {
         {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
-              GIVE IT A WHO.
+              FRAME YOUR POINT OF VIEW (POV)
             </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
               A point of view makes the problem real. The who might be a learner, a manager — or you as L&D. All three are valid.
