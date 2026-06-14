@@ -131,6 +131,30 @@ type VerdictResult = {
   reason: string;
 };
 
+// Triangulate category choice against root-cause text for obvious mismatches
+const detectSignals = (text: string, patterns: string[]) => {
+  const t = text.toLowerCase();
+  return patterns.some((p) => t.includes(p));
+};
+const computeTriangulationWarning = (categoryId: string, rootCauseText: string): string | null => {
+  if (!rootCauseText.trim()) return null;
+  const cat = ROOT_CAUSE_CATEGORIES.find((c) => c.id === categoryId);
+  if (!cat) return null;
+  const hasWill = detectSignals(rootCauseText, ["won't", "don't want", "choose not", "choosing not", "refuse", "not bothered", "ignore it", "skip it"]);
+  const hasTool = detectSignals(rootCauseText, ['broken', "doesn't work", 'wrong tool', 'bad tool', 'outdated system', "system doesn't"]);
+  const hasStructural = detectSignals(rootCauseText, ['no system', 'no process', 'manually', 'nobody knows', 'only one person', 'one person holds', 'depends on one']);
+  if (cat.tier === 'red' && hasStructural && !hasWill && !hasTool) {
+    return 'Your "why" describes a missing system or process — but the category you picked is about people choosing not to or a broken tool. Worth a second look: is there a structural gap underneath this?';
+  }
+  if ((cat.tier === 'gold' || cat.tier === 'silver') && hasWill) {
+    return 'Your "why" mentions people choosing not to — that\'s usually a culture or incentive problem. AI doesn\'t fix "won\'t." Double-check your category.';
+  }
+  if (cat.tier === 'gold' && hasTool) {
+    return 'Your "why" sounds like a broken-tool problem. AI on top of a broken tool is still broken — the fix may be upstream of AI.';
+  }
+  return null;
+};
+
 const verdictFromTier = (tier: 'gold' | 'silver' | 'red'): VerdictResult => {
   if (tier === 'gold') return { verdict: 'strong', badge: '🟢 Strong AI candidate', reason: 'This is a structural problem — great fit for AI-assisted solutions.' };
   if (tier === 'silver') return { verdict: 'maybe', badge: '🟡 Maybe — paired approach', reason: 'AI can help here with the right framing and a clear scope.' };
@@ -158,6 +182,7 @@ const World4_Castle: React.FC = () => {
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [redirectInfoVisible, setRedirectInfoVisible] = useState(false);
   const [reframeMode, setReframeMode] = useState(false);
+  const [triangulationWarning, setTriangulationWarning] = useState<string | null>(null);
 
   const STEP_TITLES = ['Your problem draft | AI Problem Finder', 'The problem type | AI Problem Finder', 'Refine your statement | AI Problem Finder', 'Frame your POV | AI Problem Finder', 'One small thing | AI Problem Finder'];
   useEffect(() => { document.title = STEP_TITLES[step] ?? 'World 3 | AI Problem Finder'; }, [step]);
@@ -176,6 +201,8 @@ const World4_Castle: React.FC = () => {
     const result = verdictFromTier(cat.tier);
     setVerdict(result);
     setFinalStatement(draft);
+    const rootCauseText = localStorage.getItem('game_root_cause_why') ?? '';
+    setTriangulationWarning(computeTriangulationWarning(categoryId, rootCauseText));
     setStep(2);
   };
 
@@ -435,6 +462,22 @@ const World4_Castle: React.FC = () => {
                   Write your sharpest version. Then we'll tell you how it lands.
                 </p>
                 <textarea className="mario-input" style={{ minHeight: 140, resize: 'vertical', lineHeight: 1.8 }} aria-label="Your refined problem statement" value={finalStatement} onChange={(e) => setFinalStatement(e.target.value)} placeholder="The problem worth solving is..." autoFocus />
+                {triangulationWarning && (
+                  <div style={{ background: 'rgba(251,208,0,0.1)', borderLeft: '4px solid var(--coin-gold)', padding: '12px 16px' }}>
+                    <p className="mario-font" style={{ fontSize: '0.38rem', color: AMBER, margin: '0 0 6px' }}>⚠ SECOND LOOK</p>
+                    <p className="vt323-font" style={{ color: '#ddd', fontSize: '1.1rem', margin: '0 0 10px', lineHeight: 1.5 }}>
+                      {triangulationWarning}
+                    </p>
+                    <button
+                      type="button"
+                      className="mario-btn mario-btn-dark"
+                      style={{ fontSize: '0.38rem' }}
+                      onClick={() => { setTriangulationWarning(null); setStep(1); }}
+                    >
+                      ← PICK A DIFFERENT CATEGORY
+                    </button>
+                  </div>
+                )}
                 {finalStatement.trim() && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <p className="mario-font" style={{ fontSize: '0.45rem', color: '#aaa', margin: 0 }}>YOUR AI FITNESS VERDICT</p>
@@ -506,8 +549,8 @@ const World4_Castle: React.FC = () => {
 
             <p className="vt323-font" style={{ color: '#ccc', fontSize: '1.1rem', margin: 0, lineHeight: 1.6 }}>
               {verdict?.verdict === 'redirect'
-                ? 'If you were going to sneak AI into one corner of this — where would you start?'
-                : 'What\'s the smallest part of this that AI could touch — without solving the whole thing?'}
+                ? 'If AI opened one corner of this — what could you attempt that you couldn\'t before?'
+                : 'What becomes possible now that wasn\'t before — not faster, but at all?'}
             </p>
 
             <textarea
@@ -516,7 +559,7 @@ const World4_Castle: React.FC = () => {
               style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
               value={firstExperiment}
               onChange={(e) => setFirstExperiment(e.target.value)}
-              placeholder="The bit that's repetitive, slow, or manual every single time..."
+              placeholder="What you could attempt that you couldn't before..."
               autoFocus
             />
 

@@ -1,15 +1,48 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gameSupabase } from '../lib/supabase';
 import '../styles/mario.css';
 
 // steps:
-// 0 — Name your challenge
-// 1 — Choose your problem to dig
-// 2 — Why is this happening?
-// 3 — Does this happen more than once a month?
+// 0 — Name your challenge(s)
+// 1 — Quick-scan: rate each challenge (gold/silver/red) before picking — NEW
+// 2 — Choose your problem to dig (now shows tier badges)
+// 3 — Why is this happening?
+// 4 — Does this happen more than once a month?
 
 const AMBER = 'var(--coin-gold)';
+
+type Tier = 'gold' | 'silver' | 'red';
+
+const TIER_OPTIONS: { tier: Tier; emoji: string; label: string; hint: string; color: string }[] = [
+  {
+    tier: 'gold',
+    emoji: '🟢',
+    label: 'No system or structure',
+    hint: "People do this manually, skip it, or it depends who's available",
+    color: '#fbd000',
+  },
+  {
+    tier: 'silver',
+    emoji: '🟡',
+    label: 'Something exists but isn\'t working',
+    hint: 'Inconsistent, under-used, or incomplete — the process is there, the results aren\'t',
+    color: '#c8c8c8',
+  },
+  {
+    tier: 'red',
+    emoji: '🔴',
+    label: 'People won\'t, or the tool is broken',
+    hint: 'The system exists. People are choosing not to use it — or the tool itself is the problem',
+    color: 'var(--mario-red)',
+  },
+];
+
+const TIER_LABEL: Record<Tier, string> = {
+  gold: '🟢 Strong AI fit',
+  silver: '🟡 Maybe — needs framing',
+  red: '🔴 Not an AI problem yet',
+};
 
 const World2_Enemies: React.FC = () => {
   const navigate = useNavigate();
@@ -17,19 +50,28 @@ const World2_Enemies: React.FC = () => {
   const [step, setStep] = useState(0);
   const [challenge, setChallenge] = useState('');
   const [extraChallenges, setExtraChallenges] = useState(['', '']);
+  // tier per challenge index (0, 1, 2)
+  const [challengeTiers, setChallengeTiers] = useState<Record<number, Tier>>({});
   const [chosenChallenge, setChosenChallenge] = useState('');
   const [whyHappening, setWhyHappening] = useState('');
   const [repetitionNudgeVisible, setRepetitionNudgeVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
 
-  const STEP_TITLES = ['Name your challenge | AI Problem Finder', 'Choose your problem | AI Problem Finder', 'Why is this happening? | AI Problem Finder', 'Recurring? | AI Problem Finder'];
+  const STEP_TITLES = [
+    'Name your challenge | AI Problem Finder',
+    'Quick scan | AI Problem Finder',
+    'Choose your problem | AI Problem Finder',
+    'Why is this happening? | AI Problem Finder',
+    'Recurring? | AI Problem Finder',
+  ];
   useEffect(() => { document.title = STEP_TITLES[step] ?? 'World 2 | AI Problem Finder'; }, [step]);
   useEffect(() => { if (!playerId) { navigate('/game'); } }, []);
 
   const handleChallengesSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!challenge.trim()) return;
+    setChallengeTiers({});
     setStep(1);
   };
 
@@ -46,6 +88,11 @@ const World2_Enemies: React.FC = () => {
       await gameSupabase.from('players').update({ world: 3 }).eq('id', playerId!);
       localStorage.setItem('game_chosen_challenge', chosenChallenge);
       localStorage.setItem('game_root_cause_why', whyHappening);
+      // save chosen tier so World 3 can use it for initial hint
+      const idx = digOptions.indexOf(chosenChallenge);
+      if (idx >= 0 && challengeTiers[idx]) {
+        localStorage.setItem('game_chosen_tier', challengeTiers[idx]);
+      }
       setComplete(true);
       setTimeout(() => navigate('/game/world/3'), 2500);
     } catch (err) {
@@ -56,8 +103,11 @@ const World2_Enemies: React.FC = () => {
   };
 
   const digOptions = [challenge, ...extraChallenges].filter((c) => c.trim());
+  const allScanned = digOptions.length > 0 && Object.keys(challengeTiers).length === digOptions.length;
 
-  const stepLabel = ['NAME IT', 'CHOOSE', 'WHY?', 'RECURRING?'][step] ?? 'RECURRING?';
+  const stepLabel = ['NAME IT', 'SCAN', 'CHOOSE', 'WHY?', 'RECURRING?'][step] ?? 'RECURRING?';
+
+  const tierColor = (t: Tier) => ({ gold: '#fbd000', silver: '#c8c8c8', red: '#e94560' }[t]);
 
   return (
     <div className="game-screen" style={{ background: '#5C94FC', minHeight: '100vh', paddingBottom: 80 }}>
@@ -70,14 +120,14 @@ const World2_Enemies: React.FC = () => {
 
       <main style={{ maxWidth: 600, margin: '0 auto', padding: '32px 20px' }}>
 
-        {/* Step 0 — Name your challenge */}
+        {/* Step 0 — Name your challenges */}
         {step === 0 && (
           <form onSubmit={handleChallengesSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h1 className="mario-font" style={{ fontSize: '0.7rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
-              NAME YOUR CHALLENGE
+              NAME YOUR CHALLENGES
             </h1>
             <p className="vt323-font" style={{ color: '#1a1a2e', fontSize: '1.3rem', margin: 0 }}>
-              What's the problem that keeps coming back?
+              Name three problems that keep coming back. You'll rate them all, then pick one to dig into.
             </p>
             <p className="vt323-font" style={{ color: '#1a1a2e', fontSize: '1rem', margin: 0 }}>
               Only your final statement will be shared with others at the end — nothing before that is visible.
@@ -85,74 +135,153 @@ const World2_Enemies: React.FC = () => {
             <input
               className="mario-input"
               placeholder="The thing that comes back every time..."
-              aria-label="Name your main challenge"
+              aria-label="First challenge"
               value={challenge}
               onChange={(e) => setChallenge(e.target.value)}
               autoFocus
             />
-            {challenge.trim() && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <p className="mario-font" style={{ fontSize: '0.4rem', color: '#aaa', margin: 0 }}>
-                  GOT MORE? (OPTIONAL)
-                </p>
-                {extraChallenges.map((val, i) => (
-                  <input
-                    key={i}
-                    className="mario-input"
-                    placeholder={i === 0 ? 'The thing that slows everything down...' : 'The thing nobody talks about but everyone feels...'}
-                    aria-label={i === 0 ? 'Optional second challenge' : 'Optional third challenge'}
-                    value={val}
-                    onChange={(e) => {
-                      const next = [...extraChallenges];
-                      next[i] = e.target.value;
-                      setExtraChallenges(next);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-            <button type="submit" className="mario-btn mario-btn-red" disabled={!challenge.trim() || loading}>
+            {extraChallenges.map((val, i) => (
+              <input
+                key={i}
+                className="mario-input"
+                placeholder={i === 0 ? 'The thing that slows everything down...' : 'The thing nobody talks about but everyone feels...'}
+                aria-label={i === 0 ? 'Second challenge' : 'Third challenge'}
+                value={val}
+                onChange={(e) => {
+                  const next = [...extraChallenges];
+                  next[i] = e.target.value;
+                  setExtraChallenges(next);
+                }}
+              />
+            ))}
+            <button type="submit" className="mario-btn mario-btn-red" disabled={!challenge.trim() || !extraChallenges[0].trim() || !extraChallenges[1].trim() || loading}>
               DIG DEEPER ▶
             </button>
           </form>
         )}
 
-        {/* Step 1 — Choose your problem to dig */}
+        {/* Step 1 — Quick scan: rate each challenge */}
         {step === 1 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+            <h2 className="mario-font" style={{ fontSize: '0.6rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
+              QUICK SCAN
+            </h2>
+            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
+              Before you pick one to dig, rate each problem. Then you'll choose based on what fits AI best.
+            </p>
+
+            {digOptions.map((opt, i) => (
+              <div
+                key={i}
+                style={{
+                  background: 'rgba(0,0,0,0.4)',
+                  borderLeft: challengeTiers[i]
+                    ? `5px solid ${tierColor(challengeTiers[i])}`
+                    : '5px solid rgba(255,255,255,0.2)',
+                  padding: '16px 18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 14,
+                  transition: 'border-color 0.2s',
+                }}
+              >
+                <p className="vt323-font" style={{ color: '#fff', fontSize: '1.2rem', margin: 0, lineHeight: 1.4 }}>
+                  {opt.length > 100 ? opt.slice(0, 100) + '...' : opt}
+                </p>
+                {challengeTiers[i] && (
+                  <span className="mario-font" style={{ fontSize: '0.38rem', color: tierColor(challengeTiers[i]) }}>
+                    {TIER_LABEL[challengeTiers[i]]}
+                  </span>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {TIER_OPTIONS.map(({ tier, emoji, label, hint, color }) => (
+                    <button
+                      key={tier}
+                      onClick={() => setChallengeTiers((prev) => ({ ...prev, [i]: tier }))}
+                      style={{
+                        fontFamily: 'VT323, monospace',
+                        fontSize: '1.1rem',
+                        background: challengeTiers[i] === tier ? `rgba(0,0,0,0.6)` : 'rgba(0,0,0,0.25)',
+                        color: challengeTiers[i] === tier ? color : '#bbb',
+                        border: challengeTiers[i] === tier ? `2px solid ${color}` : '2px solid rgba(255,255,255,0.15)',
+                        padding: '10px 14px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        lineHeight: 1.4,
+                        transition: 'all 0.15s',
+                      }}
+                      aria-pressed={challengeTiers[i] === tier}
+                    >
+                      {emoji} {label}
+                      <span style={{ display: 'block', fontSize: '0.85rem', color: challengeTiers[i] === tier ? '#ddd' : '#777', marginTop: 2 }}>
+                        {hint}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {allScanned && (
+              <button
+                className="mario-btn mario-btn-gold"
+                onClick={() => setStep(2)}
+                style={{ marginTop: 8 }}
+              >
+                CHOOSE WHICH TO DIG ▶
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Step 2 — Choose your problem (with tier badges) */}
+        {step === 2 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               CHOOSE YOUR PROBLEM TO DIG
             </h2>
             <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
-              You can't dig everywhere. Pick one.
+              Pick the one that best fits AI — or the one you care about most.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {digOptions.map((opt, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setChosenChallenge(opt); setStep(2); }}
-                  style={{
-                    fontFamily: 'VT323, monospace',
-                    fontSize: '1.3rem',
-                    background: 'rgba(0,0,0,0.5)',
-                    color: 'var(--white)',
-                    border: 'none',
-                    padding: '20px 24px',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    boxShadow: '-4px 0 0 0 var(--white), 4px 0 0 0 var(--white), 0 -4px 0 0 var(--white), 0 4px 0 0 var(--white)',
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {opt.length > 80 ? opt.slice(0, 80) + '...' : opt}
-                </button>
-              ))}
+              {digOptions.map((opt, i) => {
+                const tier = challengeTiers[i];
+                const borderColor = tier ? tierColor(tier) : 'rgba(255,255,255,0.3)';
+                return (
+                  <button
+                    key={i}
+                    onClick={() => { setChosenChallenge(opt); setStep(3); }}
+                    style={{
+                      fontFamily: 'VT323, monospace',
+                      fontSize: '1.3rem',
+                      background: 'rgba(0,0,0,0.5)',
+                      color: 'var(--white)',
+                      border: 'none',
+                      padding: '20px 24px',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      boxShadow: `-4px 0 0 0 ${borderColor}, 4px 0 0 0 ${borderColor}, 0 -4px 0 0 ${borderColor}, 0 4px 0 0 ${borderColor}`,
+                      lineHeight: 1.4,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
+                    }}
+                  >
+                    <span>{opt.length > 80 ? opt.slice(0, 80) + '...' : opt}</span>
+                    {tier && (
+                      <span className="mario-font" style={{ fontSize: '0.35rem', color: tierColor(tier) }}>
+                        {TIER_LABEL[tier]}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* Step 2 — Why is this happening? */}
-        {step === 2 && (
+        {/* Step 3 — Why is this happening? */}
+        {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.7rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
               WHY IS THIS HAPPENING?
@@ -178,15 +307,15 @@ const World2_Enemies: React.FC = () => {
             <button
               className="mario-btn mario-btn-gold"
               disabled={!whyHappening.trim()}
-              onClick={() => setStep(3)}
+              onClick={() => setStep(4)}
             >
               DIG DEEPER ▶
             </button>
           </div>
         )}
 
-        {/* Step 3 — Recurring? */}
-        {step === 3 && (
+        {/* Step 4 — Recurring? */}
+        {step === 4 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               DOES THIS HAPPEN MORE THAN ONCE A MONTH?
@@ -212,7 +341,7 @@ const World2_Enemies: React.FC = () => {
                   <button
                     className="mario-btn mario-btn-dark"
                     style={{ fontSize: '0.45rem' }}
-                    onClick={() => { setRepetitionNudgeVisible(false); setStep(1); }}
+                    onClick={() => { setRepetitionNudgeVisible(false); setStep(2); }}
                   >
                     GOT IT — GO BACK
                   </button>
