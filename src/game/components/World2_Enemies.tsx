@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gameSupabase } from '../lib/supabase';
 import '../styles/mario.css';
@@ -23,9 +23,9 @@ const World2_Enemies: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
 
-  useEffect(() => {
-    if (!playerId) { navigate('/game'); }
-  }, []);
+  const STEP_TITLES = ['Name your challenge | AI Problem Finder', 'Choose your problem | AI Problem Finder', 'Why is this happening? | AI Problem Finder', 'Recurring? | AI Problem Finder'];
+  useEffect(() => { document.title = STEP_TITLES[step] ?? 'World 2 | AI Problem Finder'; }, [step]);
+  useEffect(() => { if (!playerId) { navigate('/game'); } }, []);
 
   const handleChallengesSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,23 +68,24 @@ const World2_Enemies: React.FC = () => {
         <span>{stepLabel}</span>
       </div>
 
-      <div style={{ maxWidth: 600, margin: '0 auto', padding: '32px 20px' }}>
+      <main style={{ maxWidth: 600, margin: '0 auto', padding: '32px 20px' }}>
 
         {/* Step 0 — Name your challenge */}
         {step === 0 && (
           <form onSubmit={handleChallengesSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.7rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
+            <h1 className="mario-font" style={{ fontSize: '0.7rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
               NAME YOUR CHALLENGE
-            </h2>
-            <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0 }}>
+            </h1>
+            <p className="vt323-font" style={{ color: '#1a1a2e', fontSize: '1.3rem', margin: 0 }}>
               What's the problem that keeps coming back?
             </p>
-            <p className="vt323-font" style={{ color: '#aaa', fontSize: '1rem', margin: 0 }}>
+            <p className="vt323-font" style={{ color: '#1a1a2e', fontSize: '1rem', margin: 0 }}>
               Only your final statement will be shared with others at the end — nothing before that is visible.
             </p>
             <input
               className="mario-input"
               placeholder="The thing that comes back every time..."
+              aria-label="Name your main challenge"
               value={challenge}
               onChange={(e) => setChallenge(e.target.value)}
               autoFocus
@@ -99,6 +100,7 @@ const World2_Enemies: React.FC = () => {
                     key={i}
                     className="mario-input"
                     placeholder={i === 0 ? 'The thing that slows everything down...' : 'The thing nobody talks about but everyone feels...'}
+                    aria-label={i === 0 ? 'Optional second challenge' : 'Optional third challenge'}
                     value={val}
                     onChange={(e) => {
                       const next = [...extraChallenges];
@@ -170,6 +172,7 @@ const World2_Enemies: React.FC = () => {
               value={whyHappening}
               onChange={(e) => setWhyHappening(e.target.value)}
               placeholder="Because..."
+              aria-label="Why is this happening?"
               autoFocus
             />
             <button
@@ -227,7 +230,7 @@ const World2_Enemies: React.FC = () => {
             )}
           </div>
         )}
-      </div>
+      </main>
 
       {complete && (
         <div className="world-complete">

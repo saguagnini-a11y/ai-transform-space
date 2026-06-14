@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gameSupabase } from '../lib/supabase';
 import '../styles/mario.css';
@@ -48,6 +48,15 @@ const World1_Terrain: React.FC = () => {
   const [complete, setComplete] = useState(false);
   const coinId = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const STEP_TITLES = [
+    'Where do you work? | AI Problem Finder',
+    'Who do you design for? | AI Problem Finder',
+    'Your L&D reality | AI Problem Finder',
+    'Never enough of | AI Problem Finder',
+    'Context mapped | AI Problem Finder',
+  ];
+  useEffect(() => { document.title = STEP_TITLES[step] ?? 'World 1 | AI Problem Finder'; }, [step]);
 
   if (!playerId) { navigate('/game'); return null; }
 
@@ -111,14 +120,14 @@ const World1_Terrain: React.FC = () => {
         <span>STEP {step + 1}/{TOTAL_STEPS}</span>
       </div>
 
-      <div style={{ maxWidth: 600, margin: '0 auto', padding: '32px 20px', position: 'relative', zIndex: 2 }}>
+      <main style={{ maxWidth: 600, margin: '0 auto', padding: '32px 20px', position: 'relative', zIndex: 2 }}>
 
         {/* Step 0 — Where do you work */}
         {step === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <h2 className="mario-font" style={{ fontSize: '0.8rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', marginBottom: 4 }}>
+            <h1 className="mario-font" style={{ fontSize: '0.8rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', marginBottom: 4 }}>
               WHERE DO YOU WORK?
-            </h2>
+            </h1>
             <p className="vt323-font" style={{ color: 'var(--coin-gold)', fontSize: '1.3rem', margin: 0 }}>
               Jump to your platform!
             </p>
@@ -171,6 +180,7 @@ const World1_Terrain: React.FC = () => {
                 value={q3}
                 onChange={(e) => setQ3(e.target.value.slice(0, 20))}
                 placeholder="CHAOTIC..."
+                aria-label="Your L&D reality in one word (max 20 characters)"
                 autoFocus
               />
               <button type="submit" className="mario-btn mario-btn-gold" disabled={!q3.trim()}>
@@ -221,7 +231,7 @@ const World1_Terrain: React.FC = () => {
             </button>
           </div>
         )}
-      </div>
+      </main>
 
       {/* World complete overlay */}
       {complete && (

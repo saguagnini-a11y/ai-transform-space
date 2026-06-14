@@ -89,7 +89,7 @@ const CastleWall: React.FC = () => {
         <span>{statements.length} players</span>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 20px' }}>
+      <main style={{ maxWidth: 900, margin: '0 auto', padding: '32px 20px' }}>
         <h1 className="mario-font" style={{ fontSize: '0.9rem', color: 'var(--coin-gold)', textAlign: 'center', marginBottom: 8, textShadow: '3px 3px 0 rgba(0,0,0,0.7)' }}>
           THE WALL OF CHALLENGES
         </h1>
@@ -131,6 +131,7 @@ const CastleWall: React.FC = () => {
             <button
               key={v}
               className={`reaction-btn ${filterVerdict === v ? 'reacted' : ''}`}
+              aria-pressed={filterVerdict === v}
               onClick={() => setFilterVerdict(v)}
             >
               {v === '' ? 'All verdicts' : v === 'strong' ? '🟢 Strong' : v === 'maybe' ? '🟡 Maybe' : '🔴 Redirect'}
@@ -140,6 +141,7 @@ const CastleWall: React.FC = () => {
             <button
               key={c}
               className={`reaction-btn ${filterContext === c ? 'reacted' : ''}`}
+              aria-pressed={filterContext === c}
               onClick={() => setFilterContext(c)}
             >
               {c === '' ? 'All contexts' : c}
@@ -201,7 +203,7 @@ const CastleWall: React.FC = () => {
                   </p>
                 )}
                 {(s.context_tags as Record<string, string>)?.first_experiment && (
-                  <p style={{ fontFamily: 'VT323, monospace', fontSize: '0.9rem', color: '#777', margin: '0 0 12px', lineHeight: 1.4 }}>
+                  <p style={{ fontFamily: 'VT323, monospace', fontSize: '0.9rem', color: '#595959', margin: '0 0 12px', lineHeight: 1.4 }}>
                     <span style={{ fontFamily: 'Press Start 2P, monospace', fontSize: '0.35rem', color: '#999', marginRight: 6 }}>FIRST MOVE:</span>
                     {(s.context_tags as Record<string, string>).first_experiment}
                   </p>
@@ -229,7 +231,7 @@ const CastleWall: React.FC = () => {
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 };

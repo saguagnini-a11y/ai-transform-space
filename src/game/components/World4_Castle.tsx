@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gameSupabase } from '../lib/supabase';
 import VerdictBadge from './VerdictBadge';
@@ -159,6 +159,9 @@ const World4_Castle: React.FC = () => {
   const [redirectInfoVisible, setRedirectInfoVisible] = useState(false);
   const [reframeMode, setReframeMode] = useState(false);
 
+  const STEP_TITLES = ['Your problem draft | AI Problem Finder', 'The problem type | AI Problem Finder', 'Refine your statement | AI Problem Finder', 'Give it a who | AI Problem Finder', 'One small thing | AI Problem Finder'];
+  useEffect(() => { document.title = STEP_TITLES[step] ?? 'World 3 | AI Problem Finder'; }, [step]);
+
   if (!playerId) { navigate('/game'); return null; }
 
   const handleDraftSubmit = (e: React.FormEvent) => {
@@ -250,7 +253,7 @@ const World4_Castle: React.FC = () => {
         ))}
       </div>
 
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 20px' }}>
+      <main style={{ maxWidth: 640, margin: '0 auto', padding: '32px 20px' }}>
 
         {/* Step 0 — Draft */}
         {step === 0 && (
@@ -270,6 +273,7 @@ const World4_Castle: React.FC = () => {
             <textarea
               className="mario-input"
               style={{ minHeight: 160, resize: 'vertical', lineHeight: 1.8 }}
+              aria-label="Your L&D problem statement draft"
               value={draft}
               onChange={(e) => { setDraft(e.target.value); setNudgeDismissed(false); }}
               placeholder={reframeMode ? 'Find the crack where AI could fit...' : 'Write freely. No rules here.'}
@@ -301,10 +305,14 @@ const World4_Castle: React.FC = () => {
                 ].map((label, i) => (
                   <label key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer' }}>
                     <div
+                      role="checkbox"
+                      aria-checked={fieldChecks[i]}
+                      tabIndex={0}
                       onClick={() => setFieldChecks((prev) => prev.map((v, j) => j === i ? !v : v))}
+                      onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setFieldChecks((prev) => prev.map((v, j) => j === i ? !v : v)); } }}
                       style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2, background: fieldChecks[i] ? AMBER : 'transparent', boxShadow: `-2px 0 0 ${AMBER}, 2px 0 0 ${AMBER}, 0 -2px 0 ${AMBER}, 0 2px 0 ${AMBER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                     >
-                      {fieldChecks[i] && <span style={{ color: 'var(--black)', fontSize: '0.65rem', fontFamily: 'Press Start 2P, monospace', lineHeight: 1 }}>✓</span>}
+                      {fieldChecks[i] && <span aria-hidden="true" style={{ color: 'var(--black)', fontSize: '0.65rem', fontFamily: 'Press Start 2P, monospace', lineHeight: 1 }}>✓</span>}
                     </div>
                     <span className="vt323-font" style={{ color: fieldChecks[i] ? AMBER : '#aaa', fontSize: '1.1rem', lineHeight: 1.4, transition: 'color 0.15s' }}>
                       {label}
@@ -426,7 +434,7 @@ const World4_Castle: React.FC = () => {
                 <p className="vt323-font" style={{ color: AMBER, fontSize: '1.3rem', margin: 0, fontStyle: 'italic' }}>
                   Write your sharpest version. Then we'll tell you how it lands.
                 </p>
-                <textarea className="mario-input" style={{ minHeight: 140, resize: 'vertical', lineHeight: 1.8 }} value={finalStatement} onChange={(e) => setFinalStatement(e.target.value)} placeholder="The problem worth solving is..." autoFocus />
+                <textarea className="mario-input" style={{ minHeight: 140, resize: 'vertical', lineHeight: 1.8 }} aria-label="Your refined problem statement" value={finalStatement} onChange={(e) => setFinalStatement(e.target.value)} placeholder="The problem worth solving is..." autoFocus />
                 {finalStatement.trim() && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <p className="mario-font" style={{ fontSize: '0.45rem', color: '#aaa', margin: 0 }}>YOUR AI FITNESS VERDICT</p>
@@ -454,15 +462,15 @@ const World4_Castle: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0, boxShadow: `-2px 0 0 ${AMBER}, 2px 0 0 ${AMBER}, 0 -2px 0 ${AMBER}, 0 2px 0 ${AMBER}` }}>
               <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid rgba(251,208,0,0.2)` }}>
                 <span className="mario-font" style={{ fontSize: '0.4rem', color: AMBER, padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>WHO</span>
-                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="the person or role" value={povWho} onChange={(e) => setPovWho(e.target.value)} autoFocus />
+                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="the person or role" aria-label="Who — the person or role affected" value={povWho} onChange={(e) => setPovWho(e.target.value)} autoFocus />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid rgba(251,208,0,0.2)` }}>
                 <span className="mario-font" style={{ fontSize: '0.4rem', color: '#666', padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>NEEDS</span>
-                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what they actually need" value={povWhat} onChange={(e) => setPovWhat(e.target.value)} />
+                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what they actually need" aria-label="Needs — what they actually need" value={povWhat} onChange={(e) => setPovWhat(e.target.value)} />
               </div>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span className="mario-font" style={{ fontSize: '0.4rem', color: '#666', padding: '10px 12px', whiteSpace: 'nowrap', minWidth: 60 }}>BECAUSE</span>
-                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what's making it hard" value={povInsight} onChange={(e) => setPovInsight(e.target.value)} />
+                <input className="mario-input" style={{ flex: 1, border: 'none', boxShadow: 'none', background: 'transparent', padding: '10px 12px' }} placeholder="what's making it hard" aria-label="Because — what's making it hard" value={povInsight} onChange={(e) => setPovInsight(e.target.value)} />
               </div>
             </div>
 
@@ -504,6 +512,7 @@ const World4_Castle: React.FC = () => {
 
             <textarea
               className="mario-input"
+              aria-label="One small experiment — the first thing you could try"
               style={{ minHeight: 100, resize: 'vertical', lineHeight: 1.8 }}
               value={firstExperiment}
               onChange={(e) => setFirstExperiment(e.target.value)}
@@ -521,7 +530,7 @@ const World4_Castle: React.FC = () => {
             </div>
           </form>
         )}
-      </div>
+      </main>
 
       {/* Flag raising + win screen */}
       {flagRaised && (

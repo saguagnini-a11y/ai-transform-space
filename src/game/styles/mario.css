@@ -370,7 +370,7 @@
 .reaction-btn {
   font-family: 'VT323', monospace;
   font-size: 1rem;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.72);
   color: var(--white);
   border: none;
   padding: 6px 12px;
