@@ -3,10 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import { gameSupabase } from '../lib/supabase';
 import '../styles/mario.css';
 
-const WORLD_COLORS = ['#E52521', '#5C94FC', '#4CAF50', '#FBD000'];
 const DOT_PALETTE = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD'];
 
-const WORLD_LABELS = ['YOUR CONTEXT', 'THE DIG', 'HIDDEN BLOCKS', 'FIELD REPORT'];
+const WORLDS = [
+  { num: 1, label: 'YOUR\nCONTEXT', x: 108, y: 478, route: '/game/world/1' },
+  { num: 2, label: 'THE\nDIG',      x: 200, y: 306, route: '/game/world/2' },
+  { num: 3, label: 'FIELD\nREPORT', x: 302, y: 140, route: '/game/world/3' },
+];
+const WALL_NODE = { x: 302, y: 60, route: '/game/castle-wall', label: 'THE\nWALL' };
+
+const Tree = ({ x, y }: { x: number; y: number }) => (
+  <g>
+    <rect x={x - 2} y={y + 8} width={4} height={10} fill="#6B3A22" />
+    <circle cx={x} cy={y + 5} r={10} fill="#1E7A1E" />
+    <circle cx={x} cy={y} r={8} fill="#2A9E2A" />
+  </g>
+);
+
+const Castle = ({ x, y }: { x: number; y: number }) => (
+  <g>
+    {[0, 12, 24, 36, 48].map((bx) => (
+      <rect key={bx} x={x + bx} y={y - 14} width={9} height={13} fill="#8C8C8C" />
+    ))}
+    <rect x={x} y={y} width={57} height={36} fill="#8C8C8C" />
+    <rect x={x + 20} y={y + 16} width={16} height={20} fill="#1A1A1A" />
+    <rect x={x + 5} y={y + 7} width={11} height={10} fill="#1A1A1A" />
+    <rect x={x + 40} y={y + 7} width={11} height={10} fill="#1A1A1A" />
+  </g>
+);
 
 const WorldMap: React.FC = () => {
   const navigate = useNavigate();
@@ -15,121 +39,232 @@ const WorldMap: React.FC = () => {
 
   useEffect(() => {
     if (!playerId) { navigate('/game'); return; }
-
-    const fetchPlayers = async () => {
+    const fetch = async () => {
       const { data } = await gameSupabase.from('players').select('id, world');
       if (data) setPlayers(data);
     };
-    fetchPlayers();
-
-    const channel = gameSupabase
+    fetch();
+    const ch = gameSupabase
       .channel('world-map-players')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, fetchPlayers)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, fetch)
       .subscribe();
-
-    return () => { gameSupabase.removeChannel(channel); };
+    return () => { gameSupabase.removeChannel(ch); };
   }, [playerId, navigate]);
-
-  const dotsAtWorld = (worldNum: number) =>
-    players.filter((p) => p.world === worldNum && p.id !== playerId);
 
   const myWorld = players.find((p) => p.id === playerId)?.world ?? 1;
 
+  const dotsAt = (w: number) => players.filter((p) => p.world === w && p.id !== playerId);
+
   return (
-    <div
-      className="game-screen"
-      style={{
-        background: '#7CC35C',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '40px 20px',
-        gap: 32,
-      }}
-    >
-      {/* Header */}
-      <div style={{ textAlign: 'center' }}>
-        <h1 className="mario-font" style={{ fontSize: '1rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', marginBottom: 8 }}>
-          WORLD MAP
-        </h1>
-        <p className="vt323-font" style={{ fontSize: '1.4rem', color: 'var(--black)', background: 'rgba(255,255,255,0.7)', padding: '4px 12px' }}>
-          21 players. 21 problems. Yours is in there somewhere.
-        </p>
-      </div>
-
-      {/* Map path */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 32,
-          alignItems: 'center',
-          width: '100%',
-          maxWidth: 480,
-        }}
+    <div style={{ width: '100%', maxWidth: 480, margin: '0 auto', background: '#000', position: 'relative' }}>
+      <svg
+        viewBox="0 0 400 580"
+        style={{ width: '100%', display: 'block' }}
+        role="img"
+        aria-label="World map showing 3 worlds and the Wall of Challenges"
       >
-        {[1, 2, 3, 4].map((worldNum) => (
-          <div key={worldNum} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-            {/* Dots above */}
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', minHeight: 24 }}>
-              {dotsAtWorld(worldNum).map((p, i) => (
-                <div
-                  key={p.id}
-                  className="player-dot"
-                  style={{ background: DOT_PALETTE[i % DOT_PALETTE.length] }}
-                  title="Someone in your cohort"
-                />
-              ))}
-              {myWorld === worldNum && (
-                <div
-                  title="You"
-                  style={{
-                    width: 24,
-                    height: 24,
-                    background: 'var(--mario-red)',
-                    boxShadow: '-2px 0 0 var(--black), 2px 0 0 var(--black), 0 -2px 0 var(--black), 0 2px 0 var(--black)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.8rem',
-                  }}
-                >
-                  M
-                </div>
-              )}
-            </div>
-
-            {/* World node */}
-            <button
-              className={`world-node ${worldNum < myWorld ? 'complete' : worldNum > myWorld ? 'locked' : ''}`}
-              style={{ background: worldNum <= myWorld ? WORLD_COLORS[worldNum - 1] : '#666' }}
-              onClick={() => worldNum === myWorld && navigate(`/game/world/${worldNum}`)}
-              disabled={worldNum !== myWorld}
-            >
-              {worldNum < myWorld ? '✓' : worldNum}
-            </button>
-
-            <span className="mario-font" style={{ fontSize: '0.45rem', color: 'var(--white)', textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
-              {WORLD_LABELS[worldNum - 1]}
-            </span>
-
-            {/* Path connector */}
-            {worldNum < 4 && (
-              <div style={{ borderLeft: '4px dotted var(--coin-gold)', height: 24, opacity: 0.8 }} />
-            )}
-          </div>
+        {/* ── OCEAN ── */}
+        <rect width="400" height="580" fill="#5C94FC" />
+        {[100, 200, 310, 430, 530].map((y, i) => (
+          <line key={i} x1="0" y1={y} x2="400" y2={y}
+            stroke="rgba(255,255,255,0.15)" strokeWidth="3" strokeDasharray="18 14" />
         ))}
-      </div>
 
-      {/* CTA */}
-      <button
-        className="mario-btn mario-btn-red"
-        onClick={() => navigate(`/game/world/${myWorld}`)}
-        style={{ marginTop: 16 }}
-      >
-        ENTER WORLD {myWorld} ▶
-      </button>
+        {/* ── ISLAND 3 — top right (World 3 + Castle) ── */}
+        {/* cliff */}
+        <polygon
+          points="200,192 242,165 302,153 358,154 392,168 388,202 352,216 290,220 238,210 202,198"
+          fill="#7A4A22"
+        />
+        {/* land */}
+        <polygon
+          points="200,152 242,125 302,113 358,114 392,128 388,162 352,176 290,180 238,170 202,158"
+          fill="#4CAF50"
+        />
+        {/* land highlight edge */}
+        <polygon
+          points="200,152 242,125 302,113 358,114 392,128 388,138 350,148 290,153 238,148 202,158"
+          fill="#5DC05D"
+        />
+        <Tree x={218} y={127} />
+        <Tree x={243} y={120} />
+        <Castle x={330} y={100} />
+
+        {/* ── ISLAND 2 — center (World 2) ── */}
+        {/* cliff */}
+        <polygon
+          points="110,352 148,322 210,308 272,310 308,326 302,360 268,374 205,378 147,370 112,358"
+          fill="#7A4A22"
+        />
+        {/* land */}
+        <polygon
+          points="110,312 148,282 210,268 272,270 308,286 302,320 268,334 205,338 147,330 112,318"
+          fill="#4CAF50"
+        />
+        <polygon
+          points="110,312 148,282 210,268 272,270 308,286 302,296 268,306 205,310 147,306 112,318"
+          fill="#5DC05D"
+        />
+        <Tree x={133} y={284} />
+        <Tree x={278} y={272} />
+        <Tree x={295} y={287} />
+
+        {/* ── ISLAND 1 — bottom left (World 1) ── */}
+        {/* cliff */}
+        <polygon
+          points="18,532 52,504 108,492 162,494 202,510 196,540 162,556 98,558 45,550 18,540"
+          fill="#7A4A22"
+        />
+        {/* land */}
+        <polygon
+          points="18,492 52,464 108,452 162,454 202,470 196,500 162,516 98,518 45,510 18,500"
+          fill="#4CAF50"
+        />
+        <polygon
+          points="18,492 52,464 108,452 162,454 202,470 196,480 160,490 98,492 45,486 18,500"
+          fill="#5DC05D"
+        />
+        <Tree x={42} y={466} />
+        <Tree x={68} y={457} />
+        <Tree x={152} y={456} />
+        <Tree x={175} y={465} />
+
+        {/* ── PATH: W1 → W2 ── */}
+        <path
+          d="M 168,468 C 188,430 188,390 200,340"
+          fill="none" stroke="#F2DCA0" strokeWidth="5"
+          strokeDasharray="9 7" strokeLinecap="round"
+        />
+        {/* ── PATH: W2 → W3 ── */}
+        <path
+          d="M 200,296 C 218,258 252,210 280,168"
+          fill="none" stroke="#F2DCA0" strokeWidth="5"
+          strokeDasharray="9 7" strokeLinecap="round"
+        />
+        {/* ── PATH: W3 → Castle Wall ── */}
+        <path
+          d="M 302,132 L 302,78"
+          fill="none" stroke="#F2DCA0" strokeWidth="5"
+          strokeDasharray="9 7" strokeLinecap="round"
+        />
+
+        {/* ── WORLD NODES ── */}
+        {WORLDS.map(({ num, label, x, y, route }) => {
+          const done = num < myWorld;
+          const curr = num === myWorld;
+          const locked = num > myWorld;
+          const color = done ? '#3A9E3A' : curr ? ['#E52521','#5C94FC','#FBD000'][num - 1] : '#555';
+          const dots = dotsAt(num);
+          return (
+            <g key={num} style={{ cursor: curr ? 'pointer' : 'default' }}
+               onClick={() => curr && navigate(route)}>
+              {/* other player dots */}
+              {dots.map((p, i) => (
+                <circle key={p.id} cx={x - 26 + i * 14} cy={y - 32}
+                  r={5} fill={DOT_PALETTE[i % DOT_PALETTE.length]}
+                  stroke="#000" strokeWidth="1" />
+              ))}
+              {myWorld === num && (
+                <circle cx={x + 14} cy={y - 32} r={5}
+                  fill="#E52521" stroke="#000" strokeWidth="1" />
+              )}
+              {/* pulse ring for current */}
+              {curr && <circle cx={x} cy={y} r={28} fill="none" stroke="#FFF" strokeWidth="2" opacity="0.55" />}
+              {/* shadow */}
+              <circle cx={x + 2} cy={y + 2} r={22} fill="rgba(0,0,0,0.35)" />
+              {/* node */}
+              <circle cx={x} cy={y} r={22}
+                fill={color}
+                stroke={curr ? '#FFF' : locked ? '#333' : '#1A1A1A'}
+                strokeWidth={curr ? 3 : 2} />
+              {/* number / check */}
+              <text x={x} y={y + 6} textAnchor="middle"
+                fontFamily="'Press Start 2P', monospace"
+                fontSize={done ? '13' : '14'} fill="#FFF"
+                stroke="rgba(0,0,0,0.5)" strokeWidth="0.5">
+                {done ? '✓' : locked ? num : num}
+              </text>
+              {/* label lines */}
+              {label.split('\n').map((line, li) => (
+                <text key={li} x={x} y={y + 38 + li * 13} textAnchor="middle"
+                  fontFamily="'Press Start 2P', monospace"
+                  fontSize="5.5" fill={locked ? '#888' : '#FFF'}
+                  stroke="rgba(0,0,0,0.9)" strokeWidth="2" paintOrder="stroke">
+                  {line}
+                </text>
+              ))}
+            </g>
+          );
+        })}
+
+        {/* ── CASTLE WALL NODE ── */}
+        {(() => {
+          const unlocked = myWorld >= 3;
+          const wallDots = dotsAt(4);
+          return (
+            <g style={{ cursor: unlocked ? 'pointer' : 'default' }}
+               onClick={() => unlocked && navigate(WALL_NODE.route)}>
+              {wallDots.map((p, i) => (
+                <circle key={p.id} cx={WALL_NODE.x - 20 + i * 14} cy={WALL_NODE.y - 22}
+                  r={5} fill={DOT_PALETTE[i % DOT_PALETTE.length]}
+                  stroke="#000" strokeWidth="1" />
+              ))}
+              {unlocked && (
+                <circle cx={WALL_NODE.x} cy={WALL_NODE.y} r={24}
+                  fill="none" stroke="#FBD000" strokeWidth="2" opacity="0.6" />
+              )}
+              <circle cx={WALL_NODE.x + 2} cy={WALL_NODE.y + 2} r={18} fill="rgba(0,0,0,0.35)" />
+              <circle cx={WALL_NODE.x} cy={WALL_NODE.y} r={18}
+                fill={unlocked ? '#E52521' : '#444'}
+                stroke={unlocked ? '#FFF' : '#333'}
+                strokeWidth={unlocked ? 2 : 1.5} />
+              <text x={WALL_NODE.x} y={WALL_NODE.y + 4} textAnchor="middle"
+                fontFamily="'Press Start 2P', monospace"
+                fontSize="10" fill={unlocked ? '#FFF' : '#666'}
+                stroke="rgba(0,0,0,0.5)" strokeWidth="0.5">
+                🏆
+              </text>
+              {WALL_NODE.label.split('\n').map((line, li) => (
+                <text key={li} x={WALL_NODE.x} y={WALL_NODE.y + 30 + li * 12} textAnchor="middle"
+                  fontFamily="'Press Start 2P', monospace"
+                  fontSize="5" fill={unlocked ? '#FBD000' : '#666'}
+                  stroke="rgba(0,0,0,0.9)" strokeWidth="2" paintOrder="stroke">
+                  {line}
+                </text>
+              ))}
+            </g>
+          );
+        })()}
+
+        {/* ── HUD title ── */}
+        <text x="200" y="28" textAnchor="middle"
+          fontFamily="'Press Start 2P', monospace"
+          fontSize="11" fill="#FBD000"
+          stroke="rgba(0,0,0,0.9)" strokeWidth="3" paintOrder="stroke">
+          WORLD MAP
+        </text>
+        <text x="200" y="48" textAnchor="middle"
+          fontFamily="VT323, monospace"
+          fontSize="16" fill="#FFF"
+          stroke="rgba(0,0,0,0.8)" strokeWidth="2" paintOrder="stroke">
+          {players.length} players · {players.length} problems
+        </text>
+      </svg>
+
+      {/* CTA button below map */}
+      <div style={{ padding: '16px 20px 24px', background: '#1A1A2E', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+        <button
+          className="mario-btn mario-btn-red"
+          style={{ width: '100%', maxWidth: 320 }}
+          onClick={() =>
+            myWorld >= 3
+              ? navigate('/game/castle-wall')
+              : navigate(`/game/world/${myWorld}`)
+          }
+        >
+          {myWorld >= 3 ? 'VIEW THE WALL 🏆' : `ENTER WORLD ${myWorld} ▶`}
+        </button>
+      </div>
     </div>
   );
 };
