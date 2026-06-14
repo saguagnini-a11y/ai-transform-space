@@ -54,7 +54,8 @@ const WorldMap: React.FC = () => {
 
 
   return (
-    <div style={{ width: '100%', maxWidth: 480, margin: '0 auto', background: '#000', position: 'relative' }}>
+    <div style={{ width: '100%', minHeight: '100vh', background: '#5C94FC', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ width: '100%', maxWidth: 480, position: 'relative' }}>
       <svg
         viewBox="0 0 400 580"
         style={{ width: '100%', display: 'block' }}
@@ -240,6 +241,7 @@ const WorldMap: React.FC = () => {
           {myWorld >= 3 ? 'VIEW THE WALL 🏆' : `ENTER WORLD ${myWorld} ▶`}
         </button>
       </div>
+    </div>
     </div>
   );
 };
