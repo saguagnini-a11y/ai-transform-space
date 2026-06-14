@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { gameSupabase } from '../lib/supabase';
 import '../styles/mario.css';
 
-const DOT_PALETTE = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD'];
 
 const WORLDS = [
   { num: 1, label: 'YOUR\nCONTEXT', x: 108, y: 478, route: '/game/world/1' },
@@ -53,7 +52,6 @@ const WorldMap: React.FC = () => {
 
   const myWorld = players.find((p) => p.id === playerId)?.world ?? 1;
 
-  const dotsAt = (w: number) => players.filter((p) => p.world === w && p.id !== playerId);
 
   return (
     <div style={{ width: '100%', maxWidth: 480, margin: '0 auto', background: '#000', position: 'relative' }}>
@@ -154,20 +152,9 @@ const WorldMap: React.FC = () => {
           const curr = num === myWorld;
           const locked = num > myWorld;
           const color = done ? '#3A9E3A' : curr ? ['#E52521','#5C94FC','#FBD000'][num - 1] : '#555';
-          const dots = dotsAt(num);
           return (
             <g key={num} style={{ cursor: curr ? 'pointer' : 'default' }}
                onClick={() => curr && navigate(route)}>
-              {/* other player dots */}
-              {dots.map((p, i) => (
-                <circle key={p.id} cx={x - 26 + i * 14} cy={y - 32}
-                  r={5} fill={DOT_PALETTE[i % DOT_PALETTE.length]}
-                  stroke="#000" strokeWidth="1" />
-              ))}
-              {myWorld === num && (
-                <circle cx={x + 14} cy={y - 32} r={5}
-                  fill="#E52521" stroke="#000" strokeWidth="1" />
-              )}
               {/* pulse ring for current */}
               {curr && <circle cx={x} cy={y} r={28} fill="none" stroke="#FFF" strokeWidth="2" opacity="0.55" />}
               {/* shadow */}
@@ -200,15 +187,9 @@ const WorldMap: React.FC = () => {
         {/* ── CASTLE WALL NODE ── */}
         {(() => {
           const unlocked = myWorld >= 3;
-          const wallDots = dotsAt(4);
           return (
             <g style={{ cursor: unlocked ? 'pointer' : 'default' }}
                onClick={() => unlocked && navigate(WALL_NODE.route)}>
-              {wallDots.map((p, i) => (
-                <circle key={p.id} cx={WALL_NODE.x - 20 + i * 14} cy={WALL_NODE.y - 22}
-                  r={5} fill={DOT_PALETTE[i % DOT_PALETTE.length]}
-                  stroke="#000" strokeWidth="1" />
-              ))}
               {unlocked && (
                 <circle cx={WALL_NODE.x} cy={WALL_NODE.y} r={24}
                   fill="none" stroke="#FBD000" strokeWidth="2" opacity="0.6" />
@@ -237,17 +218,11 @@ const WorldMap: React.FC = () => {
         })()}
 
         {/* ── HUD title ── */}
-        <text x="200" y="28" textAnchor="middle"
+        <text x="200" y="36" textAnchor="middle"
           fontFamily="'Press Start 2P', monospace"
           fontSize="11" fill="#FBD000"
           stroke="rgba(0,0,0,0.9)" strokeWidth="3" paintOrder="stroke">
           WORLD MAP
-        </text>
-        <text x="200" y="48" textAnchor="middle"
-          fontFamily="VT323, monospace"
-          fontSize="16" fill="#FFF"
-          stroke="rgba(0,0,0,0.8)" strokeWidth="2" paintOrder="stroke">
-          {players.length} players · {players.length} problems
         </text>
       </svg>
 
