@@ -9,7 +9,7 @@ const WORLDS = [
   { num: 2, label: 'THE\nDIG',      x: 200, y: 306, route: '/game/world/2' },
   { num: 3, label: 'FIELD\nREPORT', x: 302, y: 140, route: '/game/world/3' },
 ];
-const WALL_NODE = { x: 302, y: 60, route: '/game/castle-wall', label: 'THE\nWALL' };
+const WALL_NODE = { x: 302, y: 60, route: '/game/castle-wall', label: 'THE\nCHALLENGES\nWALL' };
 
 const Tree = ({ x, y }: { x: number; y: number }) => (
   <g>
