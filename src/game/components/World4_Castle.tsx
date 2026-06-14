@@ -301,6 +301,9 @@ const World4_Castle: React.FC = () => {
         {/* Step 0 — Draft */}
         {step === 0 && (
           <form onSubmit={handleDraftSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.38rem', alignSelf: 'flex-start' }} onClick={() => navigate('/game/world/2')}>
+              ← GO BACK
+            </button>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               YOUR L&D PROBLEM<br />WORTH SOLVING IS...
             </h2>
@@ -374,9 +377,15 @@ const World4_Castle: React.FC = () => {
         {/* Step 1 — The Problem (9 L&D-native categories) */}
         {step === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.38rem', alignSelf: 'flex-start' }} onClick={() => setStep(0)}>
+              ← GO BACK
+            </button>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: AMBER, lineHeight: 2 }}>THE PROBLEM TEST</h2>
             <p className="vt323-font" style={{ fontSize: '1.3rem', color: 'var(--white)', margin: 0 }}>
-              Which of these best describes why your problem keeps happening?
+              Pick the one that fits best. Read all of them first.
+            </p>
+            <p className="vt323-font" style={{ fontSize: '1.1rem', color: AMBER, margin: 0, fontStyle: 'italic' }}>
+              You're choosing one. Not rating all of them.
             </p>
 
             {/* Gold tier — strong AI candidates */}
@@ -444,6 +453,9 @@ const World4_Castle: React.FC = () => {
         {/* Step 2 — Refine + Verdict (redirect auto-reframes, no fork) */}
         {step === 2 && verdict && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.38rem', alignSelf: 'flex-start' }} onClick={() => { setRedirectInfoVisible(false); setStep(1); }}>
+              ← GO BACK
+            </button>
 
             {/* Redirect info — single path, no choice */}
             {redirectInfoVisible && (
@@ -513,6 +525,9 @@ const World4_Castle: React.FC = () => {
         {/* Step 3 — POV Builder */}
         {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.38rem', alignSelf: 'flex-start' }} onClick={() => setStep(2)}>
+              ← GO BACK
+            </button>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               FRAME YOUR POINT OF VIEW (POV)
             </h2>
@@ -550,6 +565,9 @@ const World4_Castle: React.FC = () => {
         {/* Step 4 — One Small Thing */}
         {step === 4 && (
           <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.38rem', alignSelf: 'flex-start' }} onClick={() => setStep(3)}>
+              ← GO BACK
+            </button>
             <h2 className="mario-font" style={{ fontSize: '0.75rem', color: AMBER, textShadow: '3px 3px 0 rgba(0,0,0,0.8)', lineHeight: 2 }}>
               ONE SMALL THING.
             </h2>

@@ -145,6 +145,9 @@ const World2_Enemies: React.FC = () => {
         {/* Step 1 — Quick scan: rate each challenge */}
         {step === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+            <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.38rem', alignSelf: 'flex-start' }} onClick={() => setStep(0)}>
+              ← GO BACK
+            </button>
             <h2 className="mario-font" style={{ fontSize: '0.6rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               QUICK SCAN
             </h2>
@@ -221,6 +224,9 @@ const World2_Enemies: React.FC = () => {
           const topTier = sorted[0]?.tier;
           return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.38rem', alignSelf: 'flex-start' }} onClick={() => setStep(1)}>
+              ← GO BACK
+            </button>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               CHOOSE YOUR PROBLEM TO DIG
             </h2>
@@ -268,6 +274,9 @@ const World2_Enemies: React.FC = () => {
         {/* Step 3 — Why is this happening? */}
         {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.38rem', alignSelf: 'flex-start' }} onClick={() => setStep(2)}>
+              ← GO BACK
+            </button>
             <h2 className="mario-font" style={{ fontSize: '0.7rem', color: 'var(--white)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
               WHY IS THIS HAPPENING?
             </h2>
@@ -313,6 +322,9 @@ const World2_Enemies: React.FC = () => {
         {/* Step 4 — Recurring? */}
         {step === 4 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <button type="button" className="mario-btn mario-btn-dark" style={{ fontSize: '0.38rem', alignSelf: 'flex-start' }} onClick={() => setStep(3)}>
+              ← GO BACK
+            </button>
             <h2 className="mario-font" style={{ fontSize: '0.65rem', color: 'var(--mario-red)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)', lineHeight: 2 }}>
               DOES THIS HAPPEN MORE THAN ONCE A MONTH?
             </h2>
